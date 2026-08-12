@@ -29,6 +29,35 @@ The benchmark task prompt should not be rewritten to tell the agent which method
 
 ## 2. Design principles
 
+### Experiment Workflow
+
+```text
+                    ┌──────────────────┐
+                    │ Terminal-Bench   │
+                    │ source tasks     │
+                    └────────┬─────────┘
+                             │
+                  ┌──────────┼──────────┐
+                  │          │          │
+                  ▼          ▼          ▼
+             baseline       sdd        dfg
+                  │          │          │
+                  │     frozen SDD   frozen DFG
+                  │       snapshot     snapshot
+                  │          │          │
+                  └──────────┼──────────┘
+                             │
+                    generated Harbor
+                         tasks
+                             │
+                    ┌────────┴────────┐
+                    │                 │
+               Claude Code        Codex CLI
+                    │                 │
+                    ▼                 ▼
+                 results           results
+```
+
 ### Keep benchmark tasks unchanged
 
 The original benchmark task is the source of truth.
