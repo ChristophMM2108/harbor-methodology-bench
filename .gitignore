@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Generated benchmark tasks and large source datasets
+/generated/
+/source-tasks/terminal-bench/
+
+# Trial outputs
+/results/raw/
+/results/artifacts/
+/results/normalized/
+/results/reports/
+
+# Local credentials/config
+config/local.env
+*.local
+
+# Editors/OS
+.vscode/
+.idea/
+.DS_Store
