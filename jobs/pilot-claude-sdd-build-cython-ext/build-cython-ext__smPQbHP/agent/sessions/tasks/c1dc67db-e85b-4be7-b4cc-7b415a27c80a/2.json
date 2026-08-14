@@ -1,0 +1,8 @@
+{
+  "id": "2",
+  "subject": "Fix np.int deprecated alias usages",
+  "description": "Fix np.int/np.float/np.bool usages in ccomplexity.pyx, periodiccell.py, spacecurve.py that were removed in numpy 1.24/2.0",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

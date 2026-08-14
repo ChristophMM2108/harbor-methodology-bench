@@ -1,0 +1,10 @@
+{
+    "task": {
+        "name": "terminal-bench/openssl-selfsigned-cert",
+        "ref": "sha256:43b288549abe880ce4a3c735f30e746c4440c0159c5411e9ae5aafb547ba2d8c",
+        "source": "terminal-bench/terminal-bench-2"
+    },
+    "trial_name": "openssl-selfsigned-cert__xT8mDny",
+    "trials_dir": "jobs/2026-08-12__16-01-57",
+    "job_id": "a57f2253-d8cc-49d7-8181-be0afe355930"
+}

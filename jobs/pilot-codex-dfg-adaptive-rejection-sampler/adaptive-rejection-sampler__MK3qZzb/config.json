@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "generated/dfg/adaptive-rejection-sampler"
+    },
+    "trial_name": "adaptive-rejection-sampler__MK3qZzb",
+    "trials_dir": "jobs/pilot-codex-dfg-adaptive-rejection-sampler",
+    "agent": {
+        "name": "codex",
+        "model_name": "gpt-5.6-terra"
+    },
+    "job_id": "97970c23-db9f-4229-88b2-db0b5dbddbd0"
+}

@@ -1,0 +1,114 @@
+{
+    "id": "fbd47722-60c0-485d-ad3e-a3c35bc71517",
+    "task_name": "terminal-bench/qemu-startup",
+    "trial_name": "qemu-startup__YMPCjfN",
+    "trial_uri": "file:///home/chriz/GitRepos/harbor-methodology-bench/jobs/2026-08-12__16-01-57/qemu-startup__YMPCjfN",
+    "task_id": {
+        "org": "terminal-bench",
+        "name": "qemu-startup",
+        "ref": "sha256:e9796833ca178d98500b4146d107d947226485065f5a79a1dff2cdf7430f4f95"
+    },
+    "source": "terminal-bench/terminal-bench-2",
+    "task_checksum": "a0ad5ae76248295fb7174c716a1bfb07567ecba4af534614197c2199f855cf4f",
+    "config": {
+        "task": {
+            "path": null,
+            "git_url": null,
+            "git_commit_id": null,
+            "name": "terminal-bench/qemu-startup",
+            "ref": "sha256:e9796833ca178d98500b4146d107d947226485065f5a79a1dff2cdf7430f4f95",
+            "overwrite": false,
+            "download_dir": null,
+            "source": "terminal-bench/terminal-bench-2"
+        },
+        "trial_name": "qemu-startup__YMPCjfN",
+        "trials_dir": "jobs/2026-08-12__16-01-57",
+        "install_only": false,
+        "timeout_multiplier": 1.0,
+        "agent_timeout_multiplier": null,
+        "verifier_timeout_multiplier": null,
+        "agent_setup_timeout_multiplier": null,
+        "environment_build_timeout_multiplier": null,
+        "agent": {
+            "name": "oracle",
+            "import_path": null,
+            "model_name": null,
+            "n_concurrent": null,
+            "concurrency_group": null,
+            "skills": [],
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": null,
+            "max_timeout_sec": null,
+            "resume_trajectory": false,
+            "load_trajectory": null,
+            "extra_allowed_hosts": [],
+            "kwargs": {},
+            "mcp_servers": []
+        },
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "cpu_enforcement_policy": "auto",
+            "memory_enforcement_policy": "auto",
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "override_tpu": null,
+            "mounts": null,
+            "extra_docker_compose": [],
+            "kwargs": {},
+            "extra_allowed_hosts": []
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": false
+        },
+        "artifacts": [],
+        "extra_instruction_paths": [],
+        "job_id": "a57f2253-d8cc-49d7-8181-be0afe355930",
+        "source_trial": null
+    },
+    "agent_info": {
+        "name": "oracle",
+        "version": "1.0.0",
+        "model_info": null
+    },
+    "agent_result": {
+        "n_input_tokens": null,
+        "n_cache_tokens": null,
+        "n_output_tokens": null,
+        "cost_usd": null,
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": {
+        "rewards": {
+            "reward": 1.0
+        }
+    },
+    "verifier_environment_mode": "shared",
+    "exception_info": null,
+    "started_at": "2026-08-12T19:52:40.839128Z",
+    "finished_at": "2026-08-12T19:54:06.302104Z",
+    "environment_setup": {
+        "started_at": "2026-08-12T19:52:40.840472Z",
+        "finished_at": "2026-08-12T19:52:43.831626Z"
+    },
+    "agent_setup": {
+        "started_at": "2026-08-12T19:52:43.831649Z",
+        "finished_at": "2026-08-12T19:52:43.831690Z"
+    },
+    "agent_execution": {
+        "started_at": "2026-08-12T19:52:43.831759Z",
+        "finished_at": "2026-08-12T19:53:47.209595Z"
+    },
+    "verifier": {
+        "started_at": "2026-08-12T19:53:47.468633Z",
+        "finished_at": "2026-08-12T19:53:55.485643Z"
+    },
+    "step_results": null
+}

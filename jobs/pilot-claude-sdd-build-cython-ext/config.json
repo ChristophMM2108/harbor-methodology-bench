@@ -1,0 +1,15 @@
+{
+    "job_name": "pilot-claude-sdd-build-cython-ext",
+    "n_concurrent_trials": 1,
+    "agents": [
+        {
+            "name": "claude-code",
+            "model_name": "claude-sonnet-5"
+        }
+    ],
+    "tasks": [
+        {
+            "path": "generated/sdd/build-cython-ext"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "task": {
+        "name": "terminal-bench/sam-cell-seg",
+        "ref": "sha256:a141c1f364a9a69e27545a062f5238a27dfde68dfa0a04921966ada2854bf1db",
+        "source": "terminal-bench/terminal-bench-2"
+    },
+    "trial_name": "sam-cell-seg__ngyJhbt",
+    "trials_dir": "jobs/2026-08-12__16-01-57",
+    "job_id": "a57f2253-d8cc-49d7-8181-be0afe355930"
+}

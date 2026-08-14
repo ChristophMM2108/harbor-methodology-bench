@@ -1,0 +1,8 @@
+{
+  "id": "6",
+  "subject": "Sample 10k from intervened BN and save",
+  "description": "Sample 10,000 points from the intervened BN and save to /app/final_bn_sample.csv with columns U,Y,R,D,M.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

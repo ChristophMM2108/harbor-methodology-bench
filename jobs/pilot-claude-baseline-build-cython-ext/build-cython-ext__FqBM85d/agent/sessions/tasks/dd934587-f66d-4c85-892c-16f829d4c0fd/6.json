@@ -1,0 +1,8 @@
+{
+  "id": "6",
+  "subject": "Verify README snippet runs and run test suite",
+  "description": "Run the given code snippet, then run pytest on tests/ excluding test_random_curves.py and test_catalogue.py, fix any further errors found",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

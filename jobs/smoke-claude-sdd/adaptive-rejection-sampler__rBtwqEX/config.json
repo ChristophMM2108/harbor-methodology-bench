@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "generated/sdd/adaptive-rejection-sampler"
+    },
+    "trial_name": "adaptive-rejection-sampler__rBtwqEX",
+    "trials_dir": "jobs/smoke-claude-sdd",
+    "agent": {
+        "name": "claude-code",
+        "model_name": "claude-sonnet-5"
+    },
+    "job_id": "b0223d56-2d8b-4c2a-a6a9-69056bdc6ac2"
+}

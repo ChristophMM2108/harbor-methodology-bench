@@ -1,0 +1,8 @@
+{
+  "id": "5",
+  "subject": "Save intervened_dag.csv",
+  "description": "Write edges of intervened BN (with Y's incoming edges removed) to /app/intervened_dag.csv.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

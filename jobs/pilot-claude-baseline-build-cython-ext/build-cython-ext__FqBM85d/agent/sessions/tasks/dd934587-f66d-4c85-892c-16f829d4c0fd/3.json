@@ -1,0 +1,8 @@
+{
+  "id": "3",
+  "subject": "Install build deps (Cython, setuptools) and build extensions",
+  "description": "pip install cython, numpy already present; run setup.py build_ext / pip install .",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

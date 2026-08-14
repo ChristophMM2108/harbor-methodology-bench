@@ -1,0 +1,21 @@
+source_root: source-tasks/terminal-bench
+generated_root: generated
+repetitions: 1
+
+models:
+  claude-code: claude-sonnet-5
+  codex: gpt-5.6-terra
+
+toolkits:
+  - id: sdd
+    snapshot: toolkits/sdd/snapshot
+  - id: dfg
+    snapshot: toolkits/dfg/snapshot
+
+matrix:
+  - {id: claude-baseline, agent: claude-code, toolkit: baseline}
+  - {id: claude-sdd, agent: claude-code, toolkit: sdd}
+  - {id: claude-dfg, agent: claude-code, toolkit: dfg}
+  - {id: codex-baseline, agent: codex, toolkit: baseline}
+  - {id: codex-sdd, agent: codex, toolkit: sdd}
+  - {id: codex-dfg, agent: codex, toolkit: dfg}

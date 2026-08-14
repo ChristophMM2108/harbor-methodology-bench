@@ -1,0 +1,8 @@
+{
+  "id": "3",
+  "subject": "Build Cython extensions against numpy 2.3.0",
+  "description": "Run setup.py build_ext / pip install and fix any remaining numpy C-API or Cython 3.x compatibility errors",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,8 @@
+{
+  "id": "1",
+  "subject": "Fix setup.py distutils/Extension imports for Python 3.13",
+  "description": "Replace distutils.core/distutils.extension imports with setuptools equivalents in setup.py and pyknotid/spacecurves/setup.py",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

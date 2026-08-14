@@ -1,0 +1,10 @@
+{
+    "task": {
+        "name": "terminal-bench/fix-git",
+        "ref": "sha256:66be7179f07f1aa8f0d60f88800a883a68c1ffb7a349aae76aa60fa679485473",
+        "source": "terminal-bench/terminal-bench-2"
+    },
+    "trial_name": "fix-git__dJ239tG",
+    "trials_dir": "jobs/2026-08-12__16-01-57",
+    "job_id": "a57f2253-d8cc-49d7-8181-be0afe355930"
+}

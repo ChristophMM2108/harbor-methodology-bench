@@ -1,0 +1,8 @@
+{
+  "id": "4",
+  "subject": "Perform intervention do(Y=0)",
+  "description": "Mutilate the DAG by removing Y's parent edges, set Y's CPD to constant 0 (or tiny variance ~1e-9), keep downstream CPDs.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

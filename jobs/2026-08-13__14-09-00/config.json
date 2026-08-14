@@ -1,0 +1,13 @@
+{
+    "agents": [
+        {
+            "name": "claude-code",
+            "model_name": "claude-"
+        }
+    ],
+    "tasks": [
+        {
+            "path": "generated/baseline/adaptive-rejection-sampler"
+        }
+    ]
+}

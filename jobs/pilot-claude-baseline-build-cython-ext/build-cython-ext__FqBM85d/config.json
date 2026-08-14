@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "generated/baseline/build-cython-ext"
+    },
+    "trial_name": "build-cython-ext__FqBM85d",
+    "trials_dir": "jobs/pilot-claude-baseline-build-cython-ext",
+    "agent": {
+        "name": "claude-code",
+        "model_name": "claude-sonnet-5"
+    },
+    "job_id": "04ec53ca-95e5-40d5-ae9a-36bdf419b4de"
+}

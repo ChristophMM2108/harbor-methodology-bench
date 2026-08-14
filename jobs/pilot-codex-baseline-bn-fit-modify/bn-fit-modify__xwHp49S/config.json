@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "generated/baseline/bn-fit-modify"
+    },
+    "trial_name": "bn-fit-modify__xwHp49S",
+    "trials_dir": "jobs/pilot-codex-baseline-bn-fit-modify",
+    "agent": {
+        "name": "codex",
+        "model_name": "gpt-5.6-terra"
+    },
+    "job_id": "3ed9d196-d38a-4f07-8e20-5a86d4777532"
+}

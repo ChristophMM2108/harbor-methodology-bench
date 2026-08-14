@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "generated/baseline/adaptive-rejection-sampler"
+    },
+    "trial_name": "adaptive-rejection-sampler__MuixZYV",
+    "trials_dir": "jobs/smoke-claude-baseline-rerun",
+    "agent": {
+        "name": "claude-code",
+        "model_name": "claude-sonnet-5"
+    },
+    "job_id": "619bd51c-345e-488e-8262-095d349f4228"
+}

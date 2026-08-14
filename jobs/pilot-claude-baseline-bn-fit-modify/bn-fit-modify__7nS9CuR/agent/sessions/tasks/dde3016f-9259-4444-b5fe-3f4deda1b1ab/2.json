@@ -1,0 +1,9 @@
+{
+  "id": "2",
+  "subject": "Fit Linear Gaussian BN on data using recovered DAG",
+  "description": "Use pgmpy LinearGaussianBayesianNetwork with MLE to fit CPDs from bn_sample_10k.csv given the DAG structure",
+  "activeForm": "Fitting Bayesian Network",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

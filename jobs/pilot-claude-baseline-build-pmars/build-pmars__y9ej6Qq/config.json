@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "generated/baseline/build-pmars"
+    },
+    "trial_name": "build-pmars__y9ej6Qq",
+    "trials_dir": "jobs/pilot-claude-baseline-build-pmars",
+    "agent": {
+        "name": "claude-code",
+        "model_name": "claude-sonnet-5"
+    },
+    "job_id": "837a3b05-2ebc-4aa4-ab4c-368bdc2a7364"
+}

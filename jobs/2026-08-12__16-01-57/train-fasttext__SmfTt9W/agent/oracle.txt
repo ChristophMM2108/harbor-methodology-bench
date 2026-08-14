@@ -1,0 +1,839 @@
+data
+Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [34.8 kB]
+Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8790 kB]
+Get:5 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [333 kB]
+Fetched 9365 kB in 1s (8066 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  git-man krb5-locales less libbrotli1 libbsd0 libcbor0.8 libcurl3-gnutls
+  libedit2 liberror-perl libexpat1 libfido2-1 libgdbm-compat4 libgssapi-krb5-2
+  libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap-2.5-0
+  libldap-common libnghttp2-14 libperl5.36 librtmp1 libsasl2-2
+  libsasl2-modules libsasl2-modules-db libssh2-1 libssl3 libx11-6 libx11-data
+  libxau6 libxcb1 libxdmcp6 libxext6 libxmuu1 openssh-client openssl patch
+  perl perl-base perl-modules-5.36 xauth
+Suggested packages:
+  gettext-base git-daemon-run | git-daemon-sysvinit git-doc git-email git-gui
+  gitk gitweb git-cvs git-mediawiki git-svn krb5-doc krb5-user sensible-utils
+  libsasl2-modules-gssapi-mit | libsasl2-modules-gssapi-heimdal
+  libsasl2-modules-ldap libsasl2-modules-otp libsasl2-modules-sql keychain
+  libpam-ssh monkeysphere ssh-askpass ed diffutils-doc perl-doc
+  libterm-readline-gnu-perl | libterm-readline-perl-perl make
+  libtap-harness-archive-perl
+The following NEW packages will be installed:
+  git git-man krb5-locales less libbrotli1 libbsd0 libcbor0.8 libcurl3-gnutls
+  libedit2 liberror-perl libexpat1 libfido2-1 libgdbm-compat4 libgssapi-krb5-2
+  libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap-2.5-0
+  libldap-common libnghttp2-14 libperl5.36 librtmp1 libsasl2-2
+  libsasl2-modules libsasl2-modules-db libssh2-1 libx11-6 libx11-data libxau6
+  libxcb1 libxdmcp6 libxext6 libxmuu1 openssh-client patch perl
+  perl-modules-5.36 xauth
+The following packages will be upgraded:
+  libssl3 openssl perl-base
+3 upgraded, 39 newly installed, 0 to remove and 28 not upgraded.
+Need to get 26.7 MB of archives.
+After this operation, 114 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main amd64 perl-base amd64 5.36.0-7+deb12u3 [1608 kB]
+Get:2 http://deb.debian.org/debian bookworm/main amd64 perl-modules-5.36 all 5.36.0-7+deb12u3 [2815 kB]
+Get:3 http://deb.debian.org/debian bookworm/main amd64 libgdbm-compat4 amd64 1.23-3 [48.2 kB]
+Get:4 http://deb.debian.org/debian bookworm/main amd64 libperl5.36 amd64 5.36.0-7+deb12u3 [4196 kB]
+Get:5 http://deb.debian.org/debian bookworm/main amd64 perl amd64 5.36.0-7+deb12u3 [239 kB]
+Get:6 http://deb.debian.org/debian bookworm/main amd64 less amd64 590-2.1~deb12u2 [132 kB]
+Get:7 http://deb.debian.org/debian bookworm/main amd64 krb5-locales all 1.20.1-2+deb12u5 [63.5 kB]
+Get:8 http://deb.debian.org/debian bookworm/main amd64 libbsd0 amd64 0.11.7-2 [117 kB]
+Get:9 http://deb.debian.org/debian bookworm/main amd64 libedit2 amd64 3.1-20221030-2 [93.0 kB]
+Get:10 http://deb.debian.org/debian bookworm/main amd64 libcbor0.8 amd64 0.8.0-2+b1 [27.4 kB]
+Get:11 http://deb.debian.org/debian bookworm/main amd64 libssl3 amd64 3.0.20-1~deb12u2 [2036 kB]
+Get:12 http://deb.debian.org/debian bookworm/main amd64 libfido2-1 amd64 1.12.0-2+b1 [77.2 kB]
+Get:13 http://deb.debian.org/debian bookworm/main amd64 libkrb5support0 amd64 1.20.1-2+deb12u5 [33.2 kB]
+Get:14 http://deb.debian.org/debian bookworm/main amd64 libk5crypto3 amd64 1.20.1-2+deb12u5 [79.7 kB]
+Get:15 http://deb.debian.org/debian bookworm/main amd64 libkeyutils1 amd64 1.6.3-2 [8808 B]
+Get:16 http://deb.debian.org/debian bookworm/main amd64 libkrb5-3 amd64 1.20.1-2+deb12u5 [332 kB]
+Get:17 http://deb.debian.org/debian bookworm/main amd64 libgssapi-krb5-2 amd64 1.20.1-2+deb12u5 [135 kB]
+Get:18 http://deb.debian.org/debian bookworm/main amd64 openssh-client amd64 1:9.2p1-2+deb12u10 [994 kB]
+Get:19 http://deb.debian.org/debian bookworm/main amd64 libbrotli1 amd64 1.0.9-2+b6 [275 kB]
+Get:20 http://deb.debian.org/debian bookworm/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg-10 [20.3 kB]
+Get:21 http://deb.debian.org/debian bookworm/main amd64 libsasl2-2 amd64 2.1.28+dfsg-10 [59.7 kB]
+Get:22 http://deb.debian.org/debian bookworm/main amd64 libldap-2.5-0 amd64 2.5.13+dfsg-5 [183 kB]
+Get:23 http://deb.debian.org/debian bookworm/main amd64 libnghttp2-14 amd64 1.52.0-1+deb12u3 [72.4 kB]
+Get:24 http://deb.debian.org/debian bookworm/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2+b2 [60.8 kB]
+Get:25 http://deb.debian.org/debian bookworm/main amd64 libssh2-1 amd64 1.10.0-3+b1 [179 kB]
+Get:26 http://deb.debian.org/debian bookworm/main amd64 libcurl3-gnutls amd64 7.88.1-10+deb12u15 [386 kB]
+Get:27 http://deb.debian.org/debian bookworm/main amd64 libexpat1 amd64 2.5.0-1+deb12u2 [99.9 kB]
+Get:28 http://deb.debian.org/debian bookworm/main amd64 liberror-perl all 0.17029-2 [29.0 kB]
+Get:29 http://deb.debian.org/debian bookworm/main amd64 git-man all 1:2.39.5-0+deb12u3 [2053 kB]
+Get:30 http://deb.debian.org/debian bookworm/main amd64 git amd64 1:2.39.5-0+deb12u3 [7264 kB]
+Get:31 http://deb.debian.org/debian bookworm/main amd64 libldap-common all 2.5.13+dfsg-5 [29.3 kB]
+Get:32 http://deb.debian.org/debian bookworm/main amd64 libsasl2-modules amd64 2.1.28+dfsg-10 [66.6 kB]
+Get:33 http://deb.debian.org/debian bookworm/main amd64 libxau6 amd64 1:1.0.9-1 [19.7 kB]
+Get:34 http://deb.debian.org/debian bookworm/main amd64 libxdmcp6 amd64 1:1.1.2-3 [26.3 kB]
+Get:35 http://deb.debian.org/debian bookworm/main amd64 libxcb1 amd64 1.15-1 [144 kB]
+Get:36 http://deb.debian.org/debian bookworm/main amd64 libx11-data all 2:1.8.4-2+deb12u2 [292 kB]
+Get:37 http://deb.debian.org/debian bookworm/main amd64 libx11-6 amd64 2:1.8.4-2+deb12u2 [760 kB]
+Get:38 http://deb.debian.org/debian bookworm/main amd64 libxext6 amd64 2:1.3.4-1+b1 [52.9 kB]
+Get:39 http://deb.debian.org/debian bookworm/main amd64 libxmuu1 amd64 2:1.1.3-3 [23.9 kB]
+Get:40 http://deb.debian.org/debian bookworm/main amd64 openssl amd64 3.0.20-1~deb12u2 [1439 kB]
+Get:41 http://deb.debian.org/debian bookworm/main amd64 patch amd64 2.7.6-7 [128 kB]
+Get:42 http://deb.debian.org/debian bookworm/main amd64 xauth amd64 1:1.1.2-1 [36.0 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 26.7 MB in 2s (17.8 MB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6743 files and directories currently installed.)
+Preparing to unpack .../perl-base_5.36.0-7+deb12u3_amd64.deb ...
+Unpacking perl-base (5.36.0-7+deb12u3) over (5.36.0-7+deb12u2) ...
+Setting up perl-base (5.36.0-7+deb12u3) ...
+Selecting previously unselected package perl-modules-5.36.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6744 files and directories currently installed.)
+Preparing to unpack .../00-perl-modules-5.36_5.36.0-7+deb12u3_all.deb ...
+Unpacking perl-modules-5.36 (5.36.0-7+deb12u3) ...
+Selecting previously unselected package libgdbm-compat4:amd64.
+Preparing to unpack .../01-libgdbm-compat4_1.23-3_amd64.deb ...
+Unpacking libgdbm-compat4:amd64 (1.23-3) ...
+Selecting previously unselected package libperl5.36:amd64.
+Preparing to unpack .../02-libperl5.36_5.36.0-7+deb12u3_amd64.deb ...
+Unpacking libperl5.36:amd64 (5.36.0-7+deb12u3) ...
+Selecting previously unselected package perl.
+Preparing to unpack .../03-perl_5.36.0-7+deb12u3_amd64.deb ...
+Unpacking perl (5.36.0-7+deb12u3) ...
+Selecting previously unselected package less.
+Preparing to unpack .../04-less_590-2.1~deb12u2_amd64.deb ...
+Unpacking less (590-2.1~deb12u2) ...
+Selecting previously unselected package krb5-locales.
+Preparing to unpack .../05-krb5-locales_1.20.1-2+deb12u5_all.deb ...
+Unpacking krb5-locales (1.20.1-2+deb12u5) ...
+Selecting previously unselected package libbsd0:amd64.
+Preparing to unpack .../06-libbsd0_0.11.7-2_amd64.deb ...
+Unpacking libbsd0:amd64 (0.11.7-2) ...
+Selecting previously unselected package libedit2:amd64.
+Preparing to unpack .../07-libedit2_3.1-20221030-2_amd64.deb ...
+Unpacking libedit2:amd64 (3.1-20221030-2) ...
+Selecting previously unselected package libcbor0.8:amd64.
+Preparing to unpack .../08-libcbor0.8_0.8.0-2+b1_amd64.deb ...
+Unpacking libcbor0.8:amd64 (0.8.0-2+b1) ...
+Preparing to unpack .../09-libssl3_3.0.20-1~deb12u2_amd64.deb ...
+Unpacking libssl3:amd64 (3.0.20-1~deb12u2) over (3.0.17-1~deb12u2) ...
+Selecting previously unselected package libfido2-1:amd64.
+Preparing to unpack .../10-libfido2-1_1.12.0-2+b1_amd64.deb ...
+Unpacking libfido2-1:amd64 (1.12.0-2+b1) ...
+Selecting previously unselected package libkrb5support0:amd64.
+Preparing to unpack .../11-libkrb5support0_1.20.1-2+deb12u5_amd64.deb ...
+Unpacking libkrb5support0:amd64 (1.20.1-2+deb12u5) ...
+Selecting previously unselected package libk5crypto3:amd64.
+Preparing to unpack .../12-libk5crypto3_1.20.1-2+deb12u5_amd64.deb ...
+Unpacking libk5crypto3:amd64 (1.20.1-2+deb12u5) ...
+Selecting previously unselected package libkeyutils1:amd64.
+Preparing to unpack .../13-libkeyutils1_1.6.3-2_amd64.deb ...
+Unpacking libkeyutils1:amd64 (1.6.3-2) ...
+Selecting previously unselected package libkrb5-3:amd64.
+Preparing to unpack .../14-libkrb5-3_1.20.1-2+deb12u5_amd64.deb ...
+Unpacking libkrb5-3:amd64 (1.20.1-2+deb12u5) ...
+Selecting previously unselected package libgssapi-krb5-2:amd64.
+Preparing to unpack .../15-libgssapi-krb5-2_1.20.1-2+deb12u5_amd64.deb ...
+Unpacking libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...
+Selecting previously unselected package openssh-client.
+Preparing to unpack .../16-openssh-client_1%3a9.2p1-2+deb12u10_amd64.deb ...
+Unpacking openssh-client (1:9.2p1-2+deb12u10) ...
+Selecting previously unselected package libbrotli1:amd64.
+Preparing to unpack .../17-libbrotli1_1.0.9-2+b6_amd64.deb ...
+Unpacking libbrotli1:amd64 (1.0.9-2+b6) ...
+Selecting previously unselected package libsasl2-modules-db:amd64.
+Preparing to unpack .../18-libsasl2-modules-db_2.1.28+dfsg-10_amd64.deb ...
+Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg-10) ...
+Selecting previously unselected package libsasl2-2:amd64.
+Preparing to unpack .../19-libsasl2-2_2.1.28+dfsg-10_amd64.deb ...
+Unpacking libsasl2-2:amd64 (2.1.28+dfsg-10) ...
+Selecting previously unselected package libldap-2.5-0:amd64.
+Preparing to unpack .../20-libldap-2.5-0_2.5.13+dfsg-5_amd64.deb ...
+Unpacking libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...
+Selecting previously unselected package libnghttp2-14:amd64.
+Preparing to unpack .../21-libnghttp2-14_1.52.0-1+deb12u3_amd64.deb ...
+Unpacking libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...
+Selecting previously unselected package librtmp1:amd64.
+Preparing to unpack .../22-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_amd64.deb ...
+Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+Selecting previously unselected package libssh2-1:amd64.
+Preparing to unpack .../23-libssh2-1_1.10.0-3+b1_amd64.deb ...
+Unpacking libssh2-1:amd64 (1.10.0-3+b1) ...
+Selecting previously unselected package libcurl3-gnutls:amd64.
+Preparing to unpack .../24-libcurl3-gnutls_7.88.1-10+deb12u15_amd64.deb ...
+Unpacking libcurl3-gnutls:amd64 (7.88.1-10+deb12u15) ...
+Selecting previously unselected package libexpat1:amd64.
+Preparing to unpack .../25-libexpat1_2.5.0-1+deb12u2_amd64.deb ...
+Unpacking libexpat1:amd64 (2.5.0-1+deb12u2) ...
+Selecting previously unselected package liberror-perl.
+Preparing to unpack .../26-liberror-perl_0.17029-2_all.deb ...
+Unpacking liberror-perl (0.17029-2) ...
+Selecting previously unselected package git-man.
+Preparing to unpack .../27-git-man_1%3a2.39.5-0+deb12u3_all.deb ...
+Unpacking git-man (1:2.39.5-0+deb12u3) ...
+Selecting previously unselected package git.
+Preparing to unpack .../28-git_1%3a2.39.5-0+deb12u3_amd64.deb ...
+Unpacking git (1:2.39.5-0+deb12u3) ...
+Selecting previously unselected package libldap-common.
+Preparing to unpack .../29-libldap-common_2.5.13+dfsg-5_all.deb ...
+Unpacking libldap-common (2.5.13+dfsg-5) ...
+Selecting previously unselected package libsasl2-modules:amd64.
+Preparing to unpack .../30-libsasl2-modules_2.1.28+dfsg-10_amd64.deb ...
+Unpacking libsasl2-modules:amd64 (2.1.28+dfsg-10) ...
+Selecting previously unselected package libxau6:amd64.
+Preparing to unpack .../31-libxau6_1%3a1.0.9-1_amd64.deb ...
+Unpacking libxau6:amd64 (1:1.0.9-1) ...
+Selecting previously unselected package libxdmcp6:amd64.
+Preparing to unpack .../32-libxdmcp6_1%3a1.1.2-3_amd64.deb ...
+Unpacking libxdmcp6:amd64 (1:1.1.2-3) ...
+Selecting previously unselected package libxcb1:amd64.
+Preparing to unpack .../33-libxcb1_1.15-1_amd64.deb ...
+Unpacking libxcb1:amd64 (1.15-1) ...
+Selecting previously unselected package libx11-data.
+Preparing to unpack .../34-libx11-data_2%3a1.8.4-2+deb12u2_all.deb ...
+Unpacking libx11-data (2:1.8.4-2+deb12u2) ...
+Selecting previously unselected package libx11-6:amd64.
+Preparing to unpack .../35-libx11-6_2%3a1.8.4-2+deb12u2_amd64.deb ...
+Unpacking libx11-6:amd64 (2:1.8.4-2+deb12u2) ...
+Selecting previously unselected package libxext6:amd64.
+Preparing to unpack .../36-libxext6_2%3a1.3.4-1+b1_amd64.deb ...
+Unpacking libxext6:amd64 (2:1.3.4-1+b1) ...
+Selecting previously unselected package libxmuu1:amd64.
+Preparing to unpack .../37-libxmuu1_2%3a1.1.3-3_amd64.deb ...
+Unpacking libxmuu1:amd64 (2:1.1.3-3) ...
+Preparing to unpack .../38-openssl_3.0.20-1~deb12u2_amd64.deb ...
+Unpacking openssl (3.0.20-1~deb12u2) over (3.0.17-1~deb12u2) ...
+Selecting previously unselected package patch.
+Preparing to unpack .../39-patch_2.7.6-7_amd64.deb ...
+Unpacking patch (2.7.6-7) ...
+Selecting previously unselected package xauth.
+Preparing to unpack .../40-xauth_1%3a1.1.2-1_amd64.deb ...
+Unpacking xauth (1:1.1.2-1) ...
+Setting up libexpat1:amd64 (2.5.0-1+deb12u2) ...
+Setting up libxau6:amd64 (1:1.0.9-1) ...
+Setting up libkeyutils1:amd64 (1.6.3-2) ...
+Setting up libcbor0.8:amd64 (0.8.0-2+b1) ...
+Setting up libbrotli1:amd64 (1.0.9-2+b6) ...
+Setting up libssl3:amd64 (3.0.20-1~deb12u2) ...
+Setting up libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...
+Setting up less (590-2.1~deb12u2) ...
+Setting up krb5-locales (1.20.1-2+deb12u5) ...
+Setting up libldap-common (2.5.13+dfsg-5) ...
+Setting up libkrb5support0:amd64 (1.20.1-2+deb12u5) ...
+Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg-10) ...
+Setting up perl-modules-5.36 (5.36.0-7+deb12u3) ...
+Setting up libx11-data (2:1.8.4-2+deb12u2) ...
+Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+Setting up patch (2.7.6-7) ...
+Setting up libgdbm-compat4:amd64 (1.23-3) ...
+Setting up libk5crypto3:amd64 (1.20.1-2+deb12u5) ...
+Setting up libsasl2-2:amd64 (2.1.28+dfsg-10) ...
+Setting up git-man (1:2.39.5-0+deb12u3) ...
+Setting up libssh2-1:amd64 (1.10.0-3+b1) ...
+Setting up libkrb5-3:amd64 (1.20.1-2+deb12u5) ...
+Setting up libfido2-1:amd64 (1.12.0-2+b1) ...
+Setting up openssl (3.0.20-1~deb12u2) ...
+Setting up libbsd0:amd64 (0.11.7-2) ...
+Setting up libperl5.36:amd64 (5.36.0-7+deb12u3) ...
+Setting up libxdmcp6:amd64 (1:1.1.2-3) ...
+Setting up libxcb1:amd64 (1.15-1) ...
+Setting up libedit2:amd64 (3.1-20221030-2) ...
+Setting up libsasl2-modules:amd64 (2.1.28+dfsg-10) ...
+Setting up libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...
+Setting up perl (5.36.0-7+deb12u3) ...
+Setting up libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...
+Setting up libx11-6:amd64 (2:1.8.4-2+deb12u2) ...
+Setting up libxmuu1:amd64 (2:1.1.3-3) ...
+Setting up openssh-client (1:9.2p1-2+deb12u10) ...
+Setting up libxext6:amd64 (2:1.3.4-1+b1) ...
+Setting up libcurl3-gnutls:amd64 (7.88.1-10+deb12u15) ...
+Setting up liberror-perl (0.17029-2) ...
+Setting up git (1:2.39.5-0+deb12u3) ...
+Setting up xauth (1:1.1.2-1) ...
+Processing triggers for libc-bin (2.36-9+deb12u10) ...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu bzip2 cpp cpp-12 dirmngr
+  dpkg dpkg-dev fakeroot fontconfig-config fonts-dejavu-core g++ g++-12 gcc
+  gcc-12 gnupg gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client
+  gpg-wks-server gpgconf gpgsm gpgv libabsl20220623 libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libaom3 libasan8
+  libassuan0 libatomic1 libavif15 libbinutils libc-bin libc-dev-bin
+  libc-devtools libc6 libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0
+  libdav1d6 libde265-0 libdeflate0 libdpkg-perl libfakeroot
+  libfile-fcntllock-perl libfontconfig1 libfreetype6 libgav1-1 libgcc-12-dev
+  libgd3 libgomp1 libgprofng0 libheif1 libisl23 libitm1 libjansson4 libjbig0
+  libjpeg62-turbo libksba8 liblerc4 liblocale-gettext-perl liblsan0 liblzma5
+  libmpc3 libmpfr6 libnpth0 libnsl-dev libnsl2 libnuma1 libpng16-16
+  libquadmath0 librav1e0 libstdc++-12-dev libsvtav1enc1 libtiff6
+  libtirpc-common libtirpc-dev libtirpc3 libtsan2 libubsan1 libwebp7
+  libx265-199 libxpm4 libyuv0 linux-libc-dev make manpages manpages-dev
+  pinentry-curses rpcsvc-proto xz-utils
+Suggested packages:
+  binutils-doc bzip2-doc cpp-doc gcc-12-locales cpp-12-doc dbus-user-session
+  libpam-systemd pinentry-gnome3 tor debsig-verify debian-keyring g++-multilib
+  g++-12-multilib gcc-12-doc gcc-multilib autoconf automake libtool flex bison
+  gdb gcc-doc gcc-12-multilib parcimonie xloadimage scdaemon glibc-doc
+  libc-l10n locales libnss-nis libnss-nisplus sensible-utils bzr libgd-tools
+  libstdc++-12-doc make-doc man-browser pinentry-doc
+The following NEW packages will be installed:
+  binutils binutils-common binutils-x86-64-linux-gnu build-essential bzip2 cpp
+  cpp-12 dirmngr dpkg-dev fakeroot fontconfig-config fonts-dejavu-core g++
+  g++-12 gcc gcc-12 gnupg gnupg-l10n gnupg-utils gpg gpg-agent gpg-wks-client
+  gpg-wks-server gpgconf gpgsm libabsl20220623 libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libaom3 libasan8
+  libassuan0 libatomic1 libavif15 libbinutils libc-dev-bin libc-devtools
+  libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libdav1d6 libde265-0
+  libdeflate0 libdpkg-perl libfakeroot libfile-fcntllock-perl libfontconfig1
+  libfreetype6 libgav1-1 libgcc-12-dev libgd3 libgomp1 libgprofng0 libheif1
+  libisl23 libitm1 libjansson4 libjbig0 libjpeg62-turbo libksba8 liblerc4
+  liblocale-gettext-perl liblsan0 libmpc3 libmpfr6 libnpth0 libnsl-dev libnsl2
+  libnuma1 libpng16-16 libquadmath0 librav1e0 libstdc++-12-dev libsvtav1enc1
+  libtiff6 libtirpc-common libtirpc-dev libtirpc3 libtsan2 libubsan1 libwebp7
+  libx265-199 libxpm4 libyuv0 linux-libc-dev make manpages manpages-dev
+  pinentry-curses rpcsvc-proto xz-utils
+The following packages will be upgraded:
+  dpkg gpgv libc-bin libc6 liblzma5
+5 upgraded, 93 newly installed, 0 to remove and 23 not upgraded.
+Need to get 95.2 MB of archives.
+After this operation, 335 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main amd64 dpkg amd64 1.21.23 [1568 kB]
+Get:2 http://deb.debian.org/debian bookworm/main amd64 libc6 amd64 2.36-9+deb12u14 [2759 kB]
+Get:3 http://deb.debian.org/debian bookworm/main amd64 libc-bin amd64 2.36-9+deb12u14 [609 kB]
+Get:4 http://deb.debian.org/debian bookworm/main amd64 liblocale-gettext-perl amd64 1.07-5 [15.4 kB]
+Get:5 http://deb.debian.org/debian bookworm/main amd64 gpgv amd64 2.2.40-1.1+deb12u2 [649 kB]
+Get:6 http://deb.debian.org/debian bookworm/main amd64 liblzma5 amd64 5.4.1-1+deb12u1 [206 kB]
+Get:7 http://deb.debian.org/debian bookworm/main amd64 bzip2 amd64 1.0.8-5+b1 [49.8 kB]
+Get:8 http://deb.debian.org/debian bookworm/main amd64 manpages all 6.03-2 [1332 kB]
+Get:9 http://deb.debian.org/debian bookworm/main amd64 xz-utils amd64 5.4.1-1+deb12u1 [471 kB]
+Get:10 http://deb.debian.org/debian bookworm/main amd64 binutils-common amd64 2.40-2 [2487 kB]
+Get:11 http://deb.debian.org/debian bookworm/main amd64 libbinutils amd64 2.40-2 [572 kB]
+Get:12 http://deb.debian.org/debian bookworm/main amd64 libctf-nobfd0 amd64 2.40-2 [153 kB]
+Get:13 http://deb.debian.org/debian bookworm/main amd64 libctf0 amd64 2.40-2 [89.8 kB]
+Get:14 http://deb.debian.org/debian bookworm/main amd64 libgprofng0 amd64 2.40-2 [812 kB]
+Get:15 http://deb.debian.org/debian bookworm/main amd64 libjansson4 amd64 2.14-2 [40.8 kB]
+Get:16 http://deb.debian.org/debian bookworm/main amd64 binutils-x86-64-linux-gnu amd64 2.40-2 [2246 kB]
+Get:17 http://deb.debian.org/debian bookworm/main amd64 binutils amd64 2.40-2 [65.0 kB]
+Get:18 http://deb.debian.org/debian bookworm/main amd64 libc-dev-bin amd64 2.36-9+deb12u14 [48.1 kB]
+Get:19 http://deb.debian.org/debian-security bookworm-security/main amd64 linux-libc-dev amd64 6.1.180-1 [2332 kB]
+Get:20 http://deb.debian.org/debian bookworm/main amd64 libcrypt-dev amd64 1:4.4.33-2 [118 kB]
+Get:21 http://deb.debian.org/debian bookworm/main amd64 libtirpc-common all 1.3.3+ds-1 [14.0 kB]
+Get:22 http://deb.debian.org/debian bookworm/main amd64 libtirpc3 amd64 1.3.3+ds-1 [85.2 kB]
+Get:23 http://deb.debian.org/debian bookworm/main amd64 libnsl2 amd64 1.3.0-2 [39.5 kB]
+Get:24 http://deb.debian.org/debian bookworm/main amd64 libtirpc-dev amd64 1.3.3+ds-1 [191 kB]
+Get:25 http://deb.debian.org/debian bookworm/main amd64 libnsl-dev amd64 1.3.0-2 [66.4 kB]
+Get:26 http://deb.debian.org/debian bookworm/main amd64 rpcsvc-proto amd64 1.4.3-1 [63.3 kB]
+Get:27 http://deb.debian.org/debian bookworm/main amd64 libc6-dev amd64 2.36-9+deb12u14 [1904 kB]
+Get:28 http://deb.debian.org/debian bookworm/main amd64 libisl23 amd64 0.25-1.1 [683 kB]
+Get:29 http://deb.debian.org/debian bookworm/main amd64 libmpfr6 amd64 4.2.0-1 [701 kB]
+Get:30 http://deb.debian.org/debian bookworm/main amd64 libmpc3 amd64 1.3.1-1 [51.5 kB]
+Get:31 http://deb.debian.org/debian bookworm/main amd64 cpp-12 amd64 12.2.0-14+deb12u1 [9768 kB]
+Get:32 http://deb.debian.org/debian bookworm/main amd64 cpp amd64 4:12.2.0-3 [6836 B]
+Get:33 http://deb.debian.org/debian bookworm/main amd64 libcc1-0 amd64 12.2.0-14+deb12u1 [41.7 kB]
+Get:34 http://deb.debian.org/debian bookworm/main amd64 libgomp1 amd64 12.2.0-14+deb12u1 [116 kB]
+Get:35 http://deb.debian.org/debian bookworm/main amd64 libitm1 amd64 12.2.0-14+deb12u1 [26.1 kB]
+Get:36 http://deb.debian.org/debian bookworm/main amd64 libatomic1 amd64 12.2.0-14+deb12u1 [9376 B]
+Get:37 http://deb.debian.org/debian bookworm/main amd64 libasan8 amd64 12.2.0-14+deb12u1 [2193 kB]
+Get:38 http://deb.debian.org/debian bookworm/main amd64 liblsan0 amd64 12.2.0-14+deb12u1 [969 kB]
+Get:39 http://deb.debian.org/debian bookworm/main amd64 libtsan2 amd64 12.2.0-14+deb12u1 [2197 kB]
+Get:40 http://deb.debian.org/debian bookworm/main amd64 libubsan1 amd64 12.2.0-14+deb12u1 [883 kB]
+Get:41 http://deb.debian.org/debian bookworm/main amd64 libquadmath0 amd64 12.2.0-14+deb12u1 [145 kB]
+Get:42 http://deb.debian.org/debian bookworm/main amd64 libgcc-12-dev amd64 12.2.0-14+deb12u1 [2437 kB]
+Get:43 http://deb.debian.org/debian bookworm/main amd64 gcc-12 amd64 12.2.0-14+deb12u1 [19.3 MB]
+Get:44 http://deb.debian.org/debian bookworm/main amd64 gcc amd64 4:12.2.0-3 [5216 B]
+Get:45 http://deb.debian.org/debian bookworm/main amd64 libstdc++-12-dev amd64 12.2.0-14+deb12u1 [2047 kB]
+Get:46 http://deb.debian.org/debian bookworm/main amd64 g++-12 amd64 12.2.0-14+deb12u1 [10.7 MB]
+Get:47 http://deb.debian.org/debian bookworm/main amd64 g++ amd64 4:12.2.0-3 [1356 B]
+Get:48 http://deb.debian.org/debian bookworm/main amd64 make amd64 4.3-4.1 [396 kB]
+Get:49 http://deb.debian.org/debian bookworm/main amd64 libdpkg-perl all 1.21.23 [604 kB]
+Get:50 http://deb.debian.org/debian bookworm/main amd64 dpkg-dev all 1.21.23 [1354 kB]
+Get:51 http://deb.debian.org/debian bookworm/main amd64 build-essential amd64 12.9 [7704 B]
+Get:52 http://deb.debian.org/debian bookworm/main amd64 libassuan0 amd64 2.5.5-5 [48.5 kB]
+Get:53 http://deb.debian.org/debian bookworm/main amd64 gpgconf amd64 2.2.40-1.1+deb12u2 [565 kB]
+Get:54 http://deb.debian.org/debian bookworm/main amd64 libksba8 amd64 1.6.3-2 [128 kB]
+Get:55 http://deb.debian.org/debian bookworm/main amd64 libnpth0 amd64 1.6-3 [19.0 kB]
+Get:56 http://deb.debian.org/debian bookworm/main amd64 dirmngr amd64 2.2.40-1.1+deb12u2 [793 kB]
+Get:57 http://deb.debian.org/debian bookworm/main amd64 libfakeroot amd64 1.31-1.2 [28.3 kB]
+Get:58 http://deb.debian.org/debian bookworm/main amd64 fakeroot amd64 1.31-1.2 [66.9 kB]
+Get:59 http://deb.debian.org/debian bookworm/main amd64 fonts-dejavu-core all 2.37-6 [1068 kB]
+Get:60 http://deb.debian.org/debian bookworm/main amd64 fontconfig-config amd64 2.14.1-4 [315 kB]
+Get:61 http://deb.debian.org/debian bookworm/main amd64 gnupg-l10n all 2.2.40-1.1+deb12u2 [1093 kB]
+Get:62 http://deb.debian.org/debian bookworm/main amd64 gnupg-utils amd64 2.2.40-1.1+deb12u2 [927 kB]
+Get:63 http://deb.debian.org/debian bookworm/main amd64 gpg amd64 2.2.40-1.1+deb12u2 [950 kB]
+Get:64 http://deb.debian.org/debian bookworm/main amd64 pinentry-curses amd64 1.2.1-1 [77.4 kB]
+Get:65 http://deb.debian.org/debian bookworm/main amd64 gpg-agent amd64 2.2.40-1.1+deb12u2 [695 kB]
+Get:66 http://deb.debian.org/debian bookworm/main amd64 gpg-wks-client amd64 2.2.40-1.1+deb12u2 [541 kB]
+Get:67 http://deb.debian.org/debian bookworm/main amd64 gpg-wks-server amd64 2.2.40-1.1+deb12u2 [531 kB]
+Get:68 http://deb.debian.org/debian bookworm/main amd64 gpgsm amd64 2.2.40-1.1+deb12u2 [671 kB]
+Get:69 http://deb.debian.org/debian bookworm/main amd64 gnupg all 2.2.40-1.1+deb12u2 [846 kB]
+Get:70 http://deb.debian.org/debian bookworm/main amd64 libabsl20220623 amd64 20220623.1-1+deb12u2 [391 kB]
+Get:71 http://deb.debian.org/debian bookworm/main amd64 libalgorithm-diff-perl all 1.201-1 [43.3 kB]
+Get:72 http://deb.debian.org/debian bookworm/main amd64 libalgorithm-diff-xs-perl amd64 0.04-8+b1 [11.4 kB]
+Get:73 http://deb.debian.org/debian bookworm/main amd64 libalgorithm-merge-perl all 0.08-5 [11.8 kB]
+Get:74 http://deb.debian.org/debian bookworm/main amd64 libaom3 amd64 3.6.0-1+deb12u2 [1850 kB]
+Get:75 http://deb.debian.org/debian bookworm/main amd64 libdav1d6 amd64 1.0.0-2+deb12u1 [513 kB]
+Get:76 http://deb.debian.org/debian bookworm/main amd64 libgav1-1 amd64 0.18.0-1+b1 [332 kB]
+Get:77 http://deb.debian.org/debian bookworm/main amd64 librav1e0 amd64 0.5.1-6 [763 kB]
+Get:78 http://deb.debian.org/debian bookworm/main amd64 libsvtav1enc1 amd64 1.4.1+dfsg-1 [2121 kB]
+Get:79 http://deb.debian.org/debian bookworm/main amd64 libjpeg62-turbo amd64 1:2.1.5-2 [166 kB]
+Get:80 http://deb.debian.org/debian bookworm/main amd64 libyuv0 amd64 0.0~git20230123.b2528b0-1 [168 kB]
+Get:81 http://deb.debian.org/debian bookworm/main amd64 libavif15 amd64 0.11.1-1+deb12u1 [94.4 kB]
+Get:82 http://deb.debian.org/debian bookworm/main amd64 libpng16-16 amd64 1.6.39-2+deb12u5 [277 kB]
+Get:83 http://deb.debian.org/debian bookworm/main amd64 libfreetype6 amd64 2.12.1+dfsg-5+deb12u4 [398 kB]
+Get:84 http://deb.debian.org/debian bookworm/main amd64 libfontconfig1 amd64 2.14.1-4 [386 kB]
+Get:85 http://deb.debian.org/debian bookworm/main amd64 libde265-0 amd64 1.0.11-1+deb12u2 [185 kB]
+Get:86 http://deb.debian.org/debian bookworm/main amd64 libnuma1 amd64 2.0.16-1 [21.0 kB]
+Get:87 http://deb.debian.org/debian bookworm/main amd64 libx265-199 amd64 3.5-2+b1 [1150 kB]
+Get:88 http://deb.debian.org/debian bookworm/main amd64 libheif1 amd64 1.15.1-1+deb12u1 [215 kB]
+Get:89 http://deb.debian.org/debian bookworm/main amd64 libdeflate0 amd64 1.14-1 [61.4 kB]
+Get:90 http://deb.debian.org/debian bookworm/main amd64 libjbig0 amd64 2.1-6.1 [31.7 kB]
+Get:91 http://deb.debian.org/debian bookworm/main amd64 liblerc4 amd64 4.0.0+ds-2 [170 kB]
+Get:92 http://deb.debian.org/debian bookworm/main amd64 libwebp7 amd64 1.2.4-0.2+deb12u1 [286 kB]
+Get:93 http://deb.debian.org/debian bookworm/main amd64 libtiff6 amd64 4.5.0-6+deb12u4 [316 kB]
+Get:94 http://deb.debian.org/debian bookworm/main amd64 libxpm4 amd64 1:3.5.12-1.1+deb12u1 [48.6 kB]
+Get:95 http://deb.debian.org/debian-security bookworm-security/main amd64 libgd3 amd64 2.3.3-9+deb12u1 [124 kB]
+Get:96 http://deb.debian.org/debian bookworm/main amd64 libc-devtools amd64 2.36-9+deb12u14 [55.7 kB]
+Get:97 http://deb.debian.org/debian bookworm/main amd64 libfile-fcntllock-perl amd64 0.22-4+b1 [34.8 kB]
+Get:98 http://deb.debian.org/debian bookworm/main amd64 manpages-dev all 6.03-2 [2030 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 95.2 MB in 4s (26.1 MB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10416 files and directories currently installed.)
+Preparing to unpack .../dpkg_1.21.23_amd64.deb ...
+Unpacking dpkg (1.21.23) over (1.21.22) ...
+Setting up dpkg (1.21.23) ...
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10416 files and directories currently installed.)
+Preparing to unpack .../libc6_2.36-9+deb12u14_amd64.deb ...
+Unpacking libc6:amd64 (2.36-9+deb12u14) over (2.36-9+deb12u10) ...
+Setting up libc6:amd64 (2.36-9+deb12u14) ...
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10416 files and directories currently installed.)
+Preparing to unpack .../libc-bin_2.36-9+deb12u14_amd64.deb ...
+Unpacking libc-bin (2.36-9+deb12u14) over (2.36-9+deb12u10) ...
+Setting up libc-bin (2.36-9+deb12u14) ...
+Selecting previously unselected package liblocale-gettext-perl.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10416 files and directories currently installed.)
+Preparing to unpack .../liblocale-gettext-perl_1.07-5_amd64.deb ...
+Unpacking liblocale-gettext-perl (1.07-5) ...
+Preparing to unpack .../gpgv_2.2.40-1.1+deb12u2_amd64.deb ...
+Unpacking gpgv (2.2.40-1.1+deb12u2) over (2.2.40-1.1) ...
+Setting up gpgv (2.2.40-1.1+deb12u2) ...
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10430 files and directories currently installed.)
+Preparing to unpack .../liblzma5_5.4.1-1+deb12u1_amd64.deb ...
+Unpacking liblzma5:amd64 (5.4.1-1+deb12u1) over (5.4.1-1) ...
+Setting up liblzma5:amd64 (5.4.1-1+deb12u1) ...
+Selecting previously unselected package bzip2.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10430 files and directories currently installed.)
+Preparing to unpack .../00-bzip2_1.0.8-5+b1_amd64.deb ...
+Unpacking bzip2 (1.0.8-5+b1) ...
+Selecting previously unselected package manpages.
+Preparing to unpack .../01-manpages_6.03-2_all.deb ...
+Unpacking manpages (6.03-2) ...
+Selecting previously unselected package xz-utils.
+Preparing to unpack .../02-xz-utils_5.4.1-1+deb12u1_amd64.deb ...
+Unpacking xz-utils (5.4.1-1+deb12u1) ...
+Selecting previously unselected package binutils-common:amd64.
+Preparing to unpack .../03-binutils-common_2.40-2_amd64.deb ...
+Unpacking binutils-common:amd64 (2.40-2) ...
+Selecting previously unselected package libbinutils:amd64.
+Preparing to unpack .../04-libbinutils_2.40-2_amd64.deb ...
+Unpacking libbinutils:amd64 (2.40-2) ...
+Selecting previously unselected package libctf-nobfd0:amd64.
+Preparing to unpack .../05-libctf-nobfd0_2.40-2_amd64.deb ...
+Unpacking libctf-nobfd0:amd64 (2.40-2) ...
+Selecting previously unselected package libctf0:amd64.
+Preparing to unpack .../06-libctf0_2.40-2_amd64.deb ...
+Unpacking libctf0:amd64 (2.40-2) ...
+Selecting previously unselected package libgprofng0:amd64.
+Preparing to unpack .../07-libgprofng0_2.40-2_amd64.deb ...
+Unpacking libgprofng0:amd64 (2.40-2) ...
+Selecting previously unselected package libjansson4:amd64.
+Preparing to unpack .../08-libjansson4_2.14-2_amd64.deb ...
+Unpacking libjansson4:amd64 (2.14-2) ...
+Selecting previously unselected package binutils-x86-64-linux-gnu.
+Preparing to unpack .../09-binutils-x86-64-linux-gnu_2.40-2_amd64.deb ...
+Unpacking binutils-x86-64-linux-gnu (2.40-2) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../10-binutils_2.40-2_amd64.deb ...
+Unpacking binutils (2.40-2) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../11-libc-dev-bin_2.36-9+deb12u14_amd64.deb ...
+Unpacking libc-dev-bin (2.36-9+deb12u14) ...
+Selecting previously unselected package linux-libc-dev:amd64.
+Preparing to unpack .../12-linux-libc-dev_6.1.180-1_amd64.deb ...
+Unpacking linux-libc-dev:amd64 (6.1.180-1) ...
+Selecting previously unselected package libcrypt-dev:amd64.
+Preparing to unpack .../13-libcrypt-dev_1%3a4.4.33-2_amd64.deb ...
+Unpacking libcrypt-dev:amd64 (1:4.4.33-2) ...
+Selecting previously unselected package libtirpc-common.
+Preparing to unpack .../14-libtirpc-common_1.3.3+ds-1_all.deb ...
+Unpacking libtirpc-common (1.3.3+ds-1) ...
+Selecting previously unselected package libtirpc3:amd64.
+Preparing to unpack .../15-libtirpc3_1.3.3+ds-1_amd64.deb ...
+Unpacking libtirpc3:amd64 (1.3.3+ds-1) ...
+Selecting previously unselected package libnsl2:amd64.
+Preparing to unpack .../16-libnsl2_1.3.0-2_amd64.deb ...
+Unpacking libnsl2:amd64 (1.3.0-2) ...
+Selecting previously unselected package libtirpc-dev:amd64.
+Preparing to unpack .../17-libtirpc-dev_1.3.3+ds-1_amd64.deb ...
+Unpacking libtirpc-dev:amd64 (1.3.3+ds-1) ...
+Selecting previously unselected package libnsl-dev:amd64.
+Preparing to unpack .../18-libnsl-dev_1.3.0-2_amd64.deb ...
+Unpacking libnsl-dev:amd64 (1.3.0-2) ...
+Selecting previously unselected package rpcsvc-proto.
+Preparing to unpack .../19-rpcsvc-proto_1.4.3-1_amd64.deb ...
+Unpacking rpcsvc-proto (1.4.3-1) ...
+Selecting previously unselected package libc6-dev:amd64.
+Preparing to unpack .../20-libc6-dev_2.36-9+deb12u14_amd64.deb ...
+Unpacking libc6-dev:amd64 (2.36-9+deb12u14) ...
+Selecting previously unselected package libisl23:amd64.
+Preparing to unpack .../21-libisl23_0.25-1.1_amd64.deb ...
+Unpacking libisl23:amd64 (0.25-1.1) ...
+Selecting previously unselected package libmpfr6:amd64.
+Preparing to unpack .../22-libmpfr6_4.2.0-1_amd64.deb ...
+Unpacking libmpfr6:amd64 (4.2.0-1) ...
+Selecting previously unselected package libmpc3:amd64.
+Preparing to unpack .../23-libmpc3_1.3.1-1_amd64.deb ...
+Unpacking libmpc3:amd64 (1.3.1-1) ...
+Selecting previously unselected package cpp-12.
+Preparing to unpack .../24-cpp-12_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking cpp-12 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../25-cpp_4%3a12.2.0-3_amd64.deb ...
+Unpacking cpp (4:12.2.0-3) ...
+Selecting previously unselected package libcc1-0:amd64.
+Preparing to unpack .../26-libcc1-0_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libcc1-0:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libgomp1:amd64.
+Preparing to unpack .../27-libgomp1_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libgomp1:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libitm1:amd64.
+Preparing to unpack .../28-libitm1_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libitm1:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libatomic1:amd64.
+Preparing to unpack .../29-libatomic1_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libatomic1:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libasan8:amd64.
+Preparing to unpack .../30-libasan8_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libasan8:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package liblsan0:amd64.
+Preparing to unpack .../31-liblsan0_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking liblsan0:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libtsan2:amd64.
+Preparing to unpack .../32-libtsan2_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libtsan2:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libubsan1:amd64.
+Preparing to unpack .../33-libubsan1_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libubsan1:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libquadmath0:amd64.
+Preparing to unpack .../34-libquadmath0_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libquadmath0:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package libgcc-12-dev:amd64.
+Preparing to unpack .../35-libgcc-12-dev_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libgcc-12-dev:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package gcc-12.
+Preparing to unpack .../36-gcc-12_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking gcc-12 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../37-gcc_4%3a12.2.0-3_amd64.deb ...
+Unpacking gcc (4:12.2.0-3) ...
+Selecting previously unselected package libstdc++-12-dev:amd64.
+Preparing to unpack .../38-libstdc++-12-dev_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking libstdc++-12-dev:amd64 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package g++-12.
+Preparing to unpack .../39-g++-12_12.2.0-14+deb12u1_amd64.deb ...
+Unpacking g++-12 (12.2.0-14+deb12u1) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../40-g++_4%3a12.2.0-3_amd64.deb ...
+Unpacking g++ (4:12.2.0-3) ...
+Selecting previously unselected package make.
+Preparing to unpack .../41-make_4.3-4.1_amd64.deb ...
+Unpacking make (4.3-4.1) ...
+Selecting previously unselected package libdpkg-perl.
+Preparing to unpack .../42-libdpkg-perl_1.21.23_all.deb ...
+Unpacking libdpkg-perl (1.21.23) ...
+Selecting previously unselected package dpkg-dev.
+Preparing to unpack .../43-dpkg-dev_1.21.23_all.deb ...
+Unpacking dpkg-dev (1.21.23) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../44-build-essential_12.9_amd64.deb ...
+Unpacking build-essential (12.9) ...
+Selecting previously unselected package libassuan0:amd64.
+Preparing to unpack .../45-libassuan0_2.5.5-5_amd64.deb ...
+Unpacking libassuan0:amd64 (2.5.5-5) ...
+Selecting previously unselected package gpgconf.
+Preparing to unpack .../46-gpgconf_2.2.40-1.1+deb12u2_amd64.deb ...
+Unpacking gpgconf (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package libksba8:amd64.
+Preparing to unpack .../47-libksba8_1.6.3-2_amd64.deb ...
+Unpacking libksba8:amd64 (1.6.3-2) ...
+Selecting previously unselected package libnpth0:amd64.
+Preparing to unpack .../48-libnpth0_1.6-3_amd64.deb ...
+Unpacking libnpth0:amd64 (1.6-3) ...
+Selecting previously unselected package dirmngr.
+Preparing to unpack .../49-dirmngr_2.2.40-1.1+deb12u2_amd64.deb ...
+Unpacking dirmngr (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package libfakeroot:amd64.
+Preparing to unpack .../50-libfakeroot_1.31-1.2_amd64.deb ...
+Unpacking libfakeroot:amd64 (1.31-1.2) ...
+Selecting previously unselected package fakeroot.
+Preparing to unpack .../51-fakeroot_1.31-1.2_amd64.deb ...
+Unpacking fakeroot (1.31-1.2) ...
+Selecting previously unselected package fonts-dejavu-core.
+Preparing to unpack .../52-fonts-dejavu-core_2.37-6_all.deb ...
+Unpacking fonts-dejavu-core (2.37-6) ...
+Selecting previously unselected package fontconfig-config.
+Preparing to unpack .../53-fontconfig-config_2.14.1-4_amd64.deb ...
+Unpacking fontconfig-config (2.14.1-4) ...
+Selecting previously unselected package gnupg-l10n.
+Preparing to unpack .../54-gnupg-l10n_2.2.40-1.1+deb12u2_all.deb ...
+Unpacking gnupg-l10n (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package gnupg-utils.
+Preparing to unpack .../55-gnupg-utils_2.2.40-1.1+deb12u2_amd64.deb ...
+Unpacking gnupg-utils (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package gpg.
+Preparing to unpack .../56-gpg_2.2.40-1.1+deb12u2_amd64.deb ...
+Unpacking gpg (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package pinentry-curses.
+Preparing to unpack .../57-pinentry-curses_1.2.1-1_amd64.deb ...
+Unpacking pinentry-curses (1.2.1-1) ...
+Selecting previously unselected package gpg-agent.
+Preparing to unpack .../58-gpg-agent_2.2.40-1.1+deb12u2_amd64.deb ...
+Unpacking gpg-agent (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package gpg-wks-client.
+Preparing to unpack .../59-gpg-wks-client_2.2.40-1.1+deb12u2_amd64.deb ...
+Unpacking gpg-wks-client (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package gpg-wks-server.
+Preparing to unpack .../60-gpg-wks-server_2.2.40-1.1+deb12u2_amd64.deb ...
+Unpacking gpg-wks-server (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package gpgsm.
+Preparing to unpack .../61-gpgsm_2.2.40-1.1+deb12u2_amd64.deb ...
+Unpacking gpgsm (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package gnupg.
+Preparing to unpack .../62-gnupg_2.2.40-1.1+deb12u2_all.deb ...
+Unpacking gnupg (2.2.40-1.1+deb12u2) ...
+Selecting previously unselected package libabsl20220623:amd64.
+Preparing to unpack .../63-libabsl20220623_20220623.1-1+deb12u2_amd64.deb ...
+Unpacking libabsl20220623:amd64 (20220623.1-1+deb12u2) ...
+Selecting previously unselected package libalgorithm-diff-perl.
+Preparing to unpack .../64-libalgorithm-diff-perl_1.201-1_all.deb ...
+Unpacking libalgorithm-diff-perl (1.201-1) ...
+Selecting previously unselected package libalgorithm-diff-xs-perl:amd64.
+Preparing to unpack .../65-libalgorithm-diff-xs-perl_0.04-8+b1_amd64.deb ...
+Unpacking libalgorithm-diff-xs-perl:amd64 (0.04-8+b1) ...
+Selecting previously unselected package libalgorithm-merge-perl.
+Preparing to unpack .../66-libalgorithm-merge-perl_0.08-5_all.deb ...
+Unpacking libalgorithm-merge-perl (0.08-5) ...
+Selecting previously unselected package libaom3:amd64.
+Preparing to unpack .../67-libaom3_3.6.0-1+deb12u2_amd64.deb ...
+Unpacking libaom3:amd64 (3.6.0-1+deb12u2) ...
+Selecting previously unselected package libdav1d6:amd64.
+Preparing to unpack .../68-libdav1d6_1.0.0-2+deb12u1_amd64.deb ...
+Unpacking libdav1d6:amd64 (1.0.0-2+deb12u1) ...
+Selecting previously unselected package libgav1-1:amd64.
+Preparing to unpack .../69-libgav1-1_0.18.0-1+b1_amd64.deb ...
+Unpacking libgav1-1:amd64 (0.18.0-1+b1) ...
+Selecting previously unselected package librav1e0:amd64.
+Preparing to unpack .../70-librav1e0_0.5.1-6_amd64.deb ...
+Unpacking librav1e0:amd64 (0.5.1-6) ...
+Selecting previously unselected package libsvtav1enc1:amd64.
+Preparing to unpack .../71-libsvtav1enc1_1.4.1+dfsg-1_amd64.deb ...
+Unpacking libsvtav1enc1:amd64 (1.4.1+dfsg-1) ...
+Selecting previously unselected package libjpeg62-turbo:amd64.
+Preparing to unpack .../72-libjpeg62-turbo_1%3a2.1.5-2_amd64.deb ...
+Unpacking libjpeg62-turbo:amd64 (1:2.1.5-2) ...
+Selecting previously unselected package libyuv0:amd64.
+Preparing to unpack .../73-libyuv0_0.0~git20230123.b2528b0-1_amd64.deb ...
+Unpacking libyuv0:amd64 (0.0~git20230123.b2528b0-1) ...
+Selecting previously unselected package libavif15:amd64.
+Preparing to unpack .../74-libavif15_0.11.1-1+deb12u1_amd64.deb ...
+Unpacking libavif15:amd64 (0.11.1-1+deb12u1) ...
+Selecting previously unselected package libpng16-16:amd64.
+Preparing to unpack .../75-libpng16-16_1.6.39-2+deb12u5_amd64.deb ...
+Unpacking libpng16-16:amd64 (1.6.39-2+deb12u5) ...
+Selecting previously unselected package libfreetype6:amd64.
+Preparing to unpack .../76-libfreetype6_2.12.1+dfsg-5+deb12u4_amd64.deb ...
+Unpacking libfreetype6:amd64 (2.12.1+dfsg-5+deb12u4) ...
+Selecting previously unselected package libfontconfig1:amd64.
+Preparing to unpack .../77-libfontconfig1_2.14.1-4_amd64.deb ...
+Unpacking libfontconfig1:amd64 (2.14.1-4) ...
+Selecting previously unselected package libde265-0:amd64.
+Preparing to unpack .../78-libde265-0_1.0.11-1+deb12u2_amd64.deb ...
+Unpacking libde265-0:amd64 (1.0.11-1+deb12u2) ...
+Selecting previously unselected package libnuma1:amd64.
+Preparing to unpack .../79-libnuma1_2.0.16-1_amd64.deb ...
+Unpacking libnuma1:amd64 (2.0.16-1) ...
+Selecting previously unselected package libx265-199:amd64.
+Preparing to unpack .../80-libx265-199_3.5-2+b1_amd64.deb ...
+Unpacking libx265-199:amd64 (3.5-2+b1) ...
+Selecting previously unselected package libheif1:amd64.
+Preparing to unpack .../81-libheif1_1.15.1-1+deb12u1_amd64.deb ...
+Unpacking libheif1:amd64 (1.15.1-1+deb12u1) ...
+Selecting previously unselected package libdeflate0:amd64.
+Preparing to unpack .../82-libdeflate0_1.14-1_amd64.deb ...
+Unpacking libdeflate0:amd64 (1.14-1) ...
+Selecting previously unselected package libjbig0:amd64.
+Preparing to unpack .../83-libjbig0_2.1-6.1_amd64.deb ...
+Unpacking libjbig0:amd64 (2.1-6.1) ...
+Selecting previously unselected package liblerc4:amd64.
+Preparing to unpack .../84-liblerc4_4.0.0+ds-2_amd64.deb ...
+Unpacking liblerc4:amd64 (4.0.0+ds-2) ...
+Selecting previously unselected package libwebp7:amd64.
+Preparing to unpack .../85-libwebp7_1.2.4-0.2+deb12u1_amd64.deb ...
+Unpacking libwebp7:amd64 (1.2.4-0.2+deb12u1) ...
+Selecting previously unselected package libtiff6:amd64.
+Preparing to unpack .../86-libtiff6_4.5.0-6+deb12u4_amd64.deb ...
+Unpacking libtiff6:amd64 (4.5.0-6+deb12u4) ...
+Selecting previously unselected package libxpm4:amd64.
+Preparing to unpack .../87-libxpm4_1%3a3.5.12-1.1+deb12u1_amd64.deb ...
+Unpacking libxpm4:amd64 (1:3.5.12-1.1+deb12u1) ...
+Selecting previously unselected package libgd3:amd64.
+Preparing to unpack .../88-libgd3_2.3.3-9+deb12u1_amd64.deb ...
+Unpacking libgd3:amd64 (2.3.3-9+deb12u1) ...
+Selecting previously unselected package libc-devtools.
+Preparing to unpack .../89-libc-devtools_2.36-9+deb12u14_amd64.deb ...
+Unpacking libc-devtools (2.36-9+deb12u14) ...
+Selecting previously unselected package libfile-fcntllock-perl.
+Preparing to unpack .../90-libfile-fcntllock-perl_0.22-4+b1_amd64.deb ...
+Unpacking libfile-fcntllock-perl (0.22-4+b1) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../91-manpages-dev_6.03-2_all.deb ...
+Unpacking manpages-dev (6.03-2) ...
+Setting up libksba8:amd64 (1.6.3-2) ...
+Setting up libaom3:amd64 (3.6.0-1+deb12u2) ...
+Setting up libabsl20220623:amd64 (20220623.1-1+deb12u2) ...
+Setting up liblerc4:amd64 (4.0.0+ds-2) ...
+Setting up libxpm4:amd64 (1:3.5.12-1.1+deb12u1) ...
+Setting up libfile-fcntllock-perl (0.22-4+b1) ...
+Setting up libalgorithm-diff-perl (1.201-1) ...
+Setting up manpages (6.03-2) ...
+Setting up libtirpc-common (1.3.3+ds-1) ...
+Setting up binutils-common:amd64 (2.40-2) ...
+Setting up libdeflate0:amd64 (1.14-1) ...
+Setting up linux-libc-dev:amd64 (6.1.180-1) ...
+Setting up libctf-nobfd0:amd64 (2.40-2) ...
+Setting up libnpth0:amd64 (1.6-3) ...
+Setting up libsvtav1enc1:amd64 (1.4.1+dfsg-1) ...
+Setting up libassuan0:amd64 (2.5.5-5) ...
+Setting up libgomp1:amd64 (12.2.0-14+deb12u1) ...
+Setting up bzip2 (1.0.8-5+b1) ...
+Setting up libjbig0:amd64 (2.1-6.1) ...
+Setting up librav1e0:amd64 (0.5.1-6) ...
+Setting up libfakeroot:amd64 (1.31-1.2) ...
+Setting up libjansson4:amd64 (2.14-2) ...
+Setting up fakeroot (1.31-1.2) ...
+update-alternatives: using /usr/bin/fakeroot-sysv to provide /usr/bin/fakeroot (fakeroot) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/fakeroot.1.gz because associated file /usr/share/man/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/faked.1.gz because associated file /usr/share/man/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/fakeroot.1.gz because associated file /usr/share/man/es/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/faked.1.gz because associated file /usr/share/man/es/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/fakeroot.1.gz because associated file /usr/share/man/fr/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/faked.1.gz because associated file /usr/share/man/fr/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/fakeroot.1.gz because associated file /usr/share/man/sv/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/faked.1.gz because associated file /usr/share/man/sv/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+Setting up rpcsvc-proto (1.4.3-1) ...
+Setting up libjpeg62-turbo:amd64 (1:2.1.5-2) ...
+Setting up make (4.3-4.1) ...
+Setting up libmpfr6:amd64 (4.2.0-1) ...
+Setting up gnupg-l10n (2.2.40-1.1+deb12u2) ...
+Setting up xz-utils (5.4.1-1+deb12u1) ...
+update-alternatives: using /usr/bin/xz to provide /usr/bin/lzma (lzma) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzma.1.gz because associated file /usr/share/man/man1/xz.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/unlzma.1.gz because associated file /usr/share/man/man1/unxz.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzcat.1.gz because associated file /usr/share/man/man1/xzcat.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzmore.1.gz because associated file /usr/share/man/man1/xzmore.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzless.1.gz because associated file /usr/share/man/man1/xzless.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzdiff.1.gz because associated file /usr/share/man/man1/xzdiff.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzcmp.1.gz because associated file /usr/share/man/man1/xzcmp.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzgrep.1.gz because associated file /usr/share/man/man1/xzgrep.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzegrep.1.gz because associated file /usr/share/man/man1/xzegrep.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzfgrep.1.gz because associated file /usr/share/man/man1/xzfgrep.1.gz (of link group lzma) doesn't exist
+Setting up libquadmath0:amd64 (12.2.0-14+deb12u1) ...
+Setting up libpng16-16:amd64 (1.6.39-2+deb12u5) ...
+Setting up libmpc3:amd64 (1.3.1-1) ...
+Setting up libatomic1:amd64 (12.2.0-14+deb12u1) ...
+Setting up fonts-dejavu-core (2.37-6) ...
+Setting up libgav1-1:amd64 (0.18.0-1+b1) ...
+Setting up libdav1d6:amd64 (1.0.0-2+deb12u1) ...
+Setting up libdpkg-perl (1.21.23) ...
+Setting up libwebp7:amd64 (1.2.4-0.2+deb12u1) ...
+Setting up libubsan1:amd64 (12.2.0-14+deb12u1) ...
+Setting up libnuma1:amd64 (2.0.16-1) ...
+Setting up libcrypt-dev:amd64 (1:4.4.33-2) ...
+Setting up libtiff6:amd64 (4.5.0-6+deb12u4) ...
+Setting up libasan8:amd64 (12.2.0-14+deb12u1) ...
+Setting up gpgconf (2.2.40-1.1+deb12u2) ...
+Setting up libtsan2:amd64 (12.2.0-14+deb12u1) ...
+Setting up libbinutils:amd64 (2.40-2) ...
+Setting up libisl23:amd64 (0.25-1.1) ...
+Setting up libde265-0:amd64 (1.0.11-1+deb12u2) ...
+Setting up libc-dev-bin (2.36-9+deb12u14) ...
+Setting up libyuv0:amd64 (0.0~git20230123.b2528b0-1) ...
+Setting up libalgorithm-diff-xs-perl:amd64 (0.04-8+b1) ...
+Setting up libcc1-0:amd64 (12.2.0-14+deb12u1) ...
+Setting up liblocale-gettext-perl (1.07-5) ...
+Setting up gpg (2.2.40-1.1+deb12u2) ...
+Setting up liblsan0:amd64 (12.2.0-14+deb12u1) ...
+Setting up libitm1:amd64 (12.2.0-14+deb12u1) ...
+Setting up libalgorithm-merge-perl (0.08-5) ...
+Setting up gnupg-utils (2.2.40-1.1+deb12u2) ...
+Setting up libctf0:amd64 (2.40-2) ...
+Setting up pinentry-curses (1.2.1-1) ...
+Setting up libtirpc3:amd64 (1.3.3+ds-1) ...
+Setting up manpages-dev (6.03-2) ...
+Setting up cpp-12 (12.2.0-14+deb12u1) ...
+Setting up gpg-agent (2.2.40-1.1+deb12u2) ...
+Setting up libavif15:amd64 (0.11.1-1+deb12u1) ...
+Setting up fontconfig-config (2.14.1-4) ...
+Setting up gpgsm (2.2.40-1.1+deb12u2) ...
+Setting up dirmngr (2.2.40-1.1+deb12u2) ...
+Setting up libgprofng0:amd64 (2.40-2) ...
+Setting up libtirpc-dev:amd64 (1.3.3+ds-1) ...
+Setting up libfreetype6:amd64 (2.12.1+dfsg-5+deb12u4) ...
+Setting up libgcc-12-dev:amd64 (12.2.0-14+deb12u1) ...
+Setting up libx265-199:amd64 (3.5-2+b1) ...
+Setting up gpg-wks-server (2.2.40-1.1+deb12u2) ...
+Setting up cpp (4:12.2.0-3) ...
+Setting up libnsl2:amd64 (1.3.0-2) ...
+Setting up libfontconfig1:amd64 (2.14.1-4) ...
+Setting up binutils-x86-64-linux-gnu (2.40-2) ...
+Setting up gpg-wks-client (2.2.40-1.1+deb12u2) ...
+Setting up libheif1:amd64 (1.15.1-1+deb12u1) ...
+Setting up binutils (2.40-2) ...
+Setting up dpkg-dev (1.21.23) ...
+Setting up gcc-12 (12.2.0-14+deb12u1) ...
+Setting up libgd3:amd64 (2.3.3-9+deb12u1) ...
+Setting up libnsl-dev:amd64 (1.3.0-2) ...
+Setting up gnupg (2.2.40-1.1+deb12u2) ...
+Setting up libc6-dev:amd64 (2.36-9+deb12u14) ...
+Setting up libc-devtools (2.36-9+deb12u14) ...
+Setting up libstdc++-12-dev:amd64 (12.2.0-14+deb12u1) ...
+Setting up gcc (4:12.2.0-3) ...
+Setting up g++-12 (12.2.0-14+deb12u1) ...
+Setting up g++ (4:12.2.0-3) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up build-essential (12.9) ...
+Processing triggers for libc-bin (2.36-9+deb12u14) ...
+Cloning into 'fastText'...
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/args.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/autotune.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/matrix.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/dictionary.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/loss.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/productquantizer.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/densematrix.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/quantmatrix.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/vector.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/model.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/utils.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/meter.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG -c src/fasttext.cc
+c++ -pthread -std=c++17 -march=native -O3 -funroll-loops -DNDEBUG args.o autotune.o matrix.o dictionary.o loss.o productquantizer.o densematrix.o quantmatrix.o vector.o model.o utils.o meter.o fasttext.o src/main.cc -o fasttext
+Read 1M wordsRead 2M wordsRead 3M wordsRead 4M wordsRead 5M wordsRead 6M wordsRead 7M wordsRead 8M wordsRead 9M wordsRead 10M wordsRead 11M wordsRead 12M wordsRead 13M wordsRead 14M wordsRead 15M wordsRead 16M wordsRead 17M wordsRead 18M wordsRead 19M wordsRead 20M wordsRead 21M wordsRead 22M wordsRead 23M wordsRead 24M wordsRead 25M wordsRead 26M wordsRead 27M wordsRead 28M wordsRead 29M wordsRead 30M wordsRead 31M wordsRead 32M wordsRead 33M wordsRead 34M wordsRead 35M wordsRead 36M wordsRead 37M wordsRead 38M wordsRead 39M wordsRead 40M wordsRead 41M wordsRead 42M wordsRead 43M wordsRead 44M wordsRead 45M wordsRead 46M wordsRead 47M wordsRead 48M wordsRead 49M wordsRead 50M wordsRead 51M wordsRead 52M wordsRead 53M wordsRead 54M wordsRead 55M wordsRead 56M wordsRead 57M wordsRead 58M wordsRead 59M wordsRead 60M wordsRead 61M wordsRead 62M wordsRead 63M wordsRead 64M wordsRead 65M wordsRead 66M wordsRead 67M wordsRead 68M wordsRead 69M wordsRead 70M wordsRead 71M wordsRead 72M wordsRead 73M wordsRead 74M wordsRead 75M wordsRead 76M wordsRead 77M wordsRead 78M wordsRead 79M wordsRead 80M wordsRead 81M wordsRead 82M wordsRead 83M wordsRead 84M wordsRead 85M wordsRead 86M wordsRead 87M wordsRead 88M wordsRead 88M words
+Number of words:  1622077
+Number of labels: 5
+Progress:   0.2% words/sec/thread:  690878 lr:  0.099812 avg.loss:  1.613425 ETA:   0h 0m53sProgress:   0.3% words/sec/thread:  631127 lr:  0.099656 avg.loss:  1.612908 ETA:   0h 0m58sProgress:   0.5% words/sec/thread:  621434 lr:  0.099493 avg.loss:  1.612539 ETA:   0h 0m59sProgress:   0.7% words/sec/thread:  515993 lr:  0.099321 avg.loss:  1.599889 ETA:   0h 1m10sProgress:   0.9% words/sec/thread:  539744 lr:  0.099143 avg.loss:  1.575412 ETA:   0h 1m 7sProgress:   1.0% words/sec/thread:  555647 lr:  0.098967 avg.loss:  1.551087 ETA:   0h 1m 5sProgress:   1.2% words/sec/thread:  565218 lr:  0.098796 avg.loss:  1.528403 ETA:   0h 1m 4sProgress:   1.4% words/sec/thread:  574187 lr:  0.098621 avg.loss:  1.480576 ETA:   0h 1m 3sProgress:   1.5% words/sec/thread:  574828 lr:  0.098463 avg.loss:  1.462666 ETA:   0h 1m 3sProgress:   1.7% words/sec/thread:  577628 lr:  0.098299 avg.loss:  1.446718 ETA:   0h 1m 2sProgress:   1.9% words/sec/thread:  580949 lr:  0.098131 avg.loss:  1.430613 ETA:   0h 1m 2sProgress:   2.0% words/sec/thread:  586155 lr:  0.097955 avg.loss:  1.417127 ETA:   0h 1m 1sProgress:   2.2% words/sec/thread:  590537 lr:  0.097779 avg.loss:  1.400644 ETA:   0h 1m 1sProgress:   2.4% words/sec/thread:  590191 lr:  0.097620 avg.loss:  1.383472 ETA:   0h 1m 0sProgress:   2.5% words/sec/thread:  592156 lr:  0.097452 avg.loss:  1.364865 ETA:   0h 1m 0sProgress:   2.7% words/sec/thread:  594244 lr:  0.097281 avg.loss:  1.344121 ETA:   0h 1m 0sProgress:   2.9% words/sec/thread:  592662 lr:  0.097128 avg.loss:  1.336661 ETA:   0h 1m 0sProgress:   3.0% words/sec/thread:  591496 lr:  0.096972 avg.loss:  1.328290 ETA:   0h 1m 0sProgress:   3.2% words/sec/thread:  589130 lr:  0.096824 avg.loss:  1.309833 ETA:   0h 1m 0sProgress:   3.3% words/sec/thread:  589905 lr:  0.096660 avg.loss:  1.299262 ETA:   0h 1m 0sProgress:   3.5% words/sec/thread:  591223 lr:  0.096492 avg.loss:  1.291319 ETA:   0h 1m 0sProgress:   3.7% words/sec/thread:  593130 lr:  0.096319 avg.loss:  1.287227 ETA:   0h 0m59sProgress:   3.9% words/sec/thread:  595074 lr:  0.096146 avg.loss:  1.275163 ETA:   0h 0m59sProgress:   4.0% words/sec/thread:  597872 lr:  0.095964 avg.loss:  1.271749 ETA:   0h 0m59sProgress:   4.2% words/sec/thread:  599361 lr:  0.095791 avg.loss:  1.269999 ETA:   0h 0m58sProgress:   4.4% words/sec/thread:  600676 lr:  0.095619 avg.loss:  1.268438 ETA:   0h 0m58sProgress:   4.5% words/sec/thread:  601227 lr:  0.095452 avg.loss:  1.267092 ETA:   0h 0m58sProgress:   4.7% words/sec/thread:  602864 lr:  0.095275 avg.loss:  1.262794 ETA:   0h 0m58sProgress:   4.9% words/sec/thread:  603081 lr:  0.095110 avg.loss:  1.257749 ETA:   0h 0m58sProgress:   5.1% words/sec/thread:  604650 lr:  0.094933 avg.loss:  1.249873 ETA:   0h 0m57sProgress:   5.2% words/sec/thread:  605183 lr:  0.094764 avg.loss:  1.245614 ETA:   0h 0m57sProgress:   5.4% words/sec/thread:  606967 lr:  0.094584 avg.loss:  1.235873 ETA:   0h 0m57sProgress:   5.6% words/sec/thread:  608822 lr:  0.094401 avg.loss:  1.233047 ETA:   0h 0m57sProgress:   5.8% words/sec/thread:  610534 lr:  0.094220 avg.loss:  1.228391 ETA:   0h 0m56sProgress:   6.0% words/sec/thread:  612523 lr:  0.094033 avg.loss:  1.223630 ETA:   0h 0m56sProgress:   6.2% words/sec/thread:  614665 lr:  0.093845 avg.loss:  1.221180 ETA:   0h 0m56sProgress:   6.3% words/sec/thread:  615364 lr:  0.093671 avg.loss:  1.215205 ETA:   0h 0m56sProgress:   6.5% words/sec/thread:  616607 lr:  0.093491 avg.loss:  1.210105 ETA:   0h 0m55sProgress:   6.7% words/sec/thread:  616922 lr:  0.093320 avg.loss:  1.203778 ETA:   0h 0m55sProgress:   6.9% words/sec/thread:  618419 lr:  0.093136 avg.loss:  1.200878 ETA:   0h 0m55sProgress:   7.0% words/sec/thread:  619331 lr:  0.092957 avg.loss:  1.198856 ETA:   0h 0m55sProgress:   7.2% words/sec/thread:  619204 lr:  0.092791 avg.loss:  1.191910 ETA:   0h 0m55sProgress:   7.4% words/sec/thread:  618355 lr:  0.092632 avg.loss:  1.184343 ETA:   0h 0m55sProgress:   7.5% words/sec/thread:  618955 lr:  0.092457 avg.loss:  1.180286 ETA:   0h 0m55sProgress:   7.8% words/sec/thread:  610629 lr:  0.092239 avg.loss:  1.175156 ETA:   0h 0m55sProgress:   7.9% words/sec/thread:  611333 lr:  0.092064 avg.loss:  1.172578 ETA:   0h 0m55sProgress:   8.1% words/sec/thread:  612081 lr:  0.091888 avg.loss:  1.169967 ETA:   0h 0m55sProgress:   8.3% words/sec/thread:  611955 lr:  0.091723 avg.loss:  1.166782 ETA:   0h 0m55sProgress:   8.4% words/sec/thread:  611689 lr:  0.091561 avg.loss:  1.161019 ETA:   0h 0m55sProgress:   8.6% words/sec/thread:  612213 lr:  0.091387 avg.loss:  1.156733 ETA:   0h 0m55sProgress:   8.8% words/sec/thread:  613912 lr:  0.091197 avg.loss:  1.154974 ETA:   0h 0m54sProgress:   9.0% words/sec/thread:  614277 lr:  0.091024 avg.loss:  1.152415 ETA:   0h 0m54sProgress:   9.2% words/sec/thread:  615280 lr:  0.090843 avg.loss:  1.147646 ETA:   0h 0m54sProgress:   9.3% words/sec/thread:  616440 lr:  0.090658 avg.loss:  1.142958 ETA:   0h 0m54sProgress:   9.5% words/sec/thread:  617320 lr:  0.090476 avg.loss:  1.140085 ETA:   0h 0m54sProgress:   9.7% words/sec/thread:  618149 lr:  0.090296 avg.loss:  1.137163 ETA:   0h 0m53sProgress:   9.9% words/sec/thread:  618593 lr:  0.090121 avg.loss:  1.136173 ETA:   0h 0m53sProgress:  10.0% words/sec/thread:  617944 lr:  0.089963 avg.loss:  1.137233 ETA:   0h 0m53sProgress:  10.2% words/sec/thread:  618699 lr:  0.089783 avg.loss:  1.135442 ETA:   0h 0m53sProgress:  10.4% words/sec/thread:  618114 lr:  0.089624 avg.loss:  1.132361 ETA:   0h 0m53sProgress:  10.5% words/sec/thread:  618076 lr:  0.089457 avg.loss:  1.127882 ETA:   0h 0m53sProgress:  10.7% words/sec/thread:  618345 lr:  0.089285 avg.loss:  1.125953 ETA:   0h 0m53sProgress:  10.9% words/sec/thread:  618859 lr:  0.089108 avg.loss:  1.124595 ETA:   0h 0m53sProgress:  11.1% words/sec/thread:  618958 lr:  0.088938 avg.loss:  1.123481 ETA:   0h 0m52sProgress:  11.2% words/sec/thread:  618791 lr:  0.088773 avg.loss:  1.121262 ETA:   0h 0m52sProgress:  11.4% words/sec/thread:  618153 lr:  0.088616 avg.loss:  1.120759 ETA:   0h 0m52sProgress:  11.6% words/sec/thread:  618312 lr:  0.088446 avg.loss:  1.117566 ETA:   0h 0m52sProgress:  11.7% words/sec/thread:  618796 lr:  0.088268 avg.loss:  1.116497 ETA:   0h 0m52sProgress:  11.9% words/sec/thread:  618865 lr:  0.088099 avg.loss:  1.115475 ETA:   0h 0m52sProgress:  12.1% words/sec/thread:  619576 lr:  0.087917 avg.loss:  1.114045 ETA:   0h 0m52sProgress:  12.3% words/sec/thread:  619663 lr:  0.087747 avg.loss:  1.112081 ETA:   0h 0m52sProgress:  12.4% words/sec/thread:  620135 lr:  0.087569 avg.loss:  1.110005 ETA:   0h 0m52sProgress:  12.6% words/sec/thread:  620668 lr:  0.087389 avg.loss:  1.107538 ETA:   0h 0m51sProgress:  12.8% words/sec/thread:  621417 lr:  0.087205 avg.loss:  1.104928 ETA:   0h 0m51sProgress:  13.0% words/sec/thread:  622288 lr:  0.087018 avg.loss:  1.102951 ETA:   0h 0m51sProgress:  13.2% words/sec/thread:  622625 lr:  0.086841 avg.loss:  1.101273 ETA:   0h 0m51sProgress:  13.3% words/sec/thread:  622669 lr:  0.086671 avg.loss:  1.100646 ETA:   0h 0m51sProgress:  13.5% words/sec/thread:  622338 lr:  0.086509 avg.loss:  1.098995 ETA:   0h 0m51sProgress:  13.7% words/sec/thread:  622387 lr:  0.086339 avg.loss:  1.094140 ETA:   0h 0m51sProgress:  13.8% words/sec/thread:  622717 lr:  0.086163 avg.loss:  1.093004 ETA:   0h 0m51sProgress:  14.0% words/sec/thread:  623277 lr:  0.085981 avg.loss:  1.091924 ETA:   0h 0m50sProgress:  14.2% words/sec/thread:  623685 lr:  0.085803 avg.loss:  1.089500 ETA:   0h 0m50sProgress:  14.4% words/sec/thread:  624354 lr:  0.085617 avg.loss:  1.087192 ETA:   0h 0m50sProgress:  14.6% words/sec/thread:  624486 lr:  0.085445 avg.loss:  1.085092 ETA:   0h 0m50sProgress:  14.7% words/sec/thread:  624960 lr:  0.085264 avg.loss:  1.084207 ETA:   0h 0m50sProgress:  14.9% words/sec/thread:  625373 lr:  0.085084 avg.loss:  1.083557 ETA:   0h 0m50sProgress:  15.1% words/sec/thread:  625316 lr:  0.084916 avg.loss:  1.082932 ETA:   0h 0m50sProgress:  15.3% words/sec/thread:  625210 lr:  0.084749 avg.loss:  1.082951 ETA:   0h 0m49sProgress:  15.4% words/sec/thread:  625583 lr:  0.084569 avg.loss:  1.081684 ETA:   0h 0m49sProgress:  15.6% words/sec/thread:  620464 lr:  0.084371 avg.loss:  1.079957 ETA:   0h 0m50sProgress:  15.8% words/sec/thread:  620663 lr:  0.084196 avg.loss:  1.079253 ETA:   0h 0m50sProgress:  16.0% words/sec/thread:  620904 lr:  0.084022 avg.loss:  1.077862 ETA:   0h 0m49sProgress:  16.2% words/sec/thread:  621081 lr:  0.083848 avg.loss:  1.076146 ETA:   0h 0m49sProgress:  16.3% words/sec/thread:  621260 lr:  0.083675 avg.loss:  1.074987 ETA:   0h 0m49sProgress:  16.5% words/sec/thread:  621384 lr:  0.083503 avg.loss:  1.074916 ETA:   0h 0m49sProgress:  16.7% words/sec/thread:  621464 lr:  0.083332 avg.loss:  1.074464 ETA:   0h 0m49sProgress:  16.8% words/sec/thread:  621671 lr:  0.083158 avg.loss:  1.074475 ETA:   0h 0m49sProgress:  17.0% words/sec/thread:  621897 lr:  0.082983 avg.loss:  1.074015 ETA:   0h 0m49sProgress:  17.2% words/sec/thread:  622617 lr:  0.082791 avg.loss:  1.072842 ETA:   0h 0m49sProgress:  17.4% words/sec/thread:  621901 lr:  0.082642 avg.loss:  1.071644 ETA:   0h 0m48sProgress:  17.5% words/sec/thread:  622225 lr:  0.082464 avg.loss:  1.071575 ETA:   0h 0m48sProgress:  17.7% words/sec/thread:  622304 lr:  0.082293 avg.loss:  1.071216 ETA:   0h 0m48sProgress:  17.9% words/sec/thread:  622920 lr:  0.082106 avg.loss:  1.068669 ETA:   0h 0m48sProgress:  18.1% words/sec/thread:  623102 lr:  0.081931 avg.loss:  1.068125 ETA:   0h 0m48sProgress:  18.2% words/sec/thread:  623173 lr:  0.081760 avg.loss:  1.067341 ETA:   0h 0m48sProgress:  18.4% words/sec/thread:  623247 lr:  0.081588 avg.loss:  1.065869 ETA:   0h 0m48sProgress:  18.6% words/sec/thread:  623105 lr:  0.081423 avg.loss:  1.064719 ETA:   0h 0m48sProgress:  18.7% words/sec/thread:  622978 lr:  0.081258 avg.loss:  1.063771 ETA:   0h 0m48sProgress:  18.9% words/sec/thread:  623364 lr:  0.081077 avg.loss:  1.063362 ETA:   0h 0m47sProgress:  19.1% words/sec/thread:  623481 lr:  0.080904 avg.loss:  1.063197 ETA:   0h 0m47sProgress:  19.3% words/sec/thread:  623712 lr:  0.080727 avg.loss:  1.062539 ETA:   0h 0m47sProgress:  19.4% words/sec/thread:  623218 lr:  0.080573 avg.loss:  1.061654 ETA:   0h 0m47sProgress:  19.6% words/sec/thread:  623298 lr:  0.080401 avg.loss:  1.060473 ETA:   0h 0m47sProgress:  19.8% words/sec/thread:  623374 lr:  0.080229 avg.loss:  1.059724 ETA:   0h 0m47sProgress:  19.9% words/sec/thread:  623482 lr:  0.080057 avg.loss:  1.058917 ETA:   0h 0m47sProgress:  20.1% words/sec/thread:  624037 lr:  0.079869 avg.loss:  1.058110 ETA:   0h 0m47sProgress:  20.3% words/sec/thread:  624548 lr:  0.079682 avg.loss:  1.056484 ETA:   0h 0m47sProgress:  20.5% words/sec/thread:  624739 lr:  0.079506 avg.loss:  1.053588 ETA:   0h 0m46sProgress:  20.7% words/sec/thread:  625351 lr:  0.079316 avg.loss:  1.053023 ETA:   0h 0m46sProgress:  20.9% words/sec/thread:  622343 lr:  0.079088 avg.loss:  1.050846 ETA:   0h 0m46sProgress:  21.1% words/sec/thread:  622588 lr:  0.078911 avg.loss:  1.049644 ETA:   0h 0m46sProgress:  21.3% words/sec/thread:  622951 lr:  0.078729 avg.loss:  1.048812 ETA:   0h 0m46sProgress:  21.5% words/sec/thread:  623291 lr:  0.078549 avg.loss:  1.048623 ETA:   0h 0m46sProgress:  21.6% words/sec/thread:  623631 lr:  0.078367 avg.loss:  1.045591 ETA:   0h 0m46sProgress:  21.8% words/sec/thread:  623947 lr:  0.078187 avg.loss:  1.044616 ETA:   0h 0m46sProgress:  22.0% words/sec/thread:  623869 lr:  0.078020 avg.loss:  1.042896 ETA:   0h 0m46sProgress:  22.2% words/sec/thread:  624089 lr:  0.077843 avg.loss:  1.040929 ETA:   0h 0m45sProgress:  22.3% words/sec/thread:  624344 lr:  0.077664 avg.loss:  1.040602 ETA:   0h 0m45sProgress:  22.5% words/sec/thread:  624394 lr:  0.077493 avg.loss:  1.039807 ETA:   0h 0m45sProgress:  22.7% words/sec/thread:  624722 lr:  0.077311 avg.loss:  1.037618 ETA:   0h 0m45sProgress:  22.9% words/sec/thread:  625244 lr:  0.077123 avg.loss:  1.036855 ETA:   0h 0m45sProgress:  23.1% words/sec/thread:  625491 lr:  0.076944 avg.loss:  1.036171 ETA:   0h 0m45sProgress:  23.2% words/sec/thread:  625773 lr:  0.076764 avg.loss:  1.033369 ETA:   0h 0m45sProgress:  23.4% words/sec/thread:  625744 lr:  0.076595 avg.loss:  1.029784 ETA:   0h 0m45sProgress:  23.6% words/sec/thread:  625608 lr:  0.076430 avg.loss:  1.028905 ETA:   0h 0m45sProgress:  23.7% words/sec/thread:  625403 lr:  0.076267 avg.loss:  1.027840 ETA:   0h 0m44sProgress:  23.9% words/sec/thread:  625601 lr:  0.076090 avg.loss:  1.026882 ETA:   0h 0m44sProgress:  24.1% words/sec/thread:  625778 lr:  0.075913 avg.loss:  1.025540 ETA:   0h 0m44sProgress:  24.3% words/sec/thread:  625840 lr:  0.075741 avg.loss:  1.024429 ETA:   0h 0m44sProgress:  24.4% words/sec/thread:  626024 lr:  0.075564 avg.loss:  1.023510 ETA:   0h 0m44sProgress:  24.6% words/sec/thread:  626886 lr:  0.075357 avg.loss:  1.022105 ETA:   0h 0m44sProgress:  24.8% words/sec/thread:  626600 lr:  0.075197 avg.loss:  1.021628 ETA:   0h 0m44sProgress:  25.0% words/sec/thread:  626670 lr:  0.075024 avg.loss:  1.020838 ETA:   0h 0m44sProgress:  25.1% words/sec/thread:  626639 lr:  0.074855 avg.loss:  1.020184 ETA:   0h 0m44sProgress:  25.3% words/sec/thread:  626993 lr:  0.074669 avg.loss:  1.019859 ETA:   0h 0m43sProgress:  25.5% words/sec/thread:  627053 lr:  0.074497 avg.loss:  1.019143 ETA:   0h 0m43sProgress:  25.7% words/sec/thread:  627120 lr:  0.074324 avg.loss:  1.018390 ETA:   0h 0m43sProgress:  25.8% words/sec/thread:  627171 lr:  0.074151 avg.loss:  1.018529 ETA:   0h 0m43sProgress:  26.1% words/sec/thread:  624370 lr:  0.073939 avg.loss:  1.018162 ETA:   0h 0m43sProgress:  26.2% words/sec/thread:  624749 lr:  0.073754 avg.loss:  1.017954 ETA:   0h 0m43sProgress:  26.4% words/sec/thread:  624948 lr:  0.073576 avg.loss:  1.016868 ETA:   0h 0m43sProgress:  26.7% words/sec/thread:  626374 lr:  0.073336 avg.loss:  1.015294 ETA:   0h 0m43sProgress:  26.8% words/sec/thread:  626528 lr:  0.073159 avg.loss:  1.014424 ETA:   0h 0m43sProgress:  27.0% words/sec/thread:  626256 lr:  0.073001 avg.loss:  1.013519 ETA:   0h 0m42sProgress:  27.2% words/sec/thread:  626383 lr:  0.072825 avg.loss:  1.013361 ETA:   0h 0m42sProgress:  27.3% words/sec/thread:  626206 lr:  0.072661 avg.loss:  1.012982 ETA:   0h 0m42sProgress:  27.5% words/sec/thread:  622973 lr:  0.072476 avg.loss:  1.012271 ETA:   0h 0m42sProgress:  27.7% words/sec/thread:  622296 lr:  0.072337 avg.loss:  1.012027 ETA:   0h 0m42sProgress:  27.9% words/sec/thread:  622673 lr:  0.072149 avg.loss:  1.011993 ETA:   0h 0m42sProgress:  28.0% words/sec/thread:  622725 lr:  0.071977 avg.loss:  1.011178 ETA:   0h 0m42sProgress:  28.2% words/sec/thread:  622600 lr:  0.071814 avg.loss:  1.010186 ETA:   0h 0m42sProgress:  28.4% words/sec/thread:  622969 lr:  0.071626 avg.loss:  1.009040 ETA:   0h 0m42sProgress:  28.5% words/sec/thread:  622664 lr:  0.071471 avg.loss:  1.008255 ETA:   0h 0m42sProgress:  28.7% words/sec/thread:  622419 lr:  0.071312 avg.loss:  1.008015 ETA:   0h 0m42sProgress:  28.9% words/sec/thread:  622311 lr:  0.071149 avg.loss:  1.007616 ETA:   0h 0m42sProgress:  29.0% words/sec/thread:  622218 lr:  0.070984 avg.loss:  1.007357 ETA:   0h 0m42sProgress:  29.2% words/sec/thread:  622245 lr:  0.070813 avg.loss:  1.006610 ETA:   0h 0m41sProgress:  29.4% words/sec/thread:  622612 lr:  0.070625 avg.loss:  1.006292 ETA:   0h 0m41sProgress:  29.6% words/sec/thread:  622919 lr:  0.070441 avg.loss:  1.005608 ETA:   0h 0m41sProgress:  29.7% words/sec/thread:  622964 lr:  0.070270 avg.loss:  1.005337 ETA:   0h 0m41sProgress:  29.9% words/sec/thread:  622987 lr:  0.070099 avg.loss:  1.004655 ETA:   0h 0m41sProgress:  30.1% words/sec/thread:  623003 lr:  0.069930 avg.loss:  1.003694 ETA:   0h 0m41sProgress:  30.2% words/sec/thread:  622817 lr:  0.069769 avg.loss:  1.003098 ETA:   0h 0m41sProgress:  30.4% words/sec/thread:  622707 lr:  0.069605 avg.loss:  1.002159 ETA:   0h 0m41sProgress:  30.6% words/sec/thread:  622552 lr:  0.069444 avg.loss:  1.001091 ETA:   0h 0m41sProgress:  30.7% words/sec/thread:  622528 lr:  0.069276 avg.loss:  1.000403 ETA:   0h 0m41sProgress:  30.9% words/sec/thread:  622429 lr:  0.069112 avg.loss:  1.000287 ETA:   0h 0m40sProgress:  31.1% words/sec/thread:  620021 lr:  0.068906 avg.loss:  0.999643 ETA:   0h 0m40sProgress:  31.3% words/sec/thread:  620000 lr:  0.068739 avg.loss:  0.999050 ETA:   0h 0m40sProgress:  31.4% words/sec/thread:  619783 lr:  0.068581 avg.loss:  0.998690 ETA:   0h 0m40sProgress:  31.6% words/sec/thread:  619456 lr:  0.068430 avg.loss:  0.998522 ETA:   0h 0m40sProgress:  31.7% words/sec/thread:  619453 lr:  0.068262 avg.loss:  0.998282 ETA:   0h 0m40sProgress:  31.9% words/sec/thread:  619233 lr:  0.068105 avg.loss:  0.997636 ETA:   0h 0m40sProgress:  32.1% words/sec/thread:  619262 lr:  0.067935 avg.loss:  0.997162 ETA:   0h 0m40sProgress:  32.2% words/sec/thread:  619290 lr:  0.067766 avg.loss:  0.996483 ETA:   0h 0m40sProgress:  32.4% words/sec/thread:  619417 lr:  0.067591 avg.loss:  0.995877 ETA:   0h 0m40sProgress:  32.6% words/sec/thread:  619470 lr:  0.067420 avg.loss:  0.995517 ETA:   0h 0m40sProgress:  32.8% words/sec/thread:  619981 lr:  0.067229 avg.loss:  0.995444 ETA:   0h 0m39sProgress:  32.9% words/sec/thread:  620057 lr:  0.067050 avg.loss:  0.994724 ETA:   0h 0m39sProgress:  33.1% words/sec/thread:  620221 lr:  0.066873 avg.loss:  0.993710 ETA:   0h 0m39sProgress:  33.3% words/sec/thread:  620418 lr:  0.066693 avg.loss:  0.991613 ETA:   0h 0m39sProgress:  33.5% words/sec/thread:  620317 lr:  0.066530 avg.loss:  0.991809 ETA:   0h 0m39sProgress:  33.6% words/sec/thread:  620117 lr:  0.066373 avg.loss:  0.991590 ETA:   0h 0m39sProgress:  33.8% words/sec/thread:  620234 lr:  0.066198 avg.loss:  0.991249 ETA:   0h 0m39sProgress:  34.0% words/sec/thread:  620212 lr:  0.066030 avg.loss:  0.990490 ETA:   0h 0m39sProgress:  34.1% words/sec/thread:  620193 lr:  0.065863 avg.loss:  0.990404 ETA:   0h 0m39sProgress:  34.3% words/sec/thread:  620339 lr:  0.065686 avg.loss:  0.990067 ETA:   0h 0m39sProgress:  34.5% words/sec/thread:  620500 lr:  0.065509 avg.loss:  0.989396 ETA:   0h 0m38sProgress:  34.7% words/sec/thread:  620930 lr:  0.065315 avg.loss:  0.989206 ETA:   0h 0m38sProgress:  34.9% words/sec/thread:  621070 lr:  0.065138 avg.loss:  0.988587 ETA:   0h 0m38sProgress:  35.0% words/sec/thread:  621078 lr:  0.064969 avg.loss:  0.987897 ETA:   0h 0m38sProgress:  35.2% words/sec/thread:  620785 lr:  0.064817 avg.loss:  0.987584 ETA:   0h 0m38sProgress:  35.3% words/sec/thread:  620373 lr:  0.064671 avg.loss:  0.987118 ETA:   0h 0m38sProgress:  35.5% words/sec/thread:  619960 lr:  0.064526 avg.loss:  0.986879 ETA:   0h 0m38sProgress:  35.7% words/sec/thread:  620083 lr:  0.064349 avg.loss:  0.986855 ETA:   0h 0m38sProgress:  35.8% words/sec/thread:  620102 lr:  0.064178 avg.loss:  0.985604 ETA:   0h 0m38sProgress:  36.0% words/sec/thread:  618012 lr:  0.063977 avg.loss:  0.984789 ETA:   0h 0m38sProgress:  36.2% words/sec/thread:  618082 lr:  0.063805 avg.loss:  0.984370 ETA:   0h 0m38sProgress:  36.4% words/sec/thread:  618135 lr:  0.063634 avg.loss:  0.983834 ETA:   0h 0m37sProgress:  36.5% words/sec/thread:  618201 lr:  0.063463 avg.loss:  0.983382 ETA:   0h 0m37sProgress:  36.7% words/sec/thread:  618017 lr:  0.063305 avg.loss:  0.982913 ETA:   0h 0m37sProgress:  36.9% words/sec/thread:  617964 lr:  0.063141 avg.loss:  0.982453 ETA:   0h 0m37sProgress:  37.0% words/sec/thread:  617912 lr:  0.062976 avg.loss:  0.982246 ETA:   0h 0m37sProgress:  37.2% words/sec/thread:  617820 lr:  0.062814 avg.loss:  0.981716 ETA:   0h 0m37sProgress:  37.4% words/sec/thread:  617839 lr:  0.062645 avg.loss:  0.981217 ETA:   0h 0m37sProgress:  37.5% words/sec/thread:  617732 lr:  0.062483 avg.loss:  0.980613 ETA:   0h 0m37sProgress:  37.7% words/sec/thread:  617740 lr:  0.062315 avg.loss:  0.980555 ETA:   0h 0m37sProgress:  37.9% words/sec/thread:  617764 lr:  0.062146 avg.loss:  0.980019 ETA:   0h 0m37sProgress:  38.0% words/sec/thread:  617855 lr:  0.061973 avg.loss:  0.979745 ETA:   0h 0m36sProgress:  38.2% words/sec/thread:  617924 lr:  0.061801 avg.loss:  0.979614 ETA:   0h 0m36sProgress:  38.4% words/sec/thread:  618060 lr:  0.061624 avg.loss:  0.979587 ETA:   0h 0m36sProgress:  38.5% words/sec/thread:  617905 lr:  0.061466 avg.loss:  0.979268 ETA:   0h 0m36sProgress:  38.7% words/sec/thread:  617978 lr:  0.061294 avg.loss:  0.979060 ETA:   0h 0m36sProgress:  38.9% words/sec/thread:  617915 lr:  0.061128 avg.loss:  0.978651 ETA:   0h 0m36sProgress:  39.0% words/sec/thread:  617804 lr:  0.060968 avg.loss:  0.977574 ETA:   0h 0m36sProgress:  39.2% words/sec/thread:  617586 lr:  0.060814 avg.loss:  0.977343 ETA:   0h 0m36sProgress:  39.3% words/sec/thread:  617446 lr:  0.060655 avg.loss:  0.977000 ETA:   0h 0m36sProgress:  39.5% words/sec/thread:  617532 lr:  0.060480 avg.loss:  0.976320 ETA:   0h 0m36sProgress:  39.7% words/sec/thread:  617518 lr:  0.060314 avg.loss:  0.975172 ETA:   0h 0m36sProgress:  39.9% words/sec/thread:  617788 lr:  0.060127 avg.loss:  0.974841 ETA:   0h 0m35sProgress:  40.0% words/sec/thread:  617675 lr:  0.059967 avg.loss:  0.974613 ETA:   0h 0m35sProgress:  40.2% words/sec/thread:  617582 lr:  0.059805 avg.loss:  0.974216 ETA:   0h 0m35sProgress:  40.4% words/sec/thread:  617549 lr:  0.059640 avg.loss:  0.973516 ETA:   0h 0m35sProgress:  40.5% words/sec/thread:  617248 lr:  0.059491 avg.loss:  0.972534 ETA:   0h 0m35sProgress:  40.7% words/sec/thread:  617221 lr:  0.059326 avg.loss:  0.971404 ETA:   0h 0m35sProgress:  40.9% words/sec/thread:  617333 lr:  0.059150 avg.loss:  0.970696 ETA:   0h 0m35sProgress:  41.0% words/sec/thread:  617298 lr:  0.058985 avg.loss:  0.970989 ETA:   0h 0m35sProgress:  41.2% words/sec/thread:  617441 lr:  0.058807 avg.loss:  0.971060 ETA:   0h 0m35sProgress:  41.4% words/sec/thread:  617677 lr:  0.058623 avg.loss:  0.970939 ETA:   0h 0m34sProgress:  41.5% words/sec/thread:  617736 lr:  0.058451 avg.loss:  0.970809 ETA:   0h 0m34sProgress:  41.7% words/sec/thread:  617465 lr:  0.058302 avg.loss:  0.970382 ETA:   0h 0m34sProgress:  41.9% words/sec/thread:  615665 lr:  0.058101 avg.loss:  0.969991 ETA:   0h 0m34sProgress:  42.1% words/sec/thread:  615748 lr:  0.057928 avg.loss:  0.969924 ETA:   0h 0m34sProgress:  42.2% words/sec/thread:  615887 lr:  0.057751 avg.loss:  0.969732 ETA:   0h 0m34sProgress:  42.4% words/sec/thread:  616007 lr:  0.057575 avg.loss:  0.969447 ETA:   0h 0m34sProgress:  42.6% words/sec/thread:  616105 lr:  0.057401 avg.loss:  0.968866 ETA:   0h 0m34sProgress:  42.8% words/sec/thread:  616056 lr:  0.057237 avg.loss:  0.968315 ETA:   0h 0m34sProgress:  42.9% words/sec/thread:  615918 lr:  0.057079 avg.loss:  0.968022 ETA:   0h 0m34sProgress:  43.1% words/sec/thread:  615729 lr:  0.056925 avg.loss:  0.967069 ETA:   0h 0m34sProgress:  43.3% words/sec/thread:  616024 lr:  0.056734 avg.loss:  0.966748 ETA:   0h 0m33sProgress:  43.4% words/sec/thread:  615945 lr:  0.056572 avg.loss:  0.966440 ETA:   0h 0m33sProgress:  43.6% words/sec/thread:  615876 lr:  0.056409 avg.loss:  0.965986 ETA:   0h 0m33sProgress:  43.8% words/sec/thread:  615841 lr:  0.056244 avg.loss:  0.965577 ETA:   0h 0m33sProgress:  43.9% words/sec/thread:  615950 lr:  0.056067 avg.loss:  0.965095 ETA:   0h 0m33sProgress:  44.1% words/sec/thread:  616027 lr:  0.055892 avg.loss:  0.964860 ETA:   0h 0m33sProgress:  44.3% words/sec/thread:  615919 lr:  0.055733 avg.loss:  0.964681 ETA:   0h 0m33sProgress:  44.4% words/sec/thread:  615994 lr:  0.055560 avg.loss:  0.964204 ETA:   0h 0m33sProgress:  44.6% words/sec/thread:  615891 lr:  0.055400 avg.loss:  0.964081 ETA:   0h 0m33sProgress:  44.8% words/sec/thread:  615986 lr:  0.055226 avg.loss:  0.963641 ETA:   0h 0m33sProgress:  44.9% words/sec/thread:  615899 lr:  0.055065 avg.loss:  0.963393 ETA:   0h 0m32sProgress:  45.1% words/sec/thread:  615848 lr:  0.054901 avg.loss:  0.963279 ETA:   0h 0m32sProgress:  45.2% words/sec/thread:  615504 lr:  0.054759 avg.loss:  0.962949 ETA:   0h 0m32sProgress:  45.4% words/sec/thread:  613531 lr:  0.054584 avg.loss:  0.962817 ETA:   0h 0m32sProgress:  45.6% words/sec/thread:  613510 lr:  0.054419 avg.loss:  0.962503 ETA:   0h 0m32sProgress:  45.7% words/sec/thread:  613529 lr:  0.054251 avg.loss:  0.962327 ETA:   0h 0m32sProgress:  45.9% words/sec/thread:  613551 lr:  0.054083 avg.loss:  0.961695 ETA:   0h 0m32sProgress:  46.1% words/sec/thread:  613740 lr:  0.053902 avg.loss:  0.961178 ETA:   0h 0m32sProgress:  46.3% words/sec/thread:  613713 lr:  0.053737 avg.loss:  0.961102 ETA:   0h 0m32sProgress:  46.4% words/sec/thread:  613613 lr:  0.053578 avg.loss:  0.960847 ETA:   0h 0m32sProgress:  46.6% words/sec/thread:  613450 lr:  0.053423 avg.loss:  0.960808 ETA:   0h 0m32sProgress:  46.7% words/sec/thread:  613469 lr:  0.053255 avg.loss:  0.960209 ETA:   0h 0m31sProgress:  46.9% words/sec/thread:  613473 lr:  0.053088 avg.loss:  0.959842 ETA:   0h 0m31sProgress:  47.1% words/sec/thread:  613722 lr:  0.052900 avg.loss:  0.959570 ETA:   0h 0m31sProgress:  47.3% words/sec/thread:  613798 lr:  0.052728 avg.loss:  0.958823 ETA:   0h 0m31sProgress:  47.4% words/sec/thread:  613722 lr:  0.052567 avg.loss:  0.957952 ETA:   0h 0m31sProgress:  47.6% words/sec/thread:  613692 lr:  0.052403 avg.loss:  0.957460 ETA:   0h 0m31sProgress:  47.8% words/sec/thread:  613728 lr:  0.052231 avg.loss:  0.956691 ETA:   0h 0m31sProgress:  47.9% words/sec/thread:  613678 lr:  0.052068 avg.loss:  0.956348 ETA:   0h 0m31sProgress:  48.1% words/sec/thread:  613682 lr:  0.051901 avg.loss:  0.955825 ETA:   0h 0m31sProgress:  48.3% words/sec/thread:  613914 lr:  0.051713 avg.loss:  0.955409 ETA:   0h 0m31sProgress:  48.5% words/sec/thread:  613989 lr:  0.051540 avg.loss:  0.954293 ETA:   0h 0m30sProgress:  48.6% words/sec/thread:  613938 lr:  0.051378 avg.loss:  0.953785 ETA:   0h 0m30sProgress:  48.8% words/sec/thread:  612377 lr:  0.051181 avg.loss:  0.953447 ETA:   0h 0m30sProgress:  49.0% words/sec/thread:  612284 lr:  0.051022 avg.loss:  0.953033 ETA:   0h 0m30sProgress:  49.1% words/sec/thread:  612051 lr:  0.050874 avg.loss:  0.952672 ETA:   0h 0m30sProgress:  49.3% words/sec/thread:  612129 lr:  0.050702 avg.loss:  0.951962 ETA:   0h 0m30sProgress:  49.5% words/sec/thread:  612186 lr:  0.050531 avg.loss:  0.951547 ETA:   0h 0m30sProgress:  49.7% words/sec/thread:  612411 lr:  0.050345 avg.loss:  0.950952 ETA:   0h 0m30sProgress:  49.8% words/sec/thread:  612388 lr:  0.050180 avg.loss:  0.950890 ETA:   0h 0m30sProgress:  50.0% words/sec/thread:  612399 lr:  0.050013 avg.loss:  0.950688 ETA:   0h 0m30sProgress:  50.2% words/sec/thread:  612561 lr:  0.049832 avg.loss:  0.950196 ETA:   0h 0m29sProgress:  50.3% words/sec/thread:  612450 lr:  0.049675 avg.loss:  0.949531 ETA:   0h 0m29sProgress:  50.5% words/sec/thread:  612326 lr:  0.049519 avg.loss:  0.949359 ETA:   0h 0m29sProgress:  50.6% words/sec/thread:  612335 lr:  0.049352 avg.loss:  0.949216 ETA:   0h 0m29sProgress:  50.8% words/sec/thread:  612331 lr:  0.049185 avg.loss:  0.948902 ETA:   0h 0m29sProgress:  51.0% words/sec/thread:  612388 lr:  0.049014 avg.loss:  0.948425 ETA:   0h 0m29sProgress:  51.2% words/sec/thread:  612450 lr:  0.048842 avg.loss:  0.947778 ETA:   0h 0m29sProgress:  51.3% words/sec/thread:  612287 lr:  0.048690 avg.loss:  0.946875 ETA:   0h 0m29sProgress:  51.5% words/sec/thread:  612043 lr:  0.048544 avg.loss:  0.946093 ETA:   0h 0m29sProgress:  51.6% words/sec/thread:  611892 lr:  0.048390 avg.loss:  0.945706 ETA:   0h 0m29sProgress:  51.8% words/sec/thread:  611808 lr:  0.048231 avg.loss:  0.944882 ETA:   0h 0m29sProgress:  51.9% words/sec/thread:  611799 lr:  0.048066 avg.loss:  0.943745 ETA:   0h 0m28sProgress:  52.1% words/sec/thread:  611824 lr:  0.047897 avg.loss:  0.943194 ETA:   0h 0m28sProgress:  52.3% words/sec/thread:  611858 lr:  0.047728 avg.loss:  0.942678 ETA:   0h 0m28sProgress:  52.5% words/sec/thread:  612096 lr:  0.047541 avg.loss:  0.942259 ETA:   0h 0m28sProgress:  52.6% words/sec/thread:  612333 lr:  0.047352 avg.loss:  0.941008 ETA:   0h 0m28sProgress:  52.8% words/sec/thread:  612207 lr:  0.047197 avg.loss:  0.940871 ETA:   0h 0m28sProgress:  53.0% words/sec/thread:  610790 lr:  0.046999 avg.loss:  0.940538 ETA:   0h 0m28sProgress:  53.2% words/sec/thread:  610799 lr:  0.046832 avg.loss:  0.940310 ETA:   0h 0m28sProgress:  53.3% words/sec/thread:  610805 lr:  0.046666 avg.loss:  0.940315 ETA:   0h 0m28sProgress:  53.5% words/sec/thread:  610810 lr:  0.046500 avg.loss:  0.940170 ETA:   0h 0m28sProgress:  53.7% words/sec/thread:  610796 lr:  0.046335 avg.loss:  0.939876 ETA:   0h 0m27sProgress:  53.8% words/sec/thread:  610514 lr:  0.046194 avg.loss:  0.939574 ETA:   0h 0m27sProgress:  54.0% words/sec/thread:  610312 lr:  0.046046 avg.loss:  0.939233 ETA:   0h 0m27sProgress:  54.1% words/sec/thread:  610307 lr:  0.045881 avg.loss:  0.938796 ETA:   0h 0m27sProgress:  54.3% words/sec/thread:  610318 lr:  0.045714 avg.loss:  0.938707 ETA:   0h 0m27sProgress:  54.5% words/sec/thread:  610368 lr:  0.045543 avg.loss:  0.938382 ETA:   0h 0m27sProgress:  54.6% words/sec/thread:  610244 lr:  0.045389 avg.loss:  0.937911 ETA:   0h 0m27sProgress:  54.8% words/sec/thread:  610304 lr:  0.045218 avg.loss:  0.937832 ETA:   0h 0m27sProgress:  55.0% words/sec/thread:  610340 lr:  0.045049 avg.loss:  0.937598 ETA:   0h 0m27sProgress:  55.1% words/sec/thread:  610415 lr:  0.044876 avg.loss:  0.937466 ETA:   0h 0m27sProgress:  55.3% words/sec/thread:  610141 lr:  0.044735 avg.loss:  0.937201 ETA:   0h 0m27sProgress:  55.4% words/sec/thread:  610038 lr:  0.044579 avg.loss:  0.936967 ETA:   0h 0m26sProgress:  55.6% words/sec/thread:  610032 lr:  0.044414 avg.loss:  0.936847 ETA:   0h 0m26sProgress:  55.8% words/sec/thread:  610062 lr:  0.044245 avg.loss:  0.936797 ETA:   0h 0m26sProgress:  55.9% words/sec/thread:  610151 lr:  0.044071 avg.loss:  0.936664 ETA:   0h 0m26sProgress:  56.1% words/sec/thread:  610153 lr:  0.043905 avg.loss:  0.936299 ETA:   0h 0m26sProgress:  56.3% words/sec/thread:  610186 lr:  0.043736 avg.loss:  0.935885 ETA:   0h 0m26sProgress:  56.4% words/sec/thread:  610102 lr:  0.043578 avg.loss:  0.935764 ETA:   0h 0m26sProgress:  56.6% words/sec/thread:  610005 lr:  0.043421 avg.loss:  0.935618 ETA:   0h 0m26sProgress:  56.7% words/sec/thread:  609888 lr:  0.043266 avg.loss:  0.935267 ETA:   0h 0m26sProgress:  56.9% words/sec/thread:  609758 lr:  0.043113 avg.loss:  0.935052 ETA:   0h 0m26sProgress:  57.0% words/sec/thread:  609696 lr:  0.042953 avg.loss:  0.934947 ETA:   0h 0m25sProgress:  57.2% words/sec/thread:  609660 lr:  0.042791 avg.loss:  0.934417 ETA:   0h 0m25sProgress:  57.4% words/sec/thread:  609563 lr:  0.042635 avg.loss:  0.934209 ETA:   0h 0m25sProgress:  57.5% words/sec/thread:  609647 lr:  0.042461 avg.loss:  0.933955 ETA:   0h 0m25sProgress:  57.7% words/sec/thread:  609472 lr:  0.042312 avg.loss:  0.933766 ETA:   0h 0m25sProgress:  57.8% words/sec/thread:  609394 lr:  0.042153 avg.loss:  0.933528 ETA:   0h 0m25sProgress:  58.0% words/sec/thread:  609353 lr:  0.041992 avg.loss:  0.933234 ETA:   0h 0m25sProgress:  58.2% words/sec/thread:  609423 lr:  0.041818 avg.loss:  0.933251 ETA:   0h 0m25sProgress:  58.4% words/sec/thread:  609472 lr:  0.041648 avg.loss:  0.933087 ETA:   0h 0m25sProgress:  58.5% words/sec/thread:  609573 lr:  0.041473 avg.loss:  0.932786 ETA:   0h 0m25sProgress:  58.7% words/sec/thread:  609612 lr:  0.041303 avg.loss:  0.932412 ETA:   0h 0m24sProgress:  58.9% words/sec/thread:  609532 lr:  0.041146 avg.loss:  0.932265 ETA:   0h 0m24sProgress:  59.0% words/sec/thread:  609418 lr:  0.040991 avg.loss:  0.932254 ETA:   0h 0m24sProgress:  59.2% words/sec/thread:  609527 lr:  0.040814 avg.loss:  0.932059 ETA:   0h 0m24sProgress:  59.3% words/sec/thread:  609404 lr:  0.040660 avg.loss:  0.932046 ETA:   0h 0m24sProgress:  59.5% words/sec/thread:  609460 lr:  0.040487 avg.loss:  0.931896 ETA:   0h 0m24sProgress:  59.7% words/sec/thread:  609451 lr:  0.040323 avg.loss:  0.931655 ETA:   0h 0m24sProgress:  59.9% words/sec/thread:  608081 lr:  0.040140 avg.loss:  0.930997 ETA:   0h 0m24sProgress:  60.0% words/sec/thread:  608013 lr:  0.039982 avg.loss:  0.930611 ETA:   0h 0m24sProgress:  60.2% words/sec/thread:  607886 lr:  0.039829 avg.loss:  0.930618 ETA:   0h 0m24sProgress:  60.4% words/sec/thread:  608039 lr:  0.039647 avg.loss:  0.930420 ETA:   0h 0m24sProgress:  60.5% words/sec/thread:  607969 lr:  0.039489 avg.loss:  0.930407 ETA:   0h 0m23sProgress:  60.7% words/sec/thread:  608028 lr:  0.039318 avg.loss:  0.930007 ETA:   0h 0m23sProgress:  60.8% words/sec/thread:  607995 lr:  0.039156 avg.loss:  0.929772 ETA:   0h 0m23sProgress:  61.0% words/sec/thread:  608031 lr:  0.038987 avg.loss:  0.929543 ETA:   0h 0m23sProgress:  61.2% words/sec/thread:  608087 lr:  0.038815 avg.loss:  0.929394 ETA:   0h 0m23sProgress:  61.3% words/sec/thread:  608015 lr:  0.038657 avg.loss:  0.929131 ETA:   0h 0m23sProgress:  61.5% words/sec/thread:  607927 lr:  0.038501 avg.loss:  0.928913 ETA:   0h 0m23sProgress:  61.7% words/sec/thread:  608032 lr:  0.038324 avg.loss:  0.928718 ETA:   0h 0m23sProgress:  61.8% words/sec/thread:  608047 lr:  0.038158 avg.loss:  0.928296 ETA:   0h 0m23sProgress:  62.0% words/sec/thread:  608032 lr:  0.037994 avg.loss:  0.927965 ETA:   0h 0m23sProgress:  62.2% words/sec/thread:  608104 lr:  0.037821 avg.loss:  0.927540 ETA:   0h 0m22sProgress:  62.4% words/sec/thread:  608186 lr:  0.037648 avg.loss:  0.927326 ETA:   0h 0m22sProgress:  62.5% words/sec/thread:  608074 lr:  0.037494 avg.loss:  0.926637 ETA:   0h 0m22sProgress:  62.7% words/sec/thread:  607980 lr:  0.037339 avg.loss:  0.926089 ETA:   0h 0m22sProgress:  62.8% words/sec/thread:  608003 lr:  0.037170 avg.loss:  0.925825 ETA:   0h 0m22sProgress:  63.0% words/sec/thread:  607995 lr:  0.037006 avg.loss:  0.925312 ETA:   0h 0m22sProgress:  63.2% words/sec/thread:  608059 lr:  0.036834 avg.loss:  0.925253 ETA:   0h 0m22sProgress:  63.3% words/sec/thread:  607668 lr:  0.036710 avg.loss:  0.925170 ETA:   0h 0m22sProgress:  63.5% words/sec/thread:  607674 lr:  0.036544 avg.loss:  0.924878 ETA:   0h 0m22sProgress:  63.6% words/sec/thread:  607667 lr:  0.036380 avg.loss:  0.924590 ETA:   0h 0m22sProgress:  63.8% words/sec/thread:  607669 lr:  0.036215 avg.loss:  0.924146 ETA:   0h 0m21sProgress:  64.0% words/sec/thread:  607719 lr:  0.036044 avg.loss:  0.923679 ETA:   0h 0m21sProgress:  64.1% words/sec/thread:  607597 lr:  0.035892 avg.loss:  0.923259 ETA:   0h 0m21sProgress:  64.3% words/sec/thread:  607564 lr:  0.035730 avg.loss:  0.922596 ETA:   0h 0m21sProgress:  64.4% words/sec/thread:  607660 lr:  0.035554 avg.loss:  0.922495 ETA:   0h 0m21sProgress:  64.6% words/sec/thread:  607643 lr:  0.035390 avg.loss:  0.922269 ETA:   0h 0m21sProgress:  64.8% words/sec/thread:  607721 lr:  0.035217 avg.loss:  0.922061 ETA:   0h 0m21sProgress:  64.9% words/sec/thread:  607668 lr:  0.035058 avg.loss:  0.921986 ETA:   0h 0m21sProgress:  65.1% words/sec/thread:  607454 lr:  0.034916 avg.loss:  0.921616 ETA:   0h 0m21sProgress:  65.2% words/sec/thread:  607403 lr:  0.034756 avg.loss:  0.921366 ETA:   0h 0m21sProgress:  65.4% words/sec/thread:  607458 lr:  0.034585 avg.loss:  0.921064 ETA:   0h 0m20sProgress:  65.6% words/sec/thread:  607441 lr:  0.034422 avg.loss:  0.920782 ETA:   0h 0m20sProgress:  65.8% words/sec/thread:  606243 lr:  0.034236 avg.loss:  0.920605 ETA:   0h 0m20sProgress:  65.9% words/sec/thread:  606255 lr:  0.034070 avg.loss:  0.920387 ETA:   0h 0m20sProgress:  66.1% words/sec/thread:  606245 lr:  0.033906 avg.loss:  0.919994 ETA:   0h 0m20sProgress:  66.3% words/sec/thread:  606187 lr:  0.033748 avg.loss:  0.919547 ETA:   0h 0m20sProgress:  66.4% words/sec/thread:  606102 lr:  0.033593 avg.loss:  0.919282 ETA:   0h 0m20sProgress:  66.6% words/sec/thread:  605993 lr:  0.033440 avg.loss:  0.919174 ETA:   0h 0m20sProgress:  66.7% words/sec/thread:  606040 lr:  0.033270 avg.loss:  0.919028 ETA:   0h 0m20sProgress:  66.9% words/sec/thread:  606064 lr:  0.033103 avg.loss:  0.918913 ETA:   0h 0m20sProgress:  67.1% words/sec/thread:  606045 lr:  0.032940 avg.loss:  0.918575 ETA:   0h 0m20sProgress:  67.3% words/sec/thread:  606277 lr:  0.032747 avg.loss:  0.918321 ETA:   0h 0m19sProgress:  67.4% words/sec/thread:  606137 lr:  0.032598 avg.loss:  0.918185 ETA:   0h 0m19sProgress:  67.6% words/sec/thread:  606141 lr:  0.032433 avg.loss:  0.917748 ETA:   0h 0m19sProgress:  67.7% words/sec/thread:  606168 lr:  0.032265 avg.loss:  0.917404 ETA:   0h 0m19sProgress:  67.9% words/sec/thread:  606197 lr:  0.032097 avg.loss:  0.917003 ETA:   0h 0m19sProgress:  68.1% words/sec/thread:  606165 lr:  0.031936 avg.loss:  0.916497 ETA:   0h 0m19sProgress:  68.2% words/sec/thread:  606183 lr:  0.031770 avg.loss:  0.915685 ETA:   0h 0m19sProgress:  68.4% words/sec/thread:  606248 lr:  0.031598 avg.loss:  0.915494 ETA:   0h 0m19sProgress:  68.6% words/sec/thread:  606349 lr:  0.031421 avg.loss:  0.915158 ETA:   0h 0m19sProgress:  68.8% words/sec/thread:  606520 lr:  0.031237 avg.loss:  0.914622 ETA:   0h 0m18sProgress:  68.9% words/sec/thread:  606523 lr:  0.031072 avg.loss:  0.914352 ETA:   0h 0m18sProgress:  69.1% words/sec/thread:  606657 lr:  0.030891 avg.loss:  0.913820 ETA:   0h 0m18sProgress:  69.3% words/sec/thread:  606697 lr:  0.030722 avg.loss:  0.913399 ETA:   0h 0m18sProgress:  69.4% words/sec/thread:  606749 lr:  0.030551 avg.loss:  0.913039 ETA:   0h 0m18sProgress:  69.6% words/sec/thread:  606955 lr:  0.030360 avg.loss:  0.912693 ETA:   0h 0m18sProgress:  69.8% words/sec/thread:  606935 lr:  0.030198 avg.loss:  0.912598 ETA:   0h 0m18sProgress:  70.0% words/sec/thread:  606926 lr:  0.030034 avg.loss:  0.912424 ETA:   0h 0m18sProgress:  70.1% words/sec/thread:  606883 lr:  0.029874 avg.loss:  0.912042 ETA:   0h 0m18sProgress:  70.3% words/sec/thread:  606933 lr:  0.029703 avg.loss:  0.911951 ETA:   0h 0m18sProgress:  70.5% words/sec/thread:  605973 lr:  0.029497 avg.loss:  0.911592 ETA:   0h 0m17sProgress:  70.7% words/sec/thread:  605920 lr:  0.029339 avg.loss:  0.911055 ETA:   0h 0m17sProgress:  70.8% words/sec/thread:  605993 lr:  0.029166 avg.loss:  0.910471 ETA:   0h 0m17sProgress:  71.0% words/sec/thread:  606056 lr:  0.028994 avg.loss:  0.910333 ETA:   0h 0m17sProgress:  71.2% words/sec/thread:  606100 lr:  0.028824 avg.loss:  0.909967 ETA:   0h 0m17sProgress:  71.3% words/sec/thread:  606111 lr:  0.028658 avg.loss:  0.909713 ETA:   0h 0m17sProgress:  71.5% words/sec/thread:  606009 lr:  0.028506 avg.loss:  0.909216 ETA:   0h 0m17sProgress:  71.7% words/sec/thread:  605988 lr:  0.028343 avg.loss:  0.908999 ETA:   0h 0m17sProgress:  71.8% words/sec/thread:  605860 lr:  0.028193 avg.loss:  0.908981 ETA:   0h 0m17sProgress:  72.0% words/sec/thread:  605758 lr:  0.028041 avg.loss:  0.908810 ETA:   0h 0m17sProgress:  72.1% words/sec/thread:  605644 lr:  0.027890 avg.loss:  0.908437 ETA:   0h 0m16sProgress:  72.3% words/sec/thread:  605668 lr:  0.027722 avg.loss:  0.908238 ETA:   0h 0m16sProgress:  72.5% words/sec/thread:  605839 lr:  0.027537 avg.loss:  0.907927 ETA:   0h 0m16sProgress:  72.7% words/sec/thread:  606302 lr:  0.027313 avg.loss:  0.907366 ETA:   0h 0m16sProgress:  72.9% words/sec/thread:  606399 lr:  0.027136 avg.loss:  0.907199 ETA:   0h 0m16sProgress:  73.1% words/sec/thread:  606584 lr:  0.026950 avg.loss:  0.906961 ETA:   0h 0m16sProgress:  73.2% words/sec/thread:  606795 lr:  0.026758 avg.loss:  0.906678 ETA:   0h 0m16sProgress:  73.4% words/sec/thread:  606900 lr:  0.026580 avg.loss:  0.906401 ETA:   0h 0m16sProgress:  73.6% words/sec/thread:  607015 lr:  0.026401 avg.loss:  0.905798 ETA:   0h 0m16sProgress:  73.8% words/sec/thread:  607134 lr:  0.026222 avg.loss:  0.905249 ETA:   0h 0m15sProgress:  73.9% words/sec/thread:  607119 lr:  0.026059 avg.loss:  0.904325 ETA:   0h 0m15sProgress:  74.1% words/sec/thread:  607160 lr:  0.025889 avg.loss:  0.904017 ETA:   0h 0m15sProgress:  74.3% words/sec/thread:  607261 lr:  0.025712 avg.loss:  0.903546 ETA:   0h 0m15sProgress:  74.5% words/sec/thread:  606360 lr:  0.025504 avg.loss:  0.903380 ETA:   0h 0m15sProgress:  74.7% words/sec/thread:  606474 lr:  0.025326 avg.loss:  0.902996 ETA:   0h 0m15sProgress:  74.9% words/sec/thread:  606587 lr:  0.025147 avg.loss:  0.902416 ETA:   0h 0m15sProgress:  75.0% words/sec/thread:  606771 lr:  0.024959 avg.loss:  0.901979 ETA:   0h 0m15sProgress:  75.2% words/sec/thread:  606908 lr:  0.024778 avg.loss:  0.901660 ETA:   0h 0m15sProgress:  75.4% words/sec/thread:  607049 lr:  0.024595 avg.loss:  0.901377 ETA:   0h 0m14sProgress:  75.6% words/sec/thread:  607220 lr:  0.024409 avg.loss:  0.900886 ETA:   0h 0m14sProgress:  75.8% words/sec/thread:  607249 lr:  0.024241 avg.loss:  0.900370 ETA:   0h 0m14sProgress:  75.9% words/sec/thread:  607338 lr:  0.024064 avg.loss:  0.900229 ETA:   0h 0m14sProgress:  76.1% words/sec/thread:  607449 lr:  0.023885 avg.loss:  0.899963 ETA:   0h 0m14sProgress:  76.3% words/sec/thread:  607464 lr:  0.023719 avg.loss:  0.899737 ETA:   0h 0m14sProgress:  76.5% words/sec/thread:  607568 lr:  0.023540 avg.loss:  0.899620 ETA:   0h 0m14sProgress:  76.6% words/sec/thread:  607686 lr:  0.023360 avg.loss:  0.899548 ETA:   0h 0m14sProgress:  76.8% words/sec/thread:  607788 lr:  0.023183 avg.loss:  0.898925 ETA:   0h 0m14sProgress:  77.0% words/sec/thread:  607909 lr:  0.023002 avg.loss:  0.898810 ETA:   0h 0m13sProgress:  77.2% words/sec/thread:  607963 lr:  0.022830 avg.loss:  0.898654 ETA:   0h 0m13sProgress:  77.3% words/sec/thread:  607863 lr:  0.022678 avg.loss:  0.898535 ETA:   0h 0m13sProgress:  77.5% words/sec/thread:  607842 lr:  0.022515 avg.loss:  0.898097 ETA:   0h 0m13sProgress:  77.7% words/sec/thread:  607924 lr:  0.022340 avg.loss:  0.897897 ETA:   0h 0m13sProgress:  77.8% words/sec/thread:  608008 lr:  0.022164 avg.loss:  0.897807 ETA:   0h 0m13sProgress:  78.0% words/sec/thread:  608155 lr:  0.021979 avg.loss:  0.897602 ETA:   0h 0m13sProgress:  78.2% words/sec/thread:  608251 lr:  0.021802 avg.loss:  0.897576 ETA:   0h 0m13sProgress:  78.4% words/sec/thread:  608422 lr:  0.021613 avg.loss:  0.897302 ETA:   0h 0m13sProgress:  78.6% words/sec/thread:  608527 lr:  0.021434 avg.loss:  0.896745 ETA:   0h 0m12sProgress:  78.8% words/sec/thread:  608674 lr:  0.021249 avg.loss:  0.896498 ETA:   0h 0m12sProgress:  78.9% words/sec/thread:  608758 lr:  0.021073 avg.loss:  0.896281 ETA:   0h 0m12sProgress:  79.1% words/sec/thread:  608800 lr:  0.020903 avg.loss:  0.895994 ETA:   0h 0m12sProgress:  79.3% words/sec/thread:  608918 lr:  0.020721 avg.loss:  0.895730 ETA:   0h 0m12sProgress:  79.4% words/sec/thread:  608918 lr:  0.020555 avg.loss:  0.895196 ETA:   0h 0m12sProgress:  79.6% words/sec/thread:  608942 lr:  0.020387 avg.loss:  0.894783 ETA:   0h 0m12sProgress:  79.8% words/sec/thread:  609002 lr:  0.020213 avg.loss:  0.894505 ETA:   0h 0m12sProgress:  80.0% words/sec/thread:  609087 lr:  0.020037 avg.loss:  0.894202 ETA:   0h 0m12sProgress:  80.1% words/sec/thread:  609212 lr:  0.019855 avg.loss:  0.893700 ETA:   0h 0m12sProgress:  80.3% words/sec/thread:  609305 lr:  0.019677 avg.loss:  0.893269 ETA:   0h 0m11sProgress:  80.5% words/sec/thread:  609414 lr:  0.019496 avg.loss:  0.893191 ETA:   0h 0m11sProgress:  80.7% words/sec/thread:  608645 lr:  0.019279 avg.loss:  0.892852 ETA:   0h 0m11sProgress:  80.9% words/sec/thread:  608612 lr:  0.019118 avg.loss:  0.892625 ETA:   0h 0m11sProgress:  81.1% words/sec/thread:  608703 lr:  0.018941 avg.loss:  0.892045 ETA:   0h 0m11sProgress:  81.2% words/sec/thread:  608689 lr:  0.018777 avg.loss:  0.891789 ETA:   0h 0m11sProgress:  81.4% words/sec/thread:  608724 lr:  0.018608 avg.loss:  0.891454 ETA:   0h 0m11sProgress:  81.6% words/sec/thread:  608786 lr:  0.018434 avg.loss:  0.890932 ETA:   0h 0m11sProgress:  81.7% words/sec/thread:  608887 lr:  0.018255 avg.loss:  0.890652 ETA:   0h 0m11sProgress:  81.9% words/sec/thread:  608952 lr:  0.018080 avg.loss:  0.890372 ETA:   0h 0m10sProgress:  82.1% words/sec/thread:  609043 lr:  0.017903 avg.loss:  0.890033 ETA:   0h 0m10sProgress:  82.3% words/sec/thread:  609076 lr:  0.017733 avg.loss:  0.889377 ETA:   0h 0m10sProgress:  82.4% words/sec/thread:  609126 lr:  0.017561 avg.loss:  0.888698 ETA:   0h 0m10sProgress:  82.6% words/sec/thread:  609146 lr:  0.017393 avg.loss:  0.888299 ETA:   0h 0m10sProgress:  82.8% words/sec/thread:  609217 lr:  0.017217 avg.loss:  0.888083 ETA:   0h 0m10sProgress:  83.0% words/sec/thread:  609305 lr:  0.017040 avg.loss:  0.887890 ETA:   0h 0m10sProgress:  83.1% words/sec/thread:  609468 lr:  0.016852 avg.loss:  0.887591 ETA:   0h 0m10sProgress:  83.3% words/sec/thread:  609565 lr:  0.016674 avg.loss:  0.887198 ETA:   0h 0m10sProgress:  83.5% words/sec/thread:  609626 lr:  0.016500 avg.loss:  0.886784 ETA:   0h 0m 9sProgress:  83.7% words/sec/thread:  609607 lr:  0.016336 avg.loss:  0.886370 ETA:   0h 0m 9sProgress:  83.8% words/sec/thread:  609681 lr:  0.016161 avg.loss:  0.886002 ETA:   0h 0m 9sProgress:  84.0% words/sec/thread:  609654 lr:  0.015999 avg.loss:  0.885639 ETA:   0h 0m 9sProgress:  84.2% words/sec/thread:  609649 lr:  0.015833 avg.loss:  0.885372 ETA:   0h 0m 9sProgress:  84.3% words/sec/thread:  609500 lr:  0.015689 avg.loss:  0.884910 ETA:   0h 0m 9sProgress:  84.5% words/sec/thread:  609409 lr:  0.015536 avg.loss:  0.884688 ETA:   0h 0m 9sProgress:  84.6% words/sec/thread:  609468 lr:  0.015362 avg.loss:  0.884381 ETA:   0h 0m 9sProgress:  84.8% words/sec/thread:  609519 lr:  0.015189 avg.loss:  0.884015 ETA:   0h 0m 9sProgress:  85.0% words/sec/thread:  609559 lr:  0.015018 avg.loss:  0.883691 ETA:   0h 0m 9sProgress:  85.1% words/sec/thread:  609537 lr:  0.014856 avg.loss:  0.883230 ETA:   0h 0m 8sProgress:  85.3% words/sec/thread:  609570 lr:  0.014685 avg.loss:  0.882912 ETA:   0h 0m 8sProgress:  85.5% words/sec/thread:  609613 lr:  0.014514 avg.loss:  0.882488 ETA:   0h 0m 8sProgress:  85.6% words/sec/thread:  609579 lr:  0.014353 avg.loss:  0.882303 ETA:   0h 0m 8sProgress:  85.8% words/sec/thread:  609574 lr:  0.014188 avg.loss:  0.882055 ETA:   0h 0m 8sProgress:  86.0% words/sec/thread:  609577 lr:  0.014022 avg.loss:  0.881665 ETA:   0h 0m 8sProgress:  86.2% words/sec/thread:  609649 lr:  0.013846 avg.loss:  0.881428 ETA:   0h 0m 8sProgress:  86.3% words/sec/thread:  609716 lr:  0.013671 avg.loss:  0.881274 ETA:   0h 0m 8sProgress:  86.5% words/sec/thread:  609839 lr:  0.013487 avg.loss:  0.880944 ETA:   0h 0m 8sProgress:  86.7% words/sec/thread:  609866 lr:  0.013318 avg.loss:  0.880782 ETA:   0h 0m 8sProgress:  86.9% words/sec/thread:  609999 lr:  0.013132 avg.loss:  0.880491 ETA:   0h 0m 7sProgress:  87.0% words/sec/thread:  610027 lr:  0.012963 avg.loss:  0.880419 ETA:   0h 0m 7sProgress:  87.2% words/sec/thread:  610064 lr:  0.012792 avg.loss:  0.879966 ETA:   0h 0m 7sProgress:  87.4% words/sec/thread:  610121 lr:  0.012618 avg.loss:  0.879212 ETA:   0h 0m 7sProgress:  87.5% words/sec/thread:  610128 lr:  0.012451 avg.loss:  0.878902 ETA:   0h 0m 7sProgress:  87.7% words/sec/thread:  610129 lr:  0.012285 avg.loss:  0.878731 ETA:   0h 0m 7sProgress:  87.9% words/sec/thread:  610240 lr:  0.012103 avg.loss:  0.878479 ETA:   0h 0m 7sProgress:  88.1% words/sec/thread:  610230 lr:  0.011938 avg.loss:  0.878220 ETA:   0h 0m 7sProgress:  88.2% words/sec/thread:  610286 lr:  0.011764 avg.loss:  0.877867 ETA:   0h 0m 7sProgress:  88.4% words/sec/thread:  610293 lr:  0.011598 avg.loss:  0.877581 ETA:   0h 0m 7sProgress:  88.6% words/sec/thread:  609518 lr:  0.011390 avg.loss:  0.877234 ETA:   0h 0m 6sProgress:  88.8% words/sec/thread:  609513 lr:  0.011225 avg.loss:  0.876546 ETA:   0h 0m 6sProgress:  88.9% words/sec/thread:  609491 lr:  0.011063 avg.loss:  0.876175 ETA:   0h 0m 6sProgress:  89.1% words/sec/thread:  609456 lr:  0.010902 avg.loss:  0.875901 ETA:   0h 0m 6sProgress:  89.2% words/sec/thread:  609362 lr:  0.010750 avg.loss:  0.875477 ETA:   0h 0m 6sProgress:  89.4% words/sec/thread:  609308 lr:  0.010593 avg.loss:  0.875194 ETA:   0h 0m 6sProgress:  89.6% words/sec/thread:  609275 lr:  0.010432 avg.loss:  0.874675 ETA:   0h 0m 6sProgress:  89.7% words/sec/thread:  609244 lr:  0.010271 avg.loss:  0.873839 ETA:   0h 0m 6sProgress:  89.9% words/sec/thread:  609275 lr:  0.010100 avg.loss:  0.872908 ETA:   0h 0m 6sProgress:  90.1% words/sec/thread:  609208 lr:  0.009944 avg.loss:  0.872696 ETA:   0h 0m 6sProgress:  90.2% words/sec/thread:  609204 lr:  0.009779 avg.loss:  0.872181 ETA:   0h 0m 5sProgress:  90.4% words/sec/thread:  609226 lr:  0.009610 avg.loss:  0.871209 ETA:   0h 0m 5sProgress:  90.6% words/sec/thread:  609226 lr:  0.009445 avg.loss:  0.870732 ETA:   0h 0m 5sProgress:  90.7% words/sec/thread:  609224 lr:  0.009279 avg.loss:  0.870250 ETA:   0h 0m 5sProgress:  90.9% words/sec/thread:  609169 lr:  0.009121 avg.loss:  0.869892 ETA:   0h 0m 5sProgress:  91.0% words/sec/thread:  609096 lr:  0.008967 avg.loss:  0.869295 ETA:   0h 0m 5sProgress:  91.2% words/sec/thread:  609021 lr:  0.008813 avg.loss:  0.868950 ETA:   0h 0m 5sProgress:  91.3% words/sec/thread:  608918 lr:  0.008663 avg.loss:  0.868499 ETA:   0h 0m 5sProgress:  91.5% words/sec/thread:  608894 lr:  0.008500 avg.loss:  0.868096 ETA:   0h 0m 5sProgress:  91.7% words/sec/thread:  608900 lr:  0.008334 avg.loss:  0.867713 ETA:   0h 0m 5sProgress:  91.8% words/sec/thread:  608928 lr:  0.008165 avg.loss:  0.867410 ETA:   0h 0m 4sProgress:  92.0% words/sec/thread:  608949 lr:  0.007996 avg.loss:  0.867077 ETA:   0h 0m 4sProgress:  92.2% words/sec/thread:  608999 lr:  0.007823 avg.loss:  0.866701 ETA:   0h 0m 4sProgress:  92.3% words/sec/thread:  608943 lr:  0.007666 avg.loss:  0.866361 ETA:   0h 0m 4sProgress:  92.5% words/sec/thread:  608840 lr:  0.007516 avg.loss:  0.865956 ETA:   0h 0m 4sProgress:  92.6% words/sec/thread:  608796 lr:  0.007355 avg.loss:  0.865470 ETA:   0h 0m 4sProgress:  92.8% words/sec/thread:  607974 lr:  0.007161 avg.loss:  0.865123 ETA:   0h 0m 4sProgress:  93.0% words/sec/thread:  607892 lr:  0.007008 avg.loss:  0.864838 ETA:   0h 0m 4sProgress:  93.1% words/sec/thread:  607744 lr:  0.006866 avg.loss:  0.864567 ETA:   0h 0m 4sProgress:  93.3% words/sec/thread:  607630 lr:  0.006718 avg.loss:  0.864247 ETA:   0h 0m 4sProgress:  93.4% words/sec/thread:  607541 lr:  0.006567 avg.loss:  0.863301 ETA:   0h 0m 3sProgress:  93.6% words/sec/thread:  607550 lr:  0.006401 avg.loss:  0.862456 ETA:   0h 0m 3sProgress:  93.8% words/sec/thread:  607536 lr:  0.006238 avg.loss:  0.862066 ETA:   0h 0m 3sProgress:  93.9% words/sec/thread:  607576 lr:  0.006066 avg.loss:  0.861303 ETA:   0h 0m 3sProgress:  94.1% words/sec/thread:  607539 lr:  0.005907 avg.loss:  0.860949 ETA:   0h 0m 3sProgress:  94.3% words/sec/thread:  607555 lr:  0.005739 avg.loss:  0.860721 ETA:   0h 0m 3sProgress:  94.4% words/sec/thread:  607567 lr:  0.005572 avg.loss:  0.860186 ETA:   0h 0m 3sProgress:  94.6% words/sec/thread:  607570 lr:  0.005406 avg.loss:  0.859646 ETA:   0h 0m 3sProgress:  94.7% words/sec/thread:  607480 lr:  0.005255 avg.loss:  0.859364 ETA:   0h 0m 3sProgress:  94.9% words/sec/thread:  607439 lr:  0.005097 avg.loss:  0.859023 ETA:   0h 0m 3sProgress:  95.1% words/sec/thread:  607471 lr:  0.004927 avg.loss:  0.858933 ETA:   0h 0m 2sProgress:  95.2% words/sec/thread:  607487 lr:  0.004758 avg.loss:  0.858585 ETA:   0h 0m 2sProgress:  95.4% words/sec/thread:  607424 lr:  0.004603 avg.loss:  0.857761 ETA:   0h 0m 2sProgress:  95.6% words/sec/thread:  607409 lr:  0.004440 avg.loss:  0.857469 ETA:   0h 0m 2sProgress:  95.7% words/sec/thread:  607424 lr:  0.004273 avg.loss:  0.857201 ETA:   0h 0m 2sProgress:  95.9% words/sec/thread:  607461 lr:  0.004102 avg.loss:  0.856619 ETA:   0h 0m 2sProgress:  96.1% words/sec/thread:  607787 lr:  0.003886 avg.loss:  0.856033 ETA:   0h 0m 2sProgress:  96.3% words/sec/thread:  607003 lr:  0.003687 avg.loss:  0.854868 ETA:   0h 0m 2sProgress:  96.5% words/sec/thread:  606910 lr:  0.003536 avg.loss:  0.854497 ETA:   0h 0m 2sProgress:  96.6% words/sec/thread:  606815 lr:  0.003387 avg.loss:  0.854104 ETA:   0h 0m 2sProgress:  96.8% words/sec/thread:  606855 lr:  0.003215 avg.loss:  0.853793 ETA:   0h 0m 1sProgress:  97.0% words/sec/thread:  606937 lr:  0.003035 avg.loss:  0.853070 ETA:   0h 0m 1sProgress:  97.1% words/sec/thread:  606925 lr:  0.002872 avg.loss:  0.852804 ETA:   0h 0m 1sProgress:  97.3% words/sec/thread:  606906 lr:  0.002710 avg.loss:  0.852645 ETA:   0h 0m 1sProgress:  97.5% words/sec/thread:  606951 lr:  0.002538 avg.loss:  0.852060 ETA:   0h 0m 1sProgress:  97.6% words/sec/thread:  606976 lr:  0.002369 avg.loss:  0.851707 ETA:   0h 0m 1sProgress:  97.8% words/sec/thread:  607019 lr:  0.002197 avg.loss:  0.851316 ETA:   0h 0m 1sProgress:  98.0% words/sec/thread:  607011 lr:  0.002034 avg.loss:  0.850789 ETA:   0h 0m 1sProgress:  98.1% words/sec/thread:  607010 lr:  0.001869 avg.loss:  0.850319 ETA:   0h 0m 1sProgress:  98.3% words/sec/thread:  607004 lr:  0.001705 avg.loss:  0.849631 ETA:   0h 0m 1sProgress:  98.5% words/sec/thread:  607018 lr:  0.001538 avg.loss:  0.848767 ETA:   0h 0m 0sProgress:  98.6% words/sec/thread:  606979 lr:  0.001380 avg.loss:  0.848242 ETA:   0h 0m 0sProgress:  98.8% words/sec/thread:  607002 lr:  0.001211 avg.loss:  0.848087 ETA:   0h 0m 0sProgress:  99.0% words/sec/thread:  607262 lr:  0.000988 avg.loss:  0.848051 ETA:   0h 0m 0sProgress:  99.2% words/sec/thread:  607228 lr:  0.000829 avg.loss:  0.847684 ETA:   0h 0m 0sProgress:  99.3% words/sec/thread:  607294 lr:  0.000653 avg.loss:  0.847561 ETA:   0h 0m 0sProgress:  99.5% words/sec/thread:  606467 lr:  0.000482 avg.loss:  0.847504 ETA:   0h 0m 0sProgress:  99.7% words/sec/thread:  606525 lr:  0.000308 avg.loss:  0.847284 ETA:   0h 0m 0sProgress:  99.9% words/sec/thread:  606584 lr:  0.000134 avg.loss:  0.847286 ETA:   0h 0m 0sProgress: 100.0% words/sec/thread:  606398 lr: -0.000001 avg.loss:  0.847154 ETA:   0h 0m 0sProgress: 100.0% words/sec/thread:  606397 lr:  0.000000 avg.loss:  0.847154 ETA:   0h 0m 0s
+convert_data.py
+data
+fastText
+model.bin
+model.vec

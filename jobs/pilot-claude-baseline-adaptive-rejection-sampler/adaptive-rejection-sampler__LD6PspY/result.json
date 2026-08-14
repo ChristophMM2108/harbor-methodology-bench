@@ -1,0 +1,115 @@
+{
+    "id": "a0e394a9-69bb-472b-8a11-3c19ab20cfbe",
+    "task_name": "terminal-bench/adaptive-rejection-sampler",
+    "trial_name": "adaptive-rejection-sampler__LD6PspY",
+    "trial_uri": "file:///home/chriz/GitRepos/harbor-methodology-bench/jobs/pilot-claude-baseline-adaptive-rejection-sampler/adaptive-rejection-sampler__LD6PspY",
+    "task_id": {
+        "path": "generated/baseline/adaptive-rejection-sampler"
+    },
+    "source": null,
+    "task_checksum": "f3861a5470a4be39e35ad168fdc0b842111a8360f518a2ccb22c80198e850097",
+    "config": {
+        "task": {
+            "path": "generated/baseline/adaptive-rejection-sampler",
+            "git_url": null,
+            "git_commit_id": null,
+            "name": null,
+            "ref": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "adaptive-rejection-sampler__LD6PspY",
+        "trials_dir": "jobs/pilot-claude-baseline-adaptive-rejection-sampler",
+        "install_only": false,
+        "timeout_multiplier": 1.0,
+        "agent_timeout_multiplier": null,
+        "verifier_timeout_multiplier": null,
+        "agent_setup_timeout_multiplier": null,
+        "environment_build_timeout_multiplier": null,
+        "agent": {
+            "name": "claude-code",
+            "import_path": null,
+            "model_name": "claude-sonnet-5",
+            "n_concurrent": null,
+            "concurrency_group": null,
+            "skills": [],
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": null,
+            "max_timeout_sec": null,
+            "resume_trajectory": false,
+            "load_trajectory": null,
+            "extra_allowed_hosts": [],
+            "kwargs": {},
+            "mcp_servers": []
+        },
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "cpu_enforcement_policy": "auto",
+            "memory_enforcement_policy": "auto",
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "override_tpu": null,
+            "mounts": null,
+            "extra_docker_compose": [],
+            "kwargs": {},
+            "extra_allowed_hosts": []
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": false
+        },
+        "artifacts": [],
+        "extra_instruction_paths": [],
+        "job_id": "3cf5fccf-0c4c-44a7-9ca4-fca3d0f59a7e",
+        "source_trial": null
+    },
+    "agent_info": {
+        "name": "claude-code",
+        "version": "2.1.231",
+        "model_info": {
+            "name": "claude-sonnet-5",
+            "provider": "anthropic"
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 1621361,
+        "n_cache_tokens": 1572657,
+        "n_output_tokens": 39196,
+        "cost_usd": 1.3518051,
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": {
+        "rewards": {
+            "reward": 1.0
+        }
+    },
+    "verifier_environment_mode": "shared",
+    "exception_info": null,
+    "started_at": "2026-08-13T19:27:02.084068Z",
+    "finished_at": "2026-08-13T19:36:29.766215Z",
+    "environment_setup": {
+        "started_at": "2026-08-13T19:27:02.101442Z",
+        "finished_at": "2026-08-13T19:27:02.989411Z"
+    },
+    "agent_setup": {
+        "started_at": "2026-08-13T19:27:02.989459Z",
+        "finished_at": "2026-08-13T19:28:37.293743Z"
+    },
+    "agent_execution": {
+        "started_at": "2026-08-13T19:28:37.293923Z",
+        "finished_at": "2026-08-13T19:36:07.416003Z"
+    },
+    "verifier": {
+        "started_at": "2026-08-13T19:36:07.674165Z",
+        "finished_at": "2026-08-13T19:36:18.052668Z"
+    },
+    "step_results": null
+}

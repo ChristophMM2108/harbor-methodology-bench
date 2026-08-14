@@ -1,0 +1,8 @@
+{
+  "id": "3",
+  "subject": "Fit Bayesian Network with learned DAG",
+  "description": "Fit a Linear Gaussian BN (pgmpy) using the recovered DAG structure on bn_sample_10k.csv.",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

@@ -1,0 +1,10 @@
+{
+    "task": {
+        "name": "terminal-bench/make-doom-for-mips",
+        "ref": "sha256:fb053a364213e3f952e6f906f4360e59f2a90b0083455e97e42892607dc70cc9",
+        "source": "terminal-bench/terminal-bench-2"
+    },
+    "trial_name": "make-doom-for-mips__GPNFQBF",
+    "trials_dir": "jobs/2026-08-12__16-01-57",
+    "job_id": "a57f2253-d8cc-49d7-8181-be0afe355930"
+}

@@ -1,0 +1,10 @@
+{
+    "task": {
+        "name": "terminal-bench/torch-tensor-parallelism",
+        "ref": "sha256:6446c8219da1b2cde0d6b248b3a6cd2403c22ee2302c280e002e7b6c41f42b1b",
+        "source": "terminal-bench/terminal-bench-2"
+    },
+    "trial_name": "torch-tensor-parallelism__Hhbg6Jx",
+    "trials_dir": "jobs/2026-08-12__16-01-57",
+    "job_id": "a57f2253-d8cc-49d7-8181-be0afe355930"
+}

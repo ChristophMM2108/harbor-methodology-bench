@@ -1,0 +1,8 @@
+{
+  "id": "1",
+  "subject": "Recover DAG structure from data",
+  "description": "Use conditional independence/partial correlation testing on bn_sample_10k.csv to find the 6-edge DAG skeleton and orient edges per rules (U root, alphabetical tiebreak).",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

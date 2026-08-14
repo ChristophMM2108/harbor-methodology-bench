@@ -1,0 +1,8 @@
+{
+  "id": "6",
+  "subject": "Run test suite",
+  "description": "Run pytest tests/ excluding test_random_curves.py and test_catalogue.py, fix any failures related to numpy/python compatibility",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

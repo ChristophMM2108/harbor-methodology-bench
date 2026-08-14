@@ -1,0 +1,10 @@
+{
+    "task": {
+        "name": "terminal-bench/hf-model-inference",
+        "ref": "sha256:649831c4d9cef15fcbccbdd5639c7d4357b3061a32d9bd449d954d23370880b4",
+        "source": "terminal-bench/terminal-bench-2"
+    },
+    "trial_name": "hf-model-inference__8Q3QtuQ",
+    "trials_dir": "jobs/2026-08-12__16-01-57",
+    "job_id": "a57f2253-d8cc-49d7-8181-be0afe355930"
+}

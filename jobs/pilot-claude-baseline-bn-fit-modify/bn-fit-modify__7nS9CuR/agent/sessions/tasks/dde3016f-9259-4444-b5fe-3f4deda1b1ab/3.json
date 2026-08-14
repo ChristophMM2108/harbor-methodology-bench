@@ -1,0 +1,9 @@
+{
+  "id": "3",
+  "subject": "Perform do(Y=0) intervention and save intervened_dag.csv",
+  "description": "Remove incoming edges to Y, set Y's CPD to constant 0.0 (tiny variance), save resulting edge list to /app/intervened_dag.csv",
+  "activeForm": "Performing intervention on Y",
+  "status": "completed",
+  "blocks": [],
+  "blockedBy": []
+}

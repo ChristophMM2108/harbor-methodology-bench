@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "generated/baseline/adaptive-rejection-sampler"
+    },
+    "trial_name": "adaptive-rejection-sampler__JwRyFsz",
+    "trials_dir": "jobs/smoke-codex-baseline",
+    "agent": {
+        "name": "codex",
+        "model_name": "gpt-5.6-terra"
+    },
+    "job_id": "5f4dddb4-845a-4314-a7d6-9dbbd60f2916"
+}
