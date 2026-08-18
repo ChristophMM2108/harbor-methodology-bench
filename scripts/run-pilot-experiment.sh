@@ -4,11 +4,12 @@ set -euo pipefail
 # Harbor Pilot Experiment Runner
 # Executes the 6-cell matrix across generated tasks (e.g. 5 tasks x 6 cells = 30 trials)
 
-USAGE="Usage: $0 [--limit N] [--force] [--dry-run]"
+USAGE="Usage: $0 [--limit N] [--force] [--dry-run] [--skip-preflight]"
 
 LIMIT=5
 FORCE=false
 DRY_RUN=false
+SKIP_PREFLIGHT=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -22,6 +23,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --dry-run)
             DRY_RUN=true
+            shift
+            ;;
+        --skip-preflight)
+            SKIP_PREFLIGHT=true
             shift
             ;;
         -h|--help)
@@ -83,8 +88,32 @@ CELLS=(
     "codex-dfg|dfg|codex|gpt-5.6-terra"
 )
 
+if [ "$DRY_RUN" = false ] && [ "$SKIP_PREFLIGHT" = false ]; then
+    echo "=== 2. In-Container Preflight (methodology must reach the agent workdir) ==="
+    ./scripts/validate-variants.sh --limit "$LIMIT"
+    ./scripts/preflight-variants.sh --limit "$LIMIT"
+fi
+
+# Fail closed per cell: a trial may only run against a variant whose container
+# was proven to carry (or, for the baseline, to lack) the methodology payload.
+assert_preflight_passed() {
+    local task_path="$1"
+    python3 - "$task_path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+report = Path(sys.argv[1]) / ".methodology-bench-preflight.json"
+if not report.is_file():
+    sys.exit(f"missing preflight report: {report} (run ./scripts/preflight-variants.sh)")
+data = json.loads(report.read_text())
+if not data.get("passed"):
+    sys.exit(f"preflight failed for {report}: {data.get('errors')}")
+PY
+}
+
 TOTAL_RUNS=$((${#TASKS[@]} * ${#CELLS[@]}))
-echo "=== 2. Starting Pilot Matrix ($TOTAL_RUNS total runs) ==="
+echo "=== 3. Starting Pilot Matrix ($TOTAL_RUNS total runs) ==="
 
 RUN_IDX=0
 PASSED_RUNS=0
@@ -105,6 +134,10 @@ for task in "${TASKS[@]}"; do
         if [ "$DRY_RUN" = true ]; then
             echo "   [DRY RUN] harbor run -p $TASK_PATH -a $agent -m $model -n 1 --env-file config/local.env --job-name $JOB_NAME"
             continue
+        fi
+
+        if [ "$SKIP_PREFLIGHT" = false ]; then
+            assert_preflight_passed "$TASK_PATH"
         fi
 
         if [ -d "jobs/$JOB_NAME" ]; then

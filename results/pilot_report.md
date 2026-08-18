@@ -1,5 +1,9 @@
 # Harbor Methodology Bench — Results Report
 
+> **VOID — superseded.** These trials ran before the toolkit reached the
+> container; all three conditions were effectively the baseline. See TODO.md.
+
+
 **Total Trials Collected**: 30
 **Generated At**: 2026-08-13 22:36:33 UTC
 

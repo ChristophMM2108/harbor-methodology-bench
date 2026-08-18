@@ -13,6 +13,85 @@ from pathlib import Path
 from typing import Any
 
 
+CONFIG_MARKERS = ("CLAUDE.md", "AGENTS.md")
+
+
+def registered_skills(task_path: Path) -> list[str]:
+    """Skill names the generator installed for this variant, if discoverable."""
+    manifest = task_path / ".methodology-bench-manifest.json"
+    if not manifest.is_file():
+        return []
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    return list((data.get("environment") or {}).get("skills_registered") or [])
+
+
+MAX_AGENT_LOG_BYTES = 32 * 1024 * 1024
+
+
+def _agent_log_text(agent_dir: Path) -> str:
+    """Concatenate the agent's own top-level logs, including its native stream."""
+    chunks: list[str] = []
+    budget = MAX_AGENT_LOG_BYTES
+    for path in sorted(agent_dir.glob("*")):
+        if not path.is_file() or budget <= 0:
+            continue
+        try:
+            chunks.append(path.read_text(encoding="utf-8", errors="replace")[:budget])
+        except OSError:
+            continue
+        budget -= path.stat().st_size
+    return "\n".join(chunks)
+
+
+def parse_adherence(trial_dir: Path, task_path: Path) -> dict[str, Any]:
+    """Separate what the agent *had* from what the agent *used*.
+
+    `skills_available` reads the agent CLI's own startup log, so it reflects the
+    skills the CLI registered at runtime. `skills_invoked` and
+    `config_markers_seen` look only at agent-authored trajectory steps, because a
+    CLI's system prompt mentions `AGENTS.md` unconditionally and would otherwise
+    register as adherence.
+
+    Note that Claude Code loads a project `CLAUDE.md` silently into its system
+    prompt. An empty `config_markers_seen` therefore means the agent never
+    referred to the file by name, not that the file was absent — presence is
+    what preflight proves.
+    """
+    agent_dir = trial_dir / "agent"
+    trajectory = agent_dir / "trajectory.json"
+    expected_skills = registered_skills(task_path)
+    adherence: dict[str, Any] = {
+        "trajectory_found": trajectory.is_file(),
+        "config_markers_seen": [],
+        "skills_available": [],
+        "skills_invoked": [],
+        "skill_tool_calls": 0,
+    }
+    if agent_dir.is_dir() and expected_skills:
+        logs = _agent_log_text(agent_dir)
+        adherence["skills_available"] = sorted(
+            name for name in expected_skills if name in logs
+        )
+    if not trajectory.is_file():
+        return adherence
+    try:
+        data = json.loads(trajectory.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return adherence
+    text = "\n".join(
+        json.dumps(step)
+        for step in (data.get("steps") or [])
+        if step.get("source") not in ("system", "user")
+    )
+    adherence["config_markers_seen"] = [m for m in CONFIG_MARKERS if m in text]
+    adherence["skills_invoked"] = sorted(name for name in expected_skills if name in text)
+    adherence["skill_tool_calls"] = text.count('"name": "Skill"') + text.count('"name":"Skill"')
+    return adherence
+
+
 def parse_trial_result(result_path: Path) -> dict[str, Any] | None:
     try:
         data = json.loads(result_path.read_text(encoding="utf-8"))
@@ -69,6 +148,8 @@ def parse_trial_result(result_path: Path) -> dict[str, Any] | None:
     exception_type = exception_info.get("exception_type") if exception_info else None
     exception_msg = exception_info.get("exception_message") if exception_info else None
 
+    adherence = parse_adherence(result_path.parent, Path(task_path_str))
+
     return {
         "job_name": result_path.parent.parent.name,
         "trial_name": result_path.parent.name,
@@ -86,6 +167,10 @@ def parse_trial_result(result_path: Path) -> dict[str, Any] | None:
         "cost_usd": cost_usd,
         "exception_type": exception_type,
         "exception_msg": exception_msg,
+        "skills_available": bool(adherence["skills_available"]),
+        "referenced_project_config": bool(adherence["config_markers_seen"]),
+        "used_toolkit_skill": bool(adherence["skills_invoked"]) or adherence["skill_tool_calls"] > 0,
+        "adherence": adherence,
     }
 
 
@@ -112,8 +197,8 @@ def generate_markdown_report(trials: list[dict[str, Any]]) -> str:
         f"**Generated At**: {datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n",
         "## 1. Matrix Summary (By Agent & Methodology Condition)",
         "",
-        "| Agent | Model | Condition | Trials | Successes | Success Rate | Mean Reward | Avg Time (s) | Total Cost ($) |",
-        "|---|---|---|---:|---:|---:|---:|---:|---:|",
+        "| Agent | Model | Condition | Trials | Successes | Success Rate | Mean Reward | Avg Time (s) | Total Cost ($) | Skills Available | Skills Used | Config Referenced |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
 
     # Aggregate by (agent, model, variant)
@@ -130,10 +215,14 @@ def generate_markdown_report(trials: list[dict[str, Any]]) -> str:
         valid_durations = [x["duration_sec"] for x in group if x["duration_sec"] is not None]
         avg_dur = (sum(valid_durations) / len(valid_durations)) if valid_durations else 0.0
         total_cost = sum(x["cost_usd"] for x in group)
+        available = sum(1 for x in group if x.get("skills_available"))
+        used_skill = sum(1 for x in group if x.get("used_toolkit_skill"))
+        referenced = sum(1 for x in group if x.get("referenced_project_config"))
 
         lines.append(
             f"| `{agent}` | `{model}` | **{variant.upper()}** | {n_trials} | {n_success} | "
-            f"{success_rate:.1f}% | {mean_reward:.2f} | {avg_dur:.1f}s | ${total_cost:.4f} |"
+            f"{success_rate:.1f}% | {mean_reward:.2f} | {avg_dur:.1f}s | ${total_cost:.4f} | "
+            f"{available}/{n_trials} | {used_skill}/{n_trials} | {referenced}/{n_trials} |"
         )
 
     lines.extend([
@@ -153,12 +242,31 @@ def generate_markdown_report(trials: list[dict[str, Any]]) -> str:
             f"{succ_str} | {dur_str} | {exc_str} |"
         )
 
+    methodology = [t for t in trials if t["variant"] not in ("baseline", "unknown")]
+    if methodology:
+        lines.extend([
+            "",
+            "## 3. Methodology Adherence (toolkit conditions only)",
+            "",
+            "| Task | Condition | Agent | Skills Available | Skills Invoked | Skill Tool Calls | Config Referenced |",
+            "|---|---|---|---:|---|---:|---|",
+        ])
+        for t in sorted(methodology, key=lambda x: (x["task_name"], x["agent"], x["variant"])):
+            detail = t.get("adherence") or {}
+            markers = ", ".join(detail.get("config_markers_seen") or []) or "-"
+            invoked = ", ".join(detail.get("skills_invoked") or []) or "-"
+            available = len(detail.get("skills_available") or [])
+            lines.append(
+                f"| `{t['task_name']}` | **{t['variant']}** | `{t['agent']}` | {available} | "
+                f"{invoked} | {detail.get('skill_tool_calls', 0)} | {markers} |"
+            )
+
     # Exceptions summary if any
     exceptions = [t for t in trials if t["exception_type"]]
     if exceptions:
         lines.extend([
             "",
-            "## 3. Exceptions & Failures",
+            "## 4. Exceptions & Failures",
             "",
             "| Job | Task | Agent | Exception Type | Details |",
             "|---|---|---|---|---|",

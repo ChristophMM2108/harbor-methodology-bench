@@ -17,7 +17,11 @@ if [ ! -f "config/local.env" ]; then
 fi
 echo "✓ config/local.env found."
 
-echo "=== 3. Executing Smoke Matrix (6 Cells) ==="
+echo "=== 3. In-Container Preflight ==="
+./scripts/validate-variants.sh --limit 1
+./scripts/preflight-variants.sh --limit 1
+
+echo "=== 4. Executing Smoke Matrix (6 Cells) ==="
 
 CELLS=(
     "smoke-claude-baseline-rerun|generated/baseline/adaptive-rejection-sampler|claude-code|claude-sonnet-5"

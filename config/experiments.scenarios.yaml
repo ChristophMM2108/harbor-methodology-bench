@@ -1,0 +1,55 @@
+# Worked example: four conditions over one toolkit, isolating *what* about a
+# repository configuration actually moves the benchmark result.
+#
+# Run with:
+#   ./scripts/generate-variants.sh --config config/experiments.scenarios.yaml --limit 1 --force
+#   ./scripts/validate-variants.sh --config config/experiments.scenarios.yaml --limit 1
+#   ./scripts/preflight-variants.sh --config config/experiments.scenarios.yaml --limit 1
+#
+# `baseline` is always generated and never declared here.
+
+source_root: source-tasks/terminal-bench
+generated_root: generated
+repetitions: 1
+
+models:
+  claude-code: claude-sonnet-5
+
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+toolkits:
+  # Condition B — full repository, no methodology surface.
+  # Same files as the full condition minus the instruction files, skills and kit
+  # directory, so the agent works in the toolkit's repository without ever being
+  # told about the methodology. Preflight asserts the absence.
+  #
+  # This `exclude` list *is* the operational definition of "methodology surface"
+  # for the experiment. Decide it deliberately: `.sdd-kit/` holds the kit's
+  # templates and manifest, so leaving it in would hand the agent the method by
+  # another route.
+  - id: sdd-content-only
+    snapshot: toolkits/sdd/snapshot
+    exclude: [".git", ".venv", "venv", "node_modules", "__pycache__",
+              ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store",
+              "CLAUDE.md", "AGENTS.md", ".claude", ".agents", "skills", ".sdd-kit"]
+    expect_instructions: false
+    expect_skills: false
+
+  # Condition C — methodology surface only, no repository bulk.
+  # `include` is an allowlist over the snapshot's top-level entries.
+  - id: sdd-instructions-only
+    snapshot: toolkits/sdd/snapshot
+    include: ["CLAUDE.md", "AGENTS.md", ".claude", ".agents", ".sdd-kit"]
+
+  # Condition D — the toolkit as its authors ship it.
+  - id: sdd-full
+    snapshot: toolkits/sdd/snapshot
+
+matrix:
+  - {id: claude-baseline, agent: claude-code, toolkit: baseline}
+  - {id: claude-sdd-content-only, agent: claude-code, toolkit: sdd-content-only}
+  - {id: claude-sdd-instructions-only, agent: claude-code, toolkit: sdd-instructions-only}
+  - {id: claude-sdd-full, agent: claude-code, toolkit: sdd-full}

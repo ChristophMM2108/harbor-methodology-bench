@@ -1,5 +1,52 @@
 # Harbor Methodology Bench — Action Plan & Next Steps
 
+## Open: Re-run the Pilot
+
+Every trial recorded before the payload layer landed ran against a container that
+never received the toolkit — Harbor copies only `instruction.md`, `tests/` and
+`solution/` into the environment, so files at the generated task root were inert.
+All three conditions in `results/pilot_report.md` were therefore the baseline, and
+those numbers must be discarded rather than compared.
+
+```bash
+./scripts/generate-variants.sh --limit 5 --force
+./scripts/validate-variants.sh --limit 5
+./scripts/preflight-variants.sh --limit 5
+./scripts/run-pilot-experiment.sh --force
+python3 scripts/report.py --pattern "pilot-*" \
+  --md-out results/pilot_report.md --json-out results/pilot_summary.json
+```
+
+Also open, independent of the payload layer:
+
+- **Codex authentication**: all 15 Codex trials failed with `ApiUsageLimitError`
+  before reaching the task. Renew the account/quota before the next matrix run.
+- **DFG snapshot completeness**: `toolkits/dfg/snapshot/CLAUDE.md` routes agents to
+  `MASTER_CONTEXT_INDEX.md`, `DFG.md` and `PROVENANCE_INDEX.md`, none of which exist
+  in the snapshot (they appear to be git-ignored in the source repository). The
+  toolkit's own entry point is therefore a dead link inside the container.
+
+## Open Design Question: Payload Breadth
+
+A toolkit is deployed in full, natively, so a snapshot's non-methodology files land
+in the agent's working directory alongside the benchmark task — `src/`, `tests/`,
+`Makefile`, `pyproject.toml` and `uv.lock` for DFG; `docs/`, `tools/`, `kits/` and
+`tests/` for SDD. Preflight confirms none of them collided with benchmark files in
+the five pilot tasks, but they still change what the agent sees when it explores the
+repository, which is a confound distinct from the methodology instructions.
+
+Two defensible positions, to be settled before the full experiment:
+
+1. **Deploy in full** (current behaviour): the condition under test is "the agent
+   works in a repository configured with this toolkit", which is what the toolkit
+   looks like in real use.
+2. **Deploy the methodology surface only**: restrict the payload to `CLAUDE.md`,
+   `AGENTS.md`, `.claude/`, `.agents/` and the toolkit's own kit directories. This
+   isolates the instructions from unrelated repository content.
+
+Option 2 needs a per-toolkit `include:` list in `config/experiments.yaml`; the
+staging code already supports name-based filtering via `exclude:`.
+
 ## Status Summary
 
 - [x] **Phase 1 — Infrastructure & Environment Setup**
@@ -14,8 +61,10 @@
 
 - [x] **Phase 3 & 4 — Task Generation & Strict Isolation Validator**
   - Generation logic preserves source benchmark tasks and injects complete frozen snapshots.
-  - Path collisions safely redirected to `.methodology-bench/toolkit-collisions/`.
+  - Path collisions safely redirected to the in-container collision archive.
   - Validator enforces zero cross-contamination and baseline cleanliness.
+  - Generated Dockerfile layer carries the toolkit into the container; `preflight`
+    proves it from inside the container before any trial may run.
 
 - [x] **Phase 5 — Smoke Milestone (1 Task × 6 Cells × 1 Rep)**
   - Executed 6 cells for `adaptive-rejection-sampler`:

@@ -1,44 +1,237 @@
 from pathlib import Path
 
-from harbor_methodology_bench.inject import copy_task, inject_snapshot
-from harbor_methodology_bench.validate import validate_task
+import pytest
+
+from harbor_methodology_bench.environment import (
+    APPENDED_DOCKERFILE,
+    BASELINE_SPEC,
+    CONTAINER_SKILLS_DIR,
+    DEFAULT_SNAPSHOT_EXCLUDES,
+    PREBUILT_BASE,
+    PayloadSpec,
+    build_environment,
+)
+from harbor_methodology_bench.inject import copy_task
+from harbor_methodology_bench.preflight import parse_probe
+from harbor_methodology_bench.validate import expected_environment, validate_task
+
+TASK_TOML = """schema_version = "1.1"
+
+[task]
+name = "example"
+
+[environment]
+docker_image = "example/base:1"
+cpus = 1
+
+[environment.env]
+"""
 
 
-def make_task(root: Path) -> Path:
+def make_task(root: Path, *, docker_image: bool = True) -> Path:
     task = root / "source" / "example"
-    task.mkdir(parents=True)
-    (task / "task.toml").write_text("[task]\n")
+    (task / "environment").mkdir(parents=True, exist_ok=True)
+    (task / "tests").mkdir(exist_ok=True)
+    task_toml = TASK_TOML if docker_image else TASK_TOML.replace(
+        'docker_image = "example/base:1"\n', ""
+    )
+    (task / "task.toml").write_text(task_toml)
     (task / "instruction.md").write_text("original\n")
+    (task / "tests" / "test.sh").write_text("echo 1\n")
+    (task / "environment" / "Dockerfile").write_text("FROM ubuntu:24.04\nWORKDIR /app\n")
     return task
 
 
-def test_baseline_is_identical(tmp_path: Path) -> None:
-    source = make_task(tmp_path)
-    generated = tmp_path / "generated"
+def make_snapshot(root: Path, *, marker: str = "CLAUDE.md") -> Path:
+    snapshot = root / "snapshot"
+    skill = snapshot / ".claude" / "skills" / "kit-plan"
+    skill.mkdir(parents=True, exist_ok=True)
+    (skill / "SKILL.md").write_text("# plan\n")
+    (snapshot / marker).write_text("use the toolkit\n")
+    (snapshot / "src").mkdir(exist_ok=True)
+    (snapshot / "src" / "kit.py").write_text("x = 1\n")
+    (snapshot / ".venv").mkdir(exist_ok=True)
+    (snapshot / ".venv" / "junk.bin").write_text("x")
+    return snapshot
+
+
+def toolkit_spec(snapshot: Path, **overrides) -> PayloadSpec:
+    overrides.setdefault("excludes", DEFAULT_SNAPSHOT_EXCLUDES)
+    return PayloadSpec(snapshot=snapshot, **overrides)
+
+
+def generate(root: Path, variant: str, spec: PayloadSpec) -> tuple[Path, Path]:
+    source = make_task(root)
+    generated = root / "generated" / variant / source.name
     copy_task(source, generated)
-    assert validate_task(source, generated, None) == []
+    build_environment(source, generated, variant, spec)
+    return source, generated
 
 
-def test_snapshot_is_preserved_without_changing_source(tmp_path: Path) -> None:
-    source = make_task(tmp_path)
-    snapshot = tmp_path / "snapshot"
-    snapshot.mkdir()
-    (snapshot / "AGENTS.md").write_text("use toolkit\n")
-    (snapshot / ".agents").mkdir()
-    (snapshot / ".agents" / "skill.txt").write_text("skill\n")
-    generated = tmp_path / "generated"
-    copy_task(source, generated)
-    inject_snapshot(snapshot, generated, source)
-    assert validate_task(source, generated, snapshot) == []
-
-
-def test_snapshot_collision_is_archived_without_overwriting_task(tmp_path: Path) -> None:
-    source = make_task(tmp_path)
-    snapshot = tmp_path / "snapshot"
-    snapshot.mkdir()
-    (snapshot / "instruction.md").write_text("wrong\n")
-    generated = tmp_path / "generated"
-    copy_task(source, generated)
-    inject_snapshot(snapshot, generated, source)
+def test_baseline_keeps_the_benchmark_and_stages_no_payload(tmp_path: Path) -> None:
+    source, generated = generate(tmp_path, "baseline", BASELINE_SPEC)
     assert (generated / "instruction.md").read_text() == "original\n"
-    assert (generated / ".methodology-bench/toolkit-collisions/instruction.md").read_text() == "wrong\n"
+    assert not (generated / "environment" / ".methodology-bench" / "payload").exists()
+    assert validate_task(source, generated, "baseline", BASELINE_SPEC) == []
+
+
+def test_toolkit_payload_is_staged_inside_the_build_context(tmp_path: Path) -> None:
+    spec = toolkit_spec(make_snapshot(tmp_path))
+    source, generated = generate(tmp_path, "kit", spec)
+    stage = generated / "environment" / ".methodology-bench"
+    assert (stage / "payload" / "CLAUDE.md").read_text() == "use the toolkit\n"
+    assert (stage / "skills" / "kit-plan" / "SKILL.md").is_file()
+    assert not (stage / "payload" / ".venv").exists()
+    assert not (generated / "CLAUDE.md").exists()
+    assert validate_task(source, generated, "kit", spec) == []
+
+
+def test_dockerfile_is_identical_across_variants_of_one_task(tmp_path: Path) -> None:
+    spec = toolkit_spec(make_snapshot(tmp_path))
+    _, baseline = generate(tmp_path, "baseline", BASELINE_SPEC)
+    _, toolkit = generate(tmp_path, "kit", spec)
+    baseline_text = (baseline / "environment" / "Dockerfile").read_text()
+    toolkit_text = (toolkit / "environment" / "Dockerfile").read_text()
+    assert baseline_text.replace("baseline", "kit") == toolkit_text
+    assert "FROM example/base:1" in toolkit_text
+
+
+def test_task_toml_is_patched_so_the_generated_dockerfile_wins(tmp_path: Path) -> None:
+    _, generated = generate(tmp_path, "kit", toolkit_spec(make_snapshot(tmp_path)))
+    patched = (generated / "task.toml").read_text()
+    assert "# docker_image removed by harbor-methodology-bench" in patched
+    assert f'skills_dir = "{CONTAINER_SKILLS_DIR}"' in patched
+    assert "cpus = 1" in patched
+
+
+def test_strategy_falls_back_to_appending_the_source_dockerfile(tmp_path: Path) -> None:
+    source = make_task(tmp_path, docker_image=False)
+    generated = tmp_path / "generated" / "kit" / source.name
+    copy_task(source, generated)
+    plan = build_environment(source, generated, "kit", toolkit_spec(make_snapshot(tmp_path)))
+    assert plan.strategy == APPENDED_DOCKERFILE
+    rendered = (generated / "environment" / "Dockerfile").read_text()
+    assert rendered.startswith("# Generated by harbor-methodology-bench")
+    assert "FROM ubuntu:24.04" in rendered
+    assert "deploy-payload.sh" in rendered
+
+
+def test_prebuilt_strategy_is_used_when_the_task_pins_an_image(tmp_path: Path) -> None:
+    source = make_task(tmp_path)
+    _, _, plan = expected_environment(source, "kit", toolkit_spec(make_snapshot(tmp_path)))
+    assert plan.strategy == PREBUILT_BASE
+    assert plan.base_image == "example/base:1"
+
+
+def test_validator_rejects_a_modified_benchmark_file(tmp_path: Path) -> None:
+    spec = toolkit_spec(make_snapshot(tmp_path))
+    source, generated = generate(tmp_path, "kit", spec)
+    (generated / "instruction.md").write_text("tampered\n")
+    errors = validate_task(source, generated, "kit", spec)
+    assert any("benchmark file changed" in error for error in errors)
+
+
+def test_validator_rejects_a_toolkit_without_project_instructions(tmp_path: Path) -> None:
+    spec = toolkit_spec(make_snapshot(tmp_path, marker="README.md"))
+    source, generated = generate(tmp_path, "kit", spec)
+    errors = validate_task(source, generated, "kit", spec)
+    assert any("expects project instructions" in error for error in errors)
+
+
+def test_validator_rejects_an_edited_generated_dockerfile(tmp_path: Path) -> None:
+    spec = toolkit_spec(make_snapshot(tmp_path))
+    source, generated = generate(tmp_path, "kit", spec)
+    (generated / "environment" / "Dockerfile").write_text("FROM scratch\n")
+    errors = validate_task(source, generated, "kit", spec)
+    assert any("not reproducible" in error for error in errors)
+
+
+def test_validator_rejects_a_baseline_carrying_a_toolkit_marker(tmp_path: Path) -> None:
+    source, generated = generate(tmp_path, "baseline", BASELINE_SPEC)
+    (generated / "CLAUDE.md").write_text("leak\n")
+    errors = validate_task(source, generated, "baseline", BASELINE_SPEC)
+    assert any("unexpected instruction file" in error for error in errors)
+
+
+def test_content_only_condition_strips_the_methodology_surface(tmp_path: Path) -> None:
+    """Same snapshot, instruction and skill surface filtered out."""
+    snapshot = make_snapshot(tmp_path)
+    spec = toolkit_spec(
+        snapshot,
+        excludes=(*DEFAULT_SNAPSHOT_EXCLUDES, "CLAUDE.md", "AGENTS.md", ".claude", ".agents"),
+        expect_instructions=False,
+        expect_skills=False,
+    )
+    source, generated = generate(tmp_path, "kit-content-only", spec)
+    payload = generated / "environment" / ".methodology-bench" / "payload"
+    assert (payload / "src" / "kit.py").read_text() == "x = 1\n"
+    assert not (payload / "CLAUDE.md").exists()
+    assert not (payload / ".claude").exists()
+    assert validate_task(source, generated, "kit-content-only", spec) == []
+
+
+def test_content_only_condition_fails_when_instructions_survive(tmp_path: Path) -> None:
+    snapshot = make_snapshot(tmp_path)
+    spec = toolkit_spec(snapshot, expect_instructions=False, expect_skills=False)
+    source, generated = generate(tmp_path, "kit-content-only", spec)
+    errors = validate_task(source, generated, "kit-content-only", spec)
+    assert any("expects no project instructions" in error for error in errors)
+    assert any("expects no skills" in error for error in errors)
+
+
+def test_include_filter_keeps_only_the_named_top_level_entries(tmp_path: Path) -> None:
+    snapshot = make_snapshot(tmp_path)
+    spec = toolkit_spec(snapshot, includes=("CLAUDE.md", ".claude"))
+    _, generated = generate(tmp_path, "kit-instructions-only", spec)
+    payload = generated / "environment" / ".methodology-bench" / "payload"
+    assert (payload / "CLAUDE.md").is_file()
+    assert (payload / ".claude" / "skills" / "kit-plan" / "SKILL.md").is_file()
+    assert not (payload / "src").exists()
+
+
+PROBE_OUTPUT = """WORKDIR\t/app
+::REPORT::
+variant\tkit
+workdir\t/app
+skills_dir\t/methodology-bench/skills
+payload\tpresent
+deployed\tCLAUDE.md
+deployed\t.claude
+collision\ttests
+::SKILLS::
+/methodology-bench/skills/kit-plan/SKILL.md
+::TOP::
+.
+..
+.claude
+CLAUDE.md
+tests
+::HASHES::
+aa  ./CLAUDE.md
+bb  ./.claude/skills/kit-plan/SKILL.md
+::COUNT::
+2
+::INSTALL::
+/tmp/harbor-methodology-bench-installed-skills/kit-plan/SKILL.md
+"""
+
+
+def test_probe_output_is_parsed_without_mangling_dotted_paths() -> None:
+    probe = parse_probe(PROBE_OUTPUT, "/methodology-bench/skills", 100)
+    assert probe.workdir == "/app"
+    assert probe.hashes == {"CLAUDE.md": "aa", ".claude/skills/kit-plan/SKILL.md": "bb"}
+    assert probe.report["deployed"] == ["CLAUDE.md", ".claude"]
+    assert probe.report["collision"] == ["tests"]
+    assert probe.skills == ["kit-plan"]
+    assert probe.installed_skills == ["kit-plan"]
+    assert probe.top == [".claude", "CLAUDE.md", "tests"]
+    assert probe.truncated is False
+
+
+def test_compose_defined_environments_are_refused(tmp_path: Path) -> None:
+    source = make_task(tmp_path)
+    (source / "environment" / "docker-compose.yaml").write_text("services: {}\n")
+    generated = tmp_path / "generated" / "kit" / source.name
+    copy_task(source, generated)
+    with pytest.raises(ValueError, match="compose-defined"):
+        build_environment(source, generated, "kit", toolkit_spec(make_snapshot(tmp_path)))

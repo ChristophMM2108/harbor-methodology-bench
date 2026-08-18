@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "generated/sdd/bn-fit-modify"
+    },
+    "trial_name": "bn-fit-modify__Ad55Mby",
+    "trials_dir": "jobs/verify-sdd-bn-fit-modify",
+    "agent": {
+        "name": "claude-code",
+        "model_name": "claude-sonnet-5"
+    },
+    "job_id": "8acfeb54-dceb-4080-a473-91c8e79e684e"
+}
