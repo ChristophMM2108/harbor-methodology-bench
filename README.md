@@ -534,8 +534,9 @@ generated; re-run the command after changing the task suite.
 
 ### Selecting tasks
 
-`generate`, `validate`, `preflight` and `catalogue` all take the same selection
-flags, so a catalogue-chosen set flows through the whole pipeline unchanged:
+`catalogue`, `generate`, `validate`, `preflight` and both experiment runners take
+the same selection flags, so one task group flows through the whole pipeline
+unchanged:
 
 | Flag | Effect |
 |---|---|
@@ -572,13 +573,31 @@ pytorch-model-recovery
 sqlite-db-truncate
 ```
 
-Then run exactly that set:
+Then build and run exactly that set — the same flags, four commands:
 
 ```bash
-./scripts/generate-variants.sh  --suite diagnose-first --difficulty medium --force
-./scripts/validate-variants.sh  --suite diagnose-first --difficulty medium
-./scripts/preflight-variants.sh --suite diagnose-first --difficulty medium
+./scripts/generate-variants.sh    --suite diagnose-first --difficulty medium --force
+./scripts/validate-variants.sh    --suite diagnose-first --difficulty medium
+./scripts/preflight-variants.sh   --suite diagnose-first --difficulty medium
+./scripts/run-pilot-experiment.sh --suite diagnose-first --difficulty medium
 ```
+
+Running a whole benchmark category is the same shape:
+
+```bash
+./scripts/generate-variants.sh    --category software-engineering --force
+./scripts/validate-variants.sh    --category software-engineering
+./scripts/preflight-variants.sh   --category software-engineering
+./scripts/run-pilot-experiment.sh --category software-engineering --dry-run   # 26 × 6 = 156 trials
+./scripts/run-pilot-experiment.sh --category software-engineering
+```
+
+The runner resolves its task list through the same selection code as the
+generator, so leftover directories under `generated/` from an earlier selection
+can never join a run. It refuses to start if any selected variant has not been
+generated, and names the command that would fix it. `--dry-run` reports the gap
+as a warning and still prints the full plan, so it works as a preview before
+anything is built.
 
 Pin a set for a publishable experiment by writing the ids to a file:
 
@@ -861,15 +880,17 @@ echo my-task >> config/tasks-spec-dense.txt
 
 ## 8. Running a Larger Experiment
 
-### Multi-task pilot
+### Multi-task run
 
 ```bash
-./scripts/generate-variants.sh  --suite balanced --force
-./scripts/validate-variants.sh  --suite balanced
-./scripts/preflight-variants.sh --suite balanced
+SET="--suite balanced"
 
-./scripts/run-pilot-experiment.sh --dry-run     # inspect the plan first
-./scripts/run-pilot-experiment.sh               # --limit N, --force to re-run
+./scripts/generate-variants.sh    $SET --force
+./scripts/validate-variants.sh    $SET
+./scripts/preflight-variants.sh   $SET
+
+./scripts/run-pilot-experiment.sh $SET --dry-run     # inspect the plan first
+./scripts/run-pilot-experiment.sh $SET               # --force to re-run finished cells
 
 python3 scripts/report.py --pattern "pilot-*" \
   --md-out results/pilot_report.md \
@@ -877,28 +898,46 @@ python3 scripts/report.py --pattern "pilot-*" \
 ```
 
 Choose the task set with the selection flags from §6 rather than `--limit`, which
-just takes the alphabetically first N. Omit every selection flag to use all 89
-tasks.
+just takes the alphabetically first N. With no selection flag at all the runner
+defaults to `--limit 5` and says so; pass `--suite all` to run every task.
+
+The runner also takes:
+
+| Flag | Effect |
+|---|---|
+| `--config PATH` | Use a different experiment configuration |
+| `--job-prefix NAME` | Job name prefix, default `pilot`; also the `report.py --pattern` to use |
+| `--attempts N` | Repetitions per cell, passed to `harbor -n` |
+| `--force` | Re-run cells that already have results |
+| `--dry-run` | Print the Harbor invocations without executing them |
+| `--skip-preflight` | Skip the validate/preflight gate — debugging only |
+
+Matrix cells come from `config/experiments.yaml`, not from the script, so a
+configuration with four conditions runs four cells:
+
+```bash
+./scripts/run-pilot-experiment.sh \
+  --config config/experiments.scenarios.yaml \
+  --suite spec-dense --job-prefix scenarios
+```
+
+`./scripts/run-smoke-experiment.sh [--task ID]` is the same runner pinned to a
+single task with the `smoke` job prefix.
 
 ### Repetitions
 
 Agents are stochastic, so a single run per cell cannot separate a methodology
-effect from noise. Harbor takes repetitions natively:
+effect from noise. Three or more attempts per cell is the practical minimum for
+reporting a mean with a standard error:
 
 ```bash
-harbor run \
-  -p generated/sdd/adaptive-rejection-sampler \
-  -a claude-code -m claude-sonnet-5 \
-  -n 3 \
-  --env-file config/local.env \
-  --job-name full-claude-sdd-adaptive-rejection-sampler
+./scripts/run-pilot-experiment.sh --suite spec-dense --attempts 3
 ```
 
 All attempts land in the same job directory with per-trial metrics, and
 `report.py` aggregates them. Record the intended count in
 `config/experiments.yaml` as `repetitions: 3` so the configuration documents the
-design; three or more per cell is the practical minimum for reporting a mean with
-a standard error.
+design.
 
 ---
 
@@ -956,22 +995,18 @@ without invoking any of them.
 | `./scripts/validate-variants.sh [SELECTION]` | Host-side reproducibility and benchmark-integrity check |
 | `./scripts/preflight-variants.sh [SELECTION]` | Build images and assert conditions from inside the containers |
 | `./scripts/run-smoke-plan.sh --task-id ID` | Print the Harbor invocations without running them |
-| `./scripts/run-smoke-experiment.sh` | Run one task across the matrix |
-| `./scripts/run-pilot-experiment.sh [--limit N] [--force] [--dry-run] [--skip-preflight]` | Run the multi-task matrix |
+| `./scripts/run-smoke-experiment.sh [--task ID]` | Run one task across the matrix |
+| `./scripts/run-pilot-experiment.sh [SELECTION] [--force] [--dry-run] …` | Run a task group across the matrix |
 | `python3 scripts/report.py [--pattern GLOB]` | Aggregate results and telemetry |
 
 `SELECTION` is any combination of `--task ID`, `--tasks-file PATH`,
 `--suite NAME`, `--category NAME`, `--difficulty LEVEL` and `--limit N`, as
-described in §6.
-
-`freeze-kits.sh`, `catalogue.sh`, `generate-variants.sh`, `validate-variants.sh`,
-`preflight-variants.sh` and `run-smoke-plan.sh` are thin wrappers that forward all
-arguments to the CLI, so they also accept `--config <path>` to select an
-experiment configuration. The two experiment runners use the default configuration
-and hold their cells in a shell array; edit them for a non-default matrix.
+described in §6. Every command above accepts `--config <path>` to select an
+experiment configuration.
 
 The underlying CLI is `uv run harbor-methodology-bench <command>`; `preflight`
-also accepts `--max-probe-files`, `--build-timeout-sec` and `--run-timeout-sec`.
+also accepts `--max-probe-files`, `--build-timeout-sec` and `--run-timeout-sec`,
+and `matrix-plan` prints the configured cells the runners consume.
 
 Harbor's own agents are useful without spending model tokens: `-a oracle` runs a
 task's reference solution and must score 1.0, `-a nop` does nothing and must score
@@ -1061,9 +1096,10 @@ with `docker image prune` when convenient.
   the occasional odd member; audit `docs/task-catalogue.md` before publishing a
   result that depends on a suite's exact composition, and tune the thresholds at
   the top of `src/harbor_methodology_bench/catalogue.py`.
-- **The experiment runners do not take selection flags.** `generate`, `validate`,
-  `preflight` and `catalogue` do; the smoke and pilot runners hold their task and
-  cell lists in shell arrays.
+- **`generate --force` replaces only the selected variants.** Directories under
+  `generated/` from an earlier selection are left in place. They cannot join a run
+  — the runner resolves its task list from the selection, not from the directory —
+  but `rm -rf generated/` is the way to start clean.
 - **Local / self-hosted models** are reachable through the agent CLIs'
   base-URL environment variables (`ANTHROPIC_BASE_URL`, `OPENAI_BASE_URL`) and
   through Harbor's own LiteLLM-backed agents, but the configuration schema does

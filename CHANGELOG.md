@@ -58,6 +58,37 @@ arguments alone. Unknown task ids and empty results are hard errors.
 Previously only `--limit N` existed, which takes the alphabetically first N tasks;
 the five-task pilot set was an alphabetical slice rather than a chosen sample.
 
+### Added — task selection and matrix configuration in the experiment runners
+
+`scripts/run-pilot-experiment.sh` now takes the same selection flags as the rest
+of the pipeline (`--task`, `--tasks-file`, `--suite`, `--category`,
+`--difficulty`, `--limit`), so a task group chosen from the catalogue can
+actually be run:
+
+```bash
+./scripts/generate-variants.sh    --category software-engineering --force
+./scripts/validate-variants.sh    --category software-engineering
+./scripts/preflight-variants.sh   --category software-engineering
+./scripts/run-pilot-experiment.sh --category software-engineering
+```
+
+It previously discovered tasks by listing `generated/baseline` and truncating to
+`--limit`, default 5. That silently mixed in variants left over from an earlier
+selection and dropped everything past the fifth alphabetically — a
+26-task category would have run 5 arbitrary tasks. The runner now resolves its
+task list through the same selection code as the generator, verifies every
+selected variant exists before starting, and names the exact command to generate
+any that are missing. A `--dry-run` reports the gap as a warning and still prints
+the full plan, so it is usable as a preview before anything is built.
+
+Matrix cells now come from `config/experiments.yaml` through a new `matrix-plan`
+command rather than a hard-coded shell array, so a configuration with four
+conditions runs four cells. Also added `--config`, `--job-prefix` and
+`--attempts` (repetitions per cell, passed to `harbor -n`).
+
+`scripts/run-smoke-experiment.sh` is now a thin wrapper over the same runner,
+pinned to one task with the `smoke` job prefix and accepting `--task ID`.
+
 ### Added — task authoring guide
 
 README §7 documents authoring a benchmark task end to end: directory layout,

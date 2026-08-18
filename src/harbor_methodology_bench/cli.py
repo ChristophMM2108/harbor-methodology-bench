@@ -270,6 +270,26 @@ def catalogue(
     typer.echo("\nPass --md-out / --json-out to write the full catalogue.")
 
 
+@app.command("matrix-plan")
+def matrix_plan(config: Path = CONFIG_OPTION) -> None:
+    """Print the configured matrix cells as `id<TAB>variant<TAB>agent<TAB>model`.
+
+    The experiment runners read their cells from here instead of hard-coding
+    them, so a matrix change in `config/experiments.yaml` takes effect without
+    editing any shell script.
+    """
+    settings = _config(config)
+    valid_variants = {"baseline", *settings.toolkits}
+    for cell in settings.matrix:
+        variant = cell["toolkit"]
+        if variant not in valid_variants:
+            raise typer.BadParameter(f"unknown toolkit variant: {variant}")
+        model = settings.models.get(cell["agent"])
+        if not model:
+            raise typer.BadParameter(f"no model configured for agent: {cell['agent']}")
+        typer.echo(f"{cell['id']}\t{variant}\t{cell['agent']}\t{model}")
+
+
 @app.command("smoke-plan")
 def smoke_plan(config: Path = CONFIG_OPTION, task_id: str = typer.Option(...)) -> None:
     """Print the configured Harbor invocations; it never executes them."""

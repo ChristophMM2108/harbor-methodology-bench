@@ -1,20 +1,59 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Harbor Pilot Experiment Runner
-# Executes the 6-cell matrix across generated tasks (e.g. 5 tasks x 6 cells = 30 trials)
+# Harbor Experiment Runner
+#
+# Runs the matrix declared in the experiment configuration across a selected
+# group of tasks. Both the task list and the matrix cells come from the CLI, so
+# this script never needs editing to change either.
 
-USAGE="Usage: $0 [--limit N] [--force] [--dry-run] [--skip-preflight]"
+USAGE=$(cat <<'EOF'
+Usage: $0 [SELECTION] [OPTIONS]
 
-LIMIT=5
+Task selection (same flags as generate/validate/preflight; combinable):
+  --task ID           One task; repeat for several
+  --tasks-file PATH   Task ids, one per line ('#' comments allowed)
+  --suite NAME        Any axis name, plus 'all' and 'balanced'
+  --category NAME     Benchmark category, e.g. software-engineering
+  --difficulty LEVEL  easy | medium | hard
+  --limit N           Truncate the selection, applied last
+
+Options:
+  --config PATH       Experiment configuration (default config/experiments.yaml)
+  --job-prefix NAME   Job name prefix (default 'pilot')
+  --attempts N        Repetitions per cell, passed to harbor -n (default 1)
+  --force             Re-run cells that already have results
+  --dry-run           Print the harbor invocations without executing them
+  --skip-preflight    Skip the validate/preflight gate (debugging only)
+
+With no selection flags the run defaults to '--limit 5'.
+EOF
+)
+
+CONFIG="config/experiments.yaml"
+JOB_PREFIX="pilot"
+ATTEMPTS=1
 FORCE=false
 DRY_RUN=false
 SKIP_PREFLIGHT=false
+SELECTION=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --limit)
-            LIMIT="$2"
+        --task|--tasks-file|--suite|--category|--difficulty|--limit)
+            SELECTION+=("$1" "$2")
+            shift 2
+            ;;
+        --config)
+            CONFIG="$2"
+            shift 2
+            ;;
+        --job-prefix)
+            JOB_PREFIX="$2"
+            shift 2
+            ;;
+        --attempts)
+            ATTEMPTS="$2"
             shift 2
             ;;
         --force)
@@ -41,6 +80,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# An unbounded default would launch every task in the suite; keep the historical
+# 5-task default when the caller names no selection at all.
+if [ ${#SELECTION[@]} -eq 0 ]; then
+    SELECTION=(--limit 5)
+    echo "No task selection given; defaulting to ${SELECTION[*]}"
+fi
+
 echo "=== 1. Checking Environment Prerequisites ==="
 if [ "$DRY_RUN" = false ]; then
     if ! docker run --rm hello-world >/dev/null 2>&1; then
@@ -58,40 +104,52 @@ if [ "$DRY_RUN" = false ]; then
     echo "✓ config/local.env found."
 fi
 
-# Discover available tasks from generated/baseline
-if [ ! -d "generated/baseline" ]; then
-    echo "❌ No generated tasks found in generated/baseline/."
-    echo "Run: ./scripts/generate-variants.sh --limit $LIMIT --force"
-    exit 1
-fi
-
-TASKS=($(find generated/baseline -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort | head -n "$LIMIT"))
+# Resolve the task group through the same selection code the generator uses, so
+# stale directories under generated/ can never join the run by accident.
+mapfile -t TASKS < <(./scripts/catalogue.sh --config "$CONFIG" "${SELECTION[@]}" --ids-only)
 
 if [ ${#TASKS[@]} -eq 0 ]; then
-    echo "❌ No task directories found in generated/baseline/."
+    echo "❌ Task selection matched no tasks."
     exit 1
 fi
 
-echo "✓ Discovered ${#TASKS[@]} task(s) for Pilot Matrix:"
+# Cells come from the configured matrix: cell_id <TAB> variant <TAB> agent <TAB> model
+mapfile -t CELLS < <(uv run harbor-methodology-bench matrix-plan --config "$CONFIG")
+
+if [ ${#CELLS[@]} -eq 0 ]; then
+    echo "❌ The configured matrix is empty."
+    exit 1
+fi
+
+TOTAL_RUNS=$((${#TASKS[@]} * ${#CELLS[@]}))
+echo "✓ Selected ${#TASKS[@]} task(s) × ${#CELLS[@]} cell(s) = $TOTAL_RUNS trial(s)"
 for task in "${TASKS[@]}"; do
     echo "   - $task"
 done
 echo ""
 
-# Define the 6 Matrix Cells: cell_id | variant | agent | model
-CELLS=(
-    "claude-baseline|baseline|claude-code|claude-sonnet-5"
-    "claude-sdd|sdd|claude-code|claude-sonnet-5"
-    "claude-dfg|dfg|claude-code|claude-sonnet-5"
-    "codex-baseline|baseline|codex|gpt-5.6-terra"
-    "codex-sdd|sdd|codex|gpt-5.6-terra"
-    "codex-dfg|dfg|codex|gpt-5.6-terra"
-)
+MISSING=()
+for task in "${TASKS[@]}"; do
+    for cell in "${CELLS[@]}"; do
+        IFS=$'\t' read -r _ variant _ _ <<< "$cell"
+        [ -d "generated/${variant}/${task}" ] || MISSING+=("generated/${variant}/${task}")
+    done
+done
+if [ ${#MISSING[@]} -gt 0 ]; then
+    echo "⚠️  ${#MISSING[@]} selected variant(s) have not been generated, e.g. ${MISSING[0]}"
+    echo "Generate them with the same selection:"
+    echo "   ./scripts/generate-variants.sh --config $CONFIG ${SELECTION[*]} --force"
+    # A dry run is a preview, so report the gap and carry on; a real run stops.
+    if [ "$DRY_RUN" = false ]; then
+        exit 1
+    fi
+    echo ""
+fi
 
 if [ "$DRY_RUN" = false ] && [ "$SKIP_PREFLIGHT" = false ]; then
     echo "=== 2. In-Container Preflight (methodology must reach the agent workdir) ==="
-    ./scripts/validate-variants.sh --limit "$LIMIT"
-    ./scripts/preflight-variants.sh --limit "$LIMIT"
+    ./scripts/validate-variants.sh --config "$CONFIG" "${SELECTION[@]}"
+    ./scripts/preflight-variants.sh --config "$CONFIG" "${SELECTION[@]}"
 fi
 
 # Fail closed per cell: a trial may only run against a variant whose container
@@ -112,8 +170,7 @@ if not data.get("passed"):
 PY
 }
 
-TOTAL_RUNS=$((${#TASKS[@]} * ${#CELLS[@]}))
-echo "=== 3. Starting Pilot Matrix ($TOTAL_RUNS total runs) ==="
+echo "=== 3. Starting Matrix ($TOTAL_RUNS total runs) ==="
 
 RUN_IDX=0
 PASSED_RUNS=0
@@ -121,9 +178,9 @@ FAILED_RUNS=0
 
 for task in "${TASKS[@]}"; do
     for cell in "${CELLS[@]}"; do
-        IFS="|" read -r cell_id variant agent model <<< "$cell"
+        IFS=$'\t' read -r cell_id variant agent model <<< "$cell"
         RUN_IDX=$((RUN_IDX + 1))
-        JOB_NAME="pilot-${cell_id}-${task}"
+        JOB_NAME="${JOB_PREFIX}-${cell_id}-${task}"
         TASK_PATH="generated/${variant}/${task}"
 
         echo "----------------------------------------------------"
@@ -132,7 +189,7 @@ for task in "${TASKS[@]}"; do
         echo "       Agent: $agent ($model)"
 
         if [ "$DRY_RUN" = true ]; then
-            echo "   [DRY RUN] harbor run -p $TASK_PATH -a $agent -m $model -n 1 --env-file config/local.env --job-name $JOB_NAME"
+            echo "   [DRY RUN] harbor run -p $TASK_PATH -a $agent -m $model -n $ATTEMPTS --env-file config/local.env --job-name $JOB_NAME"
             continue
         fi
 
@@ -158,7 +215,8 @@ for task in "${TASKS[@]}"; do
         fi
 
         # Execute trial and allow loop to continue even if individual trial errors
-        if harbor run -p "$TASK_PATH" -a "$agent" -m "$model" -n 1 --env-file config/local.env --job-name "$JOB_NAME"; then
+        if harbor run -p "$TASK_PATH" -a "$agent" -m "$model" -n "$ATTEMPTS" \
+            --env-file config/local.env --job-name "$JOB_NAME"; then
             echo "✓ Job completed: $JOB_NAME"
             PASSED_RUNS=$((PASSED_RUNS + 1))
         else
@@ -172,7 +230,7 @@ echo "===================================================="
 if [ "$DRY_RUN" = true ]; then
     echo "✓ Dry run completed for $TOTAL_RUNS trial invocations."
 else
-    echo "Pilot Execution Finished: $PASSED_RUNS completed / $FAILED_RUNS errored (out of $TOTAL_RUNS total)."
+    echo "Execution finished: $PASSED_RUNS completed / $FAILED_RUNS errored (out of $TOTAL_RUNS total)."
     echo "To generate the report, run:"
-    echo "   python scripts/report.py"
+    echo "   python3 scripts/report.py --pattern \"${JOB_PREFIX}-*\""
 fi
