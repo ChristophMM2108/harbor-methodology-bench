@@ -5,6 +5,21 @@ active development and does not yet publish versioned releases.
 
 ## Unreleased
 
+### Added — README: fetching the benchmark task suite
+
+`source-tasks/terminal-bench/` is git-ignored, so a fresh clone previously had no
+documented way to obtain the tasks. §3 now carries the procedure: a shallow fetch
+of `harbor-framework/terminal-bench-2` at the pinned commit
+(`2fd12b88aafdd04a52c298e3940bcb189f9766d6`, 89 tasks), a copy of every directory
+containing a `task.toml`, the `SOURCE` / `GIT_SHA` / `BRANCH` provenance files
+written the same way toolkit snapshots are pinned, and a verification step.
+
+The README also regained material that the rewrite had dropped: the end-to-end
+pipeline diagram, the annotated `config/experiments.yaml` walkthrough, the
+rationale for repetitions (confidence intervals, flakiness detection, cost and
+latency distribution) with the equivalent raw `harbor run -n` invocation, the
+report aggregator's glob and archiving usage, and the project phase table.
+
 ### Added — task catalogue and deliberate task selection
 
 New module `src/harbor_methodology_bench/catalogue.py`, CLI command

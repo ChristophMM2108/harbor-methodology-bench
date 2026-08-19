@@ -55,6 +55,37 @@ the pure agent. Every other condition you declare yourself (§5).
 6. **Declared intent, asserted both ways** — a condition that must show a
    `CLAUDE.md` fails if none appears; a condition that must not fails if one does.
 
+### The pipeline
+
+```text
+              ┌──────────────────────────────┐
+              │ Terminal-Bench task sources  │
+              │ source-tasks/terminal-bench/ │
+              └───────────────┬──────────────┘
+                              │  generate
+             ┌────────────────┼────────────────┐
+             ▼                ▼                ▼
+         baseline            sdd              dfg
+       (task only)     (frozen SDD)     (frozen DFG)
+             │                │                │
+             └────────────────┼────────────────┘
+                              │
+                  generated Harbor tasks
+                  generated/<condition>/<task>/
+                              │
+                    validate  →  preflight
+                 (host hashes)   (in-container proof)
+                              │
+                     ┌────────┴────────┐
+                     ▼                 ▼
+                Claude Code        Codex CLI
+                     │                 │
+                     └────────┬────────┘
+                              ▼
+                       jobs/  →  results/
+                            report.py
+```
+
 ---
 
 ## 2. How the Docker Images Work
@@ -206,10 +237,59 @@ chmod 700 config
 chmod 600 config/local.env
 ```
 
-### Benchmark tasks and toolkit snapshots
+### Benchmark tasks
 
-- **Tasks** go in `source-tasks/terminal-bench/`, one directory per Harbor task
-  (each containing a `task.toml`).
+`source-tasks/terminal-bench/` holds one directory per Harbor task, each
+containing a `task.toml`. It is **git-ignored** — the tasks are a large external
+dataset, pinned by metadata rather than vendored — so a fresh clone of this
+repository has to fetch them before anything else works.
+
+The suite comes from the Harbor Framework's Terminal-Bench 2.0 repository, whose
+task directories sit at the repository root. Fetch it at a pinned commit and copy
+in every directory that has a `task.toml`:
+
+```bash
+REPO=https://github.com/harbor-framework/terminal-bench-2.git
+REF=2fd12b88aafdd04a52c298e3940bcb189f9766d6      # the pin this repository uses
+DEST=source-tasks/terminal-bench
+
+# 1. Shallow-fetch the pinned commit into a scratch checkout
+rm -rf /tmp/terminal-bench-2 && mkdir -p /tmp/terminal-bench-2
+git -C /tmp/terminal-bench-2 init -q .
+git -C /tmp/terminal-bench-2 remote add origin "$REPO"
+git -C /tmp/terminal-bench-2 fetch -q --depth 1 origin "$REF"
+git -C /tmp/terminal-bench-2 checkout -q FETCH_HEAD
+
+# 2. Copy every task directory (a directory is a task if it has a task.toml)
+mkdir -p "$DEST"
+for manifest in /tmp/terminal-bench-2/*/task.toml; do
+  cp -a "$(dirname "$manifest")" "$DEST/"
+done
+
+# 3. Pin the provenance, the same way toolkits are pinned
+echo "$REPO"                                   > "$DEST/SOURCE"
+git -C /tmp/terminal-bench-2 rev-parse FETCH_HEAD > "$DEST/GIT_SHA"
+echo main                                      > "$DEST/BRANCH"
+echo "Terminal-Bench 2.0 task source; copied from directories containing task.toml" \
+                                               > "$DEST/README.md"
+```
+
+Verify the result — 89 tasks at the pin above, and the catalogue reads them:
+
+```bash
+find source-tasks/terminal-bench -mindepth 2 -maxdepth 2 -name task.toml | wc -l
+./scripts/catalogue.sh
+```
+
+To move to a newer upstream commit, re-run the block with a different `REF` and
+regenerate the catalogue and the variants (`./scripts/catalogue.sh --md-out
+docs/task-catalogue.md`, then `generate --force`). The axes are derived from task
+metadata, so a suite's membership can change with the pin — which is exactly why
+the SHA is recorded next to the tasks. Your own tasks live in the same directory
+and need no provenance file; see §7 for authoring them.
+
+### Toolkit snapshots
+
 - **Toolkits** go in `toolkits/<id>/`, each with `SOURCE`, `GIT_SHA`, `BRANCH`,
   `VERSION` and a `snapshot/` directory holding the repository content at that
   commit. Populate a snapshot from a real checkout:
@@ -285,8 +365,51 @@ pilot runners additionally refuse any individual cell without a passing report
 
 ## 5. Setting Up Experiment Scenarios
 
-A condition is an entry under `toolkits:` in `config/experiments.yaml`. Available
-keys:
+### The configuration file
+
+Everything an experiment is — task source, conditions, models, matrix,
+repetitions — lives in one file. The shipped `config/experiments.yaml`:
+
+```yaml
+source_root: source-tasks/terminal-bench   # where tasks are read from (§3)
+generated_root: generated                  # where variants are written
+repetitions: 1                             # attempts per cell; records the design
+
+models:
+  claude-code: claude-sonnet-5
+  codex: gpt-5.6-terra
+
+# Names dropped from every toolkit payload before it enters a container.
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+# Directories inside a toolkit that hold installable agent skills, in precedence
+# order. The first source providing a given skill name wins.
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+toolkits:                                  # one entry per condition
+  - id: sdd
+    snapshot: toolkits/sdd/snapshot
+  - id: dfg
+    snapshot: toolkits/dfg/snapshot
+
+matrix:                                    # the cells the runners execute
+  - {id: claude-baseline, agent: claude-code, toolkit: baseline}
+  - {id: claude-sdd, agent: claude-code, toolkit: sdd}
+  - {id: claude-dfg, agent: claude-code, toolkit: dfg}
+  - {id: codex-baseline, agent: codex, toolkit: baseline}
+  - {id: codex-sdd, agent: codex, toolkit: sdd}
+  - {id: codex-dfg, agent: codex, toolkit: dfg}
+```
+
+Every script takes `--config <path>`, so an alternative configuration is a
+separate file rather than an edit — `config/experiments.scenarios.yaml` is one.
+`uv run harbor-methodology-bench matrix-plan` prints the cells a configuration
+resolves to.
+
+### Declaring a condition
+
+A condition is an entry under `toolkits:`. Available keys:
 
 | Key | Meaning |
 |---|---|
@@ -926,18 +1049,38 @@ single task with the `smoke` job prefix.
 
 ### Repetitions
 
-Agents are stochastic, so a single run per cell cannot separate a methodology
-effect from noise. Three or more attempts per cell is the practical minimum for
-reporting a mean with a standard error:
+Agents are stochastic — reasoning paths and tool choices differ between runs — so
+a single run per cell cannot separate a methodology effect from noise. Three or
+more attempts per cell is the practical minimum, for three distinct reasons:
+
+- **Confidence intervals** — a mean success rate is only reportable with a
+  standard error across `N ≥ 3` attempts.
+- **Flakiness detection** — repetitions separate a deterministic tool failure
+  from a transient rate limit or timeout.
+- **Cost and latency distribution** — median, p90 and outlier token spend are
+  properties of a distribution, not of one trial.
 
 ```bash
 ./scripts/run-pilot-experiment.sh --suite spec-dense --attempts 3
 ```
 
-All attempts land in the same job directory with per-trial metrics, and
-`report.py` aggregates them. Record the intended count in
-`config/experiments.yaml` as `repetitions: 3` so the configuration documents the
-design.
+All attempts land in the same job directory with per-trial metrics
+(`trial_1`, `trial_2`, `trial_3`), and `report.py` aggregates them. Record the
+intended count in `config/experiments.yaml` as `repetitions: 3` so the
+configuration documents the design.
+
+Harbor's own `-n` / `--n-attempts` does the same for a single hand-run cell, which
+is useful when reproducing one result outside the runners:
+
+```bash
+harbor run \
+  -p generated/sdd/adaptive-rejection-sampler \
+  -a claude-code \
+  -m claude-sonnet-5 \
+  -n 3 \
+  --env-file config/local.env \
+  --job-name full-claude-sdd-adaptive-rejection-sampler
+```
 
 ---
 
@@ -953,6 +1096,19 @@ Per cell: success rate, mean verifier reward, average duration, token
 consumption (input / output / cache), cost in USD, and adherence. Plus per-task
 breakdowns, a methodology-adherence table, and an exception summary that names
 the exact failure cause (rate limits, timeouts, non-zero exits).
+
+`--pattern` is a glob over job names, so one report can span many runs — a single
+job (`"pilot-claude-sdd-*"`), an experiment (`"full-*"`), or everything in
+`jobs/` (`"*"`). Multi-task and multi-repetition jobs are folded together
+automatically. `--md-out` writes the human-readable comparison, `--json-out` the
+machine-readable form for downstream analysis and plotting; write both when
+archiving a result:
+
+```bash
+python3 scripts/report.py --jobs-dir jobs/ --pattern "full-*" \
+  --md-out results/full_report.md \
+  --json-out results/full_summary.json
+```
 
 ### Reading adherence
 
@@ -1104,3 +1260,19 @@ with `docker image prune` when convenient.
   base-URL environment variables (`ANTHROPIC_BASE_URL`, `OPENAI_BASE_URL`) and
   through Harbor's own LiteLLM-backed agents, but the configuration schema does
   not yet carry per-cell endpoint settings.
+
+---
+
+## 14. Project Phases
+
+| Phase | Description | Status |
+|---|---|:---:|
+| **1 — Infrastructure** | Docker, uv, Harbor, Claude and Codex CLI validation | **Complete** |
+| **2 — Toolkit freezing** | Pinned SDD and DFG snapshots with `GIT_SHA` verification | **Complete** |
+| **3 — Task generation** | Source copier, payload layer, collision archive, manifest | **Complete** |
+| **4 — Validation** | Host-side reproducibility check and in-container preflight | **Complete** |
+| **5 — Smoke test** | 1 task × 6 cells × 1 attempt, end to end | **Complete** |
+| **6 — Task catalogue** | Axis classification, suites, shared selection flags | **Complete** |
+| **7 — Pilot experiment** | 5 tasks × 6 cells × 1 attempt (30 trials) | **Re-run pending** — the recorded trials predate the payload layer and are void; see `TODO.md` |
+| **8 — Full experiment** | Chosen task group × matrix × 3+ attempts | **Documented** (§8) |
+| **9 — Deep analysis** | Adherence telemetry, token overhead against measured gain | Planned |
