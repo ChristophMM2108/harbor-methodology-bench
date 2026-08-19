@@ -1,0 +1,15 @@
+{
+    "job_name": "verify-sdd-bn-fit-modify",
+    "n_concurrent_trials": 1,
+    "agents": [
+        {
+            "name": "claude-code",
+            "model_name": "claude-sonnet-5"
+        }
+    ],
+    "tasks": [
+        {
+            "path": "generated/sdd/bn-fit-modify"
+        }
+    ]
+}

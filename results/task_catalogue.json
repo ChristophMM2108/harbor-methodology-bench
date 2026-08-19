@@ -1,0 +1,2314 @@
+{
+  "axis_descriptions": {
+    "diagnose-first": "A broken system is supplied; the cause must be found before anything is fixed.",
+    "environment-engineering": "Build systems, toolchains, servers and virtual machines rather than application code.",
+    "greenfield-algorithmic": "Implement something from scratch against a short, self-contained statement.",
+    "long-horizon": "Expert estimate at or above 4 hours of human work.",
+    "modify-existing": "The agent changes code or state it did not write.",
+    "quick": "Cheap to run: expert estimate at or below 30 minutes and a 15-minute agent budget.",
+    "spec-dense": "Many explicit, individually checkable requirements in one prompt.",
+    "underspecified": "Short prompt with no enumerated requirements; the agent must decide what done means.",
+    "verification-heavy": "Graded by a large test surface, or the prompt requires the agent to write tests."
+  },
+  "n_tasks": 89,
+  "source_root": "/home/chriz/GitRepos/harbor-methodology-bench/source-tasks/terminal-bench",
+  "suites": {
+    "balanced": [
+      "chess-best-move",
+      "configure-git-webserver",
+      "constraints-scheduling",
+      "crack-7z-hash",
+      "extract-elf",
+      "fix-git",
+      "largest-eigenval",
+      "llm-inference-batching-scheduler",
+      "merge-diff-arc-agi-task",
+      "mteb-leaderboard",
+      "multi-source-data-merger",
+      "portfolio-optimization",
+      "pytorch-model-recovery",
+      "raman-fitting",
+      "sparql-university",
+      "video-processing"
+    ],
+    "diagnose-first": [
+      "build-cython-ext",
+      "build-pmars",
+      "custom-memory-heap-crash",
+      "db-wal-recovery",
+      "fix-code-vulnerability",
+      "fix-git",
+      "fix-ocaml-gc",
+      "git-leak-recovery",
+      "merge-diff-arc-agi-task",
+      "nginx-request-logging",
+      "overfull-hbox",
+      "pytorch-model-recovery",
+      "sqlite-db-truncate"
+    ],
+    "environment-engineering": [
+      "build-cython-ext",
+      "build-pmars",
+      "build-pov-ray",
+      "compile-compcert",
+      "configure-git-webserver",
+      "git-multibranch",
+      "install-windows-3.11",
+      "mailman",
+      "nginx-request-logging",
+      "qemu-alpine-ssh",
+      "qemu-startup",
+      "sqlite-with-gcov"
+    ],
+    "greenfield-algorithmic": [
+      "caffe-cifar-10",
+      "cancel-async-tasks",
+      "chess-best-move",
+      "circuit-fibsqrt",
+      "code-from-image",
+      "count-dataset-tokens",
+      "crack-7z-hash",
+      "extract-elf",
+      "extract-moves-from-video",
+      "feal-differential-cryptanalysis",
+      "feal-linear-cryptanalysis",
+      "filter-js-from-html",
+      "gpt2-codegolf",
+      "largest-eigenval",
+      "log-summary-date-ranges",
+      "make-doom-for-mips",
+      "make-mips-interpreter",
+      "model-extraction-relu-logits",
+      "mteb-leaderboard",
+      "mteb-retrieve",
+      "path-tracing",
+      "polyglot-c-py",
+      "polyglot-rust-c",
+      "portfolio-optimization",
+      "prove-plus-comm",
+      "pypi-server",
+      "pytorch-model-cli",
+      "raman-fitting",
+      "regex-log",
+      "schemelike-metacircular-eval",
+      "torch-pipeline-parallelism",
+      "torch-tensor-parallelism",
+      "train-fasttext",
+      "video-processing",
+      "vulnerable-secret",
+      "write-compressor"
+    ],
+    "long-horizon": [
+      "bn-fit-modify",
+      "circuit-fibsqrt",
+      "feal-differential-cryptanalysis",
+      "feal-linear-cryptanalysis",
+      "fix-ocaml-gc",
+      "gpt2-codegolf",
+      "install-windows-3.11",
+      "make-doom-for-mips",
+      "make-mips-interpreter",
+      "model-extraction-relu-logits",
+      "path-tracing",
+      "regex-chess",
+      "sam-cell-seg",
+      "schemelike-metacircular-eval",
+      "sparql-university",
+      "torch-pipeline-parallelism",
+      "torch-tensor-parallelism",
+      "video-processing",
+      "write-compressor"
+    ],
+    "modify-existing": [
+      "bn-fit-modify",
+      "break-filter-js-from-html",
+      "build-cython-ext",
+      "cobol-modernization",
+      "constraints-scheduling",
+      "custom-memory-heap-crash",
+      "db-wal-recovery",
+      "fix-code-vulnerability",
+      "fix-git",
+      "fix-ocaml-gc",
+      "gcode-to-text",
+      "git-leak-recovery",
+      "merge-diff-arc-agi-task",
+      "modernize-scientific-stack",
+      "password-recovery",
+      "path-tracing-reverse",
+      "pytorch-model-recovery",
+      "query-optimize",
+      "rstan-to-pystan",
+      "sam-cell-seg",
+      "sanitize-git-repo",
+      "sqlite-db-truncate",
+      "tune-mjcf"
+    ],
+    "quick": [
+      "cobol-modernization",
+      "configure-git-webserver",
+      "count-dataset-tokens",
+      "extract-elf",
+      "fix-git",
+      "git-leak-recovery",
+      "hf-model-inference",
+      "kv-store-grpc",
+      "merge-diff-arc-agi-task",
+      "multi-source-data-merger",
+      "nginx-request-logging",
+      "openssl-selfsigned-cert",
+      "polyglot-c-py",
+      "prove-plus-comm",
+      "pytorch-model-cli",
+      "pytorch-model-recovery",
+      "qemu-alpine-ssh",
+      "qemu-startup",
+      "raman-fitting",
+      "sanitize-git-repo",
+      "sqlite-with-gcov",
+      "tune-mjcf",
+      "vulnerable-secret"
+    ],
+    "spec-dense": [
+      "adaptive-rejection-sampler",
+      "constraints-scheduling",
+      "distribution-search",
+      "dna-assembly",
+      "dna-insert",
+      "financial-document-processor",
+      "fix-code-vulnerability",
+      "git-multibranch",
+      "hf-model-inference",
+      "llm-inference-batching-scheduler",
+      "mcmc-sampling-stan",
+      "modernize-scientific-stack",
+      "multi-source-data-merger",
+      "nginx-request-logging",
+      "openssl-selfsigned-cert",
+      "protein-assembly",
+      "pytorch-model-recovery",
+      "reshard-c4-data",
+      "rstan-to-pystan",
+      "sam-cell-seg",
+      "torch-pipeline-parallelism"
+    ],
+    "underspecified": [
+      "chess-best-move",
+      "compile-compcert",
+      "crack-7z-hash",
+      "extract-moves-from-video",
+      "fix-git",
+      "gcode-to-text",
+      "mteb-leaderboard",
+      "mteb-retrieve",
+      "overfull-hbox",
+      "polyglot-c-py",
+      "polyglot-rust-c",
+      "qemu-alpine-ssh",
+      "qemu-startup",
+      "sqlite-db-truncate",
+      "sqlite-with-gcov",
+      "train-fasttext"
+    ],
+    "verification-heavy": [
+      "adaptive-rejection-sampler",
+      "circuit-fibsqrt",
+      "dna-assembly",
+      "extract-elf",
+      "filter-js-from-html",
+      "financial-document-processor",
+      "install-windows-3.11",
+      "large-scale-text-editing",
+      "llm-inference-batching-scheduler",
+      "sam-cell-seg",
+      "sanitize-git-repo",
+      "schemelike-metacircular-eval"
+    ]
+  },
+  "tasks": [
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "spec-dense",
+        "verification-heavy"
+      ],
+      "category": "scientific-computing",
+      "description": "Evaluates the ability to implement an adaptive rejection sampler in R with proper statistical algorithms, modular design, input validation, log-concavity checking, and formal testing.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/adaptive-rejection-sampler:20251031",
+      "expert_min": 180.0,
+      "instruction_words": 411,
+      "requirement_lines": 15,
+      "requires_own_tests": true,
+      "tags": [
+        "applied-statistics",
+        "adaptive-rejection-sampling",
+        "Bayesian-inference",
+        "simulation"
+      ],
+      "task_id": "adaptive-rejection-sampler",
+      "test_code_bytes": 9898,
+      "test_data_bytes": 25560,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "long-horizon",
+        "modify-existing"
+      ],
+      "category": "scientific-computing",
+      "description": "Evaluates the ability to recover a Bayesian Network DAG structure from data, perform causal interventions, and sample from the modified network.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/bn-fit-modify:20251031",
+      "expert_min": 480.0,
+      "instruction_words": 215,
+      "requirement_lines": 3,
+      "requires_own_tests": false,
+      "tags": [
+        "bayesian-network",
+        "stats"
+      ],
+      "task_id": "bn-fit-modify",
+      "test_code_bytes": 6542,
+      "test_data_bytes": 14950,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 1200.0,
+      "axes": [
+        "modify-existing"
+      ],
+      "category": "security",
+      "description": "Evaluates the agent's ability to bypass an HTML sanitization filter by crafting malicious HTML that triggers JavaScript execution after filtering.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/break-filter-js-from-html:20251031",
+      "expert_min": 20.0,
+      "instruction_words": 82,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "security"
+      ],
+      "task_id": "break-filter-js-from-html",
+      "test_code_bytes": 4892,
+      "test_data_bytes": 5570,
+      "verifier_timeout_sec": 1200.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "diagnose-first",
+        "modify-existing",
+        "environment-engineering"
+      ],
+      "category": "debugging",
+      "description": "Evaluates the ability to compile and install a Python package with Cython extensions from source while fixing NumPy 2.x compatibility issues.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/build-cython-ext:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 223,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "dependency",
+        "compilation"
+      ],
+      "task_id": "build-cython-ext",
+      "test_code_bytes": 6367,
+      "test_data_bytes": 23682,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "diagnose-first",
+        "environment-engineering"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to build pMARS from Debian source packages with X11 support disabled, requiring Makefile modification and headless compilation.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/build-pmars:20251031",
+      "expert_min": 90.0,
+      "instruction_words": 84,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "build-tools",
+        "compilation",
+        "debian",
+        "gaming",
+        "pmars",
+        "corewars"
+      ],
+      "task_id": "build-pmars",
+      "test_code_bytes": 3546,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 12000.0,
+      "axes": [
+        "environment-engineering"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to locate, download, patch, and compile legacy POV-Ray 2.2 raytracer from 1990s source archives on a modern system.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/build-pov-ray:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 64,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "build-tools",
+        "compilation",
+        "graphics",
+        "ray-tracing",
+        "legacy-software",
+        "research"
+      ],
+      "task_id": "build-pov-ray",
+      "test_code_bytes": 5803,
+      "test_data_bytes": 320607,
+      "verifier_timeout_sec": 12000.0
+    },
+    {
+      "agent_timeout_sec": 1200.0,
+      "axes": [
+        "greenfield-algorithmic"
+      ],
+      "category": "machine-learning",
+      "description": "Evaluates the ability to install and configure BVLC Caffe 1.0.0, train a CNN on CIFAR-10 for exactly 500 iterations in CPU-only mode, and achieve specified accuracy thresholds.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/caffe-cifar-10:20251031",
+      "expert_min": null,
+      "instruction_words": 76,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "cnn",
+        "caffe"
+      ],
+      "task_id": "caffe-cifar-10",
+      "test_code_bytes": 7249,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1200.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to implement async task concurrency control with proper cleanup on cancellation, including the edge case of queued tasks.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/cancel-async-tasks:20251031",
+      "expert_min": 120.0,
+      "instruction_words": 88,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "async",
+        "concurrency",
+        "python"
+      ],
+      "task_id": "cancel-async-tasks",
+      "test_code_bytes": 5565,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "underspecified",
+        "greenfield-algorithmic"
+      ],
+      "category": "games",
+      "description": "Evaluates the agent's ability to analyze a chess position from an image, use a chess engine to find the best move(s), and handle multiple valid solutions.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/chess-best-move:20251031",
+      "expert_min": 45.0,
+      "instruction_words": 47,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "games"
+      ],
+      "task_id": "chess-best-move",
+      "test_code_bytes": 1579,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "long-horizon",
+        "verification-heavy",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the agent's ability to implement complex mathematical functions (Fibonacci of integer square root) using only combinational and sequential logic gates in a hardware description format.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/circuit-fibsqrt:20251031",
+      "expert_min": 960.0,
+      "instruction_words": 140,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "software-engineering"
+      ],
+      "task_id": "circuit-fibsqrt",
+      "test_code_bytes": 13780,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "modify-existing"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to reverse-engineer and reimplement a COBOL program's business logic in Python with exact output reproduction.",
+      "difficulty": "easy",
+      "docker_image": "alexgshaw/cobol-modernization:20251031",
+      "expert_min": 20.0,
+      "instruction_words": 169,
+      "requirement_lines": 4,
+      "requires_own_tests": false,
+      "tags": [
+        "coding"
+      ],
+      "task_id": "cobol-modernization",
+      "test_code_bytes": 3635,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1200.0,
+      "axes": [
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates an agent's ability to extract code from an image using OCR or vision models, implement the pseudocode logic with cryptographic hashing, and produce the correct output.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/code-from-image:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 52,
+      "requirement_lines": 2,
+      "requires_own_tests": false,
+      "tags": [
+        "ocr"
+      ],
+      "task_id": "code-from-image",
+      "test_code_bytes": 1543,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1200.0
+    },
+    {
+      "agent_timeout_sec": 2400.0,
+      "axes": [
+        "underspecified",
+        "environment-engineering"
+      ],
+      "category": "system-administration",
+      "description": "Evaluates the ability to build the CompCert verified C compiler from source with proper configuration for the host architecture and dependencies.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/compile-compcert:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 44,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "compilation",
+        "compilers"
+      ],
+      "task_id": "compile-compcert",
+      "test_code_bytes": 6502,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 2400.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "environment-engineering"
+      ],
+      "category": "system-administration",
+      "description": "Evaluates the ability to configure a Git server with automatic deployment to an nginx web server using post-receive hooks.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/configure-git-webserver:20251031",
+      "expert_min": 15.0,
+      "instruction_words": 74,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "system",
+        "version-control",
+        "web"
+      ],
+      "task_id": "configure-git-webserver",
+      "test_code_bytes": 3781,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1200.0,
+      "axes": [
+        "spec-dense",
+        "modify-existing"
+      ],
+      "category": "personal-assistant",
+      "description": "Find an optimal 1-hour meeting slot for three people with complex availability constraints by parsing ICS calendars and applying constraint satisfaction with tie-breaking preferences.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/constraints-scheduling:20251031",
+      "expert_min": 15.0,
+      "instruction_words": 360,
+      "requirement_lines": 15,
+      "requires_own_tests": false,
+      "tags": [
+        "calendar",
+        "scheduling",
+        "constraint-satisfaction",
+        "ics-parsing",
+        "temporal-reasoning"
+      ],
+      "task_id": "constraints-scheduling",
+      "test_code_bytes": 8287,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1200.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "greenfield-algorithmic"
+      ],
+      "category": "model-training",
+      "description": "Evaluates the ability to count tokens in a filtered HuggingFace dataset using a specific tokenizer.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/count-dataset-tokens:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 63,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "machine-learning",
+        "data",
+        "datasets",
+        "tokenization",
+        "huggingface"
+      ],
+      "task_id": "count-dataset-tokens",
+      "test_code_bytes": 1075,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "underspecified",
+        "greenfield-algorithmic"
+      ],
+      "category": "security",
+      "description": "Evaluates the ability to crack a password-protected 7z archive using John the Ripper and extract secret contents.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/crack-7z-hash:20251031",
+      "expert_min": 5.0,
+      "instruction_words": 18,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "decrypt",
+        "security",
+        "file-operations"
+      ],
+      "task_id": "crack-7z-hash",
+      "test_code_bytes": 1397,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "diagnose-first",
+        "modify-existing"
+      ],
+      "category": "debugging",
+      "description": "Evaluates the ability to debug and fix a C++ program that crashes in release mode due to a static initialization order issue with custom memory allocators and STL locale facets.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/custom-memory-heap-crash:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 130,
+      "requirement_lines": 2,
+      "requires_own_tests": false,
+      "tags": [
+        "cpp",
+        "memory-management",
+        "debugging"
+      ],
+      "task_id": "custom-memory-heap-crash",
+      "test_code_bytes": 6839,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "diagnose-first",
+        "modify-existing"
+      ],
+      "category": "file-operations",
+      "description": "Tests the ability to decrypt an XOR-encrypted SQLite WAL file and recover complete database contents including write-ahead log changes.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/db-wal-recovery:20251031",
+      "expert_min": 45.0,
+      "instruction_words": 117,
+      "requirement_lines": 3,
+      "requires_own_tests": false,
+      "tags": [
+        "database",
+        "encryption",
+        "recovery"
+      ],
+      "task_id": "db-wal-recovery",
+      "test_code_bytes": 4871,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "spec-dense"
+      ],
+      "category": "machine-learning",
+      "description": "Tests the ability to find a probability distribution satisfying precise dual KL divergence constraints through numerical optimization.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/distribution-search:20251031",
+      "expert_min": 120.0,
+      "instruction_words": 174,
+      "requirement_lines": 11,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "statistics",
+        "machine-learning"
+      ],
+      "task_id": "distribution-search",
+      "test_code_bytes": 3231,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "spec-dense",
+        "verification-heavy"
+      ],
+      "category": "scientific-computing",
+      "description": "Evaluates the ability to design PCR primers for Golden Gate assembly by applying molecular biology knowledge and bioinformatics tools to meet complex cloning constraints.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/dna-assembly:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 323,
+      "requirement_lines": 15,
+      "requires_own_tests": false,
+      "tags": [
+        "biology",
+        "cloning"
+      ],
+      "task_id": "dna-assembly",
+      "test_code_bytes": 14721,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "spec-dense"
+      ],
+      "category": "scientific-computing",
+      "description": "Evaluates the ability to design PCR primers for site-directed mutagenesis by analyzing plasmid sequences and applying molecular biology constraints on primer length and melting temperature.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/dna-insert:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 187,
+      "requirement_lines": 8,
+      "requires_own_tests": false,
+      "tags": [
+        "biology",
+        "cloning"
+      ],
+      "task_id": "dna-insert",
+      "test_code_bytes": 4189,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "verification-heavy",
+        "greenfield-algorithmic"
+      ],
+      "category": "file-operations",
+      "description": "Evaluates ability to parse ELF binary format and extract memory values from executable sections using Node.js.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/extract-elf:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 111,
+      "requirement_lines": 2,
+      "requires_own_tests": false,
+      "tags": [
+        "file-operations"
+      ],
+      "task_id": "extract-elf",
+      "test_code_bytes": 13247,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "underspecified",
+        "greenfield-algorithmic"
+      ],
+      "category": "file-operations",
+      "description": "Evaluates the agent's ability to download a YouTube video, extract text commands through OCR or transcription, and produce a formatted text file with 90% accuracy.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/extract-moves-from-video:20251031",
+      "expert_min": 120.0,
+      "instruction_words": 39,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "file-operations",
+        "web",
+        "video-processing"
+      ],
+      "task_id": "extract-moves-from-video",
+      "test_code_bytes": 4485,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "mathematics",
+      "description": "Evaluates the ability to implement differential cryptanalysis on a FEAL-like cipher to recover a round key through chosen plaintext attacks.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/feal-differential-cryptanalysis:20251031",
+      "expert_min": 480.0,
+      "instruction_words": 90,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "software-engineering"
+      ],
+      "task_id": "feal-differential-cryptanalysis",
+      "test_code_bytes": 6321,
+      "test_data_bytes": 381,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "mathematics",
+      "description": "Evaluates the ability to perform linear cryptanalysis on a FEAL-like cipher to recover encryption keys from known plaintext-ciphertext pairs.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/feal-linear-cryptanalysis:20251031",
+      "expert_min": 960.0,
+      "instruction_words": 94,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "software-engineering"
+      ],
+      "task_id": "feal-linear-cryptanalysis",
+      "test_code_bytes": 3525,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "verification-heavy",
+        "greenfield-algorithmic"
+      ],
+      "category": "security",
+      "description": "Evaluates the agent's ability to create a robust XSS filter that removes JavaScript from HTML files while preserving legitimate HTML structure and content.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/filter-js-from-html:20251031",
+      "expert_min": 45.0,
+      "instruction_words": 91,
+      "requirement_lines": 3,
+      "requires_own_tests": false,
+      "tags": [
+        "security"
+      ],
+      "task_id": "filter-js-from-html",
+      "test_code_bytes": 19396,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 1200.0,
+      "axes": [
+        "spec-dense",
+        "verification-heavy"
+      ],
+      "category": "data-processing",
+      "description": "Evaluates OCR, document classification, financial data extraction from mixed JPG/PDF documents, and CSV generation with totals.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/financial-document-processor:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 162,
+      "requirement_lines": 10,
+      "requires_own_tests": false,
+      "tags": [
+        "ocr",
+        "image-processing",
+        "financial",
+        "file-operations"
+      ],
+      "task_id": "financial-document-processor",
+      "test_code_bytes": 10965,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1200.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "spec-dense",
+        "diagnose-first",
+        "modify-existing"
+      ],
+      "category": "security",
+      "description": "Evaluates the ability to identify and fix a CRLF injection vulnerability (CWE-93) in HTTP header handling code by adding input validation to reject control characters.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/fix-code-vulnerability:20251031",
+      "expert_min": 120.0,
+      "instruction_words": 575,
+      "requirement_lines": 41,
+      "requires_own_tests": false,
+      "tags": [
+        "security",
+        "code-vulnerability",
+        "common-weakness-enumeration"
+      ],
+      "task_id": "fix-code-vulnerability",
+      "test_code_bytes": 4663,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "underspecified",
+        "quick",
+        "diagnose-first",
+        "modify-existing"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to recover lost Git commits from a detached HEAD state and merge them back into the master branch.",
+      "difficulty": "easy",
+      "docker_image": "alexgshaw/fix-git:20251031",
+      "expert_min": 5.0,
+      "instruction_words": 30,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "version-control"
+      ],
+      "task_id": "fix-git",
+      "test_code_bytes": 1802,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "long-horizon",
+        "diagnose-first",
+        "modify-existing"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates ability to debug and fix a runtime crash in the OCaml garbage collector's C implementation, requiring low-level debugging skills and understanding of compiler internals.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/fix-ocaml-gc:20251031",
+      "expert_min": 1440.0,
+      "instruction_words": 76,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "troubleshooting"
+      ],
+      "task_id": "fix-ocaml-gc",
+      "test_code_bytes": 1969,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "underspecified",
+        "modify-existing"
+      ],
+      "category": "file-operations",
+      "description": "Tests the agent's ability to extract and decode text from a 3D printer G-code file by parsing movement commands, rendering them visually, and performing OCR.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/gcode-to-text:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 41,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "file-operations"
+      ],
+      "task_id": "gcode-to-text",
+      "test_code_bytes": 1252,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "diagnose-first",
+        "modify-existing"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to recover secrets from unreachable git objects and completely remove them from repository history while preserving legitimate commits.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/git-leak-recovery:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 82,
+      "requirement_lines": 6,
+      "requires_own_tests": false,
+      "tags": [
+        "git",
+        "security"
+      ],
+      "task_id": "git-leak-recovery",
+      "test_code_bytes": 4346,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "spec-dense",
+        "environment-engineering"
+      ],
+      "category": "system-administration",
+      "description": "Evaluates the ability to set up a Git server with SSH authentication, implement post-receive hooks for automated multi-branch deployment, and configure Nginx to serve branch-specific content over HTTPS.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/git-multibranch:20251031",
+      "expert_min": 180.0,
+      "instruction_words": 154,
+      "requirement_lines": 8,
+      "requires_own_tests": false,
+      "tags": [
+        "system",
+        "version-control",
+        "web"
+      ],
+      "task_id": "git-multibranch",
+      "test_code_bytes": 3274,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to implement a minimal, dependency-free C program that performs GPT-2 inference from TensorFlow checkpoints in under 5000 bytes.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/gpt2-codegolf:20251031",
+      "expert_min": 2400.0,
+      "instruction_words": 78,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "software-engineering"
+      ],
+      "task_id": "gpt2-codegolf",
+      "test_code_bytes": 2159,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [],
+      "category": "software-engineering",
+      "description": "Implement a Python class that provides a headless terminal interface supporting interactive bash shells, modifier keys, startup file sourcing, and state persistence between commands.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/headless-terminal:20251031",
+      "expert_min": 120.0,
+      "instruction_words": 108,
+      "requirement_lines": 4,
+      "requires_own_tests": false,
+      "tags": [
+        "bash",
+        "terminal"
+      ],
+      "task_id": "headless-terminal",
+      "test_code_bytes": 4180,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "spec-dense",
+        "quick"
+      ],
+      "category": "data-science",
+      "description": "Evaluates the ability to download a Hugging Face transformer model, create a Flask API for sentiment analysis, and run the service in the background with proper error handling.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/hf-model-inference:20251031",
+      "expert_min": 20.0,
+      "instruction_words": 185,
+      "requirement_lines": 9,
+      "requires_own_tests": false,
+      "tags": [
+        "api",
+        "coding",
+        "data-processing",
+        "data-science"
+      ],
+      "task_id": "hf-model-inference",
+      "test_code_bytes": 4534,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "long-horizon",
+        "verification-heavy",
+        "environment-engineering"
+      ],
+      "category": "system-administration",
+      "description": "Evaluates the ability to configure and run Windows 3.11 in QEMU with VNC display, web interface, and programmatic keyboard control for automated testing.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/install-windows-3.11:20251031",
+      "expert_min": 300.0,
+      "instruction_words": 152,
+      "requirement_lines": 7,
+      "requires_own_tests": false,
+      "tags": [
+        "virtualization",
+        "qemu",
+        "windows-3.11",
+        "vnc",
+        "sys-admin",
+        "retro-computing"
+      ],
+      "task_id": "install-windows-3.11",
+      "test_code_bytes": 21989,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to build and deploy a gRPC-based key-value store server with Protocol Buffers, including service definition, code generation, implementation, and background process management.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/kv-store-grpc:20251031",
+      "expert_min": 15.0,
+      "instruction_words": 185,
+      "requirement_lines": 5,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "file-operations",
+        "system"
+      ],
+      "task_id": "kv-store-grpc",
+      "test_code_bytes": 6371,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1200.0,
+      "axes": [
+        "verification-heavy"
+      ],
+      "category": "file-operations",
+      "description": "Evaluates the ability to efficiently transform a 1-million-row CSV file using keystroke-efficient Vim macros with strict command restrictions.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/large-scale-text-editing:20251031",
+      "expert_min": 40.0,
+      "instruction_words": 157,
+      "requirement_lines": 7,
+      "requires_own_tests": true,
+      "tags": [
+        "text-editing",
+        "large-scale-text-manipulation",
+        "vim",
+        "vim-macros"
+      ],
+      "task_id": "large-scale-text-editing",
+      "test_code_bytes": 12497,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1200.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "greenfield-algorithmic"
+      ],
+      "category": "mathematics",
+      "description": "Evaluates the agent's ability to optimize eigenvalue computation by implementing a faster alternative to numpy's default algorithm while maintaining mathematical correctness.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/largest-eigenval:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 106,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "optimization",
+        "constraint",
+        "numerical-approximation"
+      ],
+      "task_id": "largest-eigenval",
+      "test_code_bytes": 4420,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "spec-dense",
+        "verification-heavy"
+      ],
+      "category": "machine-learning",
+      "description": "Implement a shape-aware batching scheduler for static-graph LLM inference that optimally packs requests into batches while meeting strict performance thresholds on cost, latency, and padding.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/llm-inference-batching-scheduler:20251031",
+      "expert_min": 45.0,
+      "instruction_words": 534,
+      "requirement_lines": 14,
+      "requires_own_tests": false,
+      "tags": [
+        "batching",
+        "inference",
+        "performance-optimization",
+        "scheduling"
+      ],
+      "task_id": "llm-inference-batching-scheduler",
+      "test_code_bytes": 32311,
+      "test_data_bytes": 49561,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "greenfield-algorithmic"
+      ],
+      "category": "data-processing",
+      "description": "Evaluates the ability to analyze date-stamped log files, calculate counts across multiple date ranges, and generate structured CSV output.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/log-summary-date-ranges:20251031",
+      "expert_min": 75.0,
+      "instruction_words": 175,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "log-analysis",
+        "report-generation",
+        "data-processing"
+      ],
+      "task_id": "log-summary-date-ranges",
+      "test_code_bytes": 2263,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "environment-engineering"
+      ],
+      "category": "system-administration",
+      "description": "Evaluates the ability to configure a functional mailing list server by integrating postfix and mailman3 with proper join/leave/announce workflows.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/mailman:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 126,
+      "requirement_lines": 7,
+      "requires_own_tests": false,
+      "tags": [
+        "email-server",
+        "mailing-list"
+      ],
+      "task_id": "mailman",
+      "test_code_bytes": 8037,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates ability to cross-compile the DOOM game engine for MIPS architecture using LLVM toolchain and verify execution in a JavaScript emulator.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/make-doom-for-mips:20251031",
+      "expert_min": 480.0,
+      "instruction_words": 84,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "software-engineering"
+      ],
+      "task_id": "make-doom-for-mips",
+      "test_code_bytes": 4311,
+      "test_data_bytes": 79806,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Implement a complete MIPS interpreter in JavaScript that can execute a DOOM ELF binary, handle system calls, and render the first game frame correctly.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/make-mips-interpreter:20251031",
+      "expert_min": 480.0,
+      "instruction_words": 83,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "software-engineering"
+      ],
+      "task_id": "make-mips-interpreter",
+      "test_code_bytes": 4311,
+      "test_data_bytes": 79806,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "spec-dense"
+      ],
+      "category": "data-science",
+      "description": "Evaluates the ability to implement and run a hierarchical Bayesian model using R and Stan, including package installation, model specification with custom priors, MCMC sampling configuration, and posterior inference.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/mcmc-sampling-stan:20251031",
+      "expert_min": 180.0,
+      "instruction_words": 213,
+      "requirement_lines": 17,
+      "requires_own_tests": false,
+      "tags": [
+        "R",
+        "stan",
+        "bayesian-statistics",
+        "mcmc"
+      ],
+      "task_id": "mcmc-sampling-stan",
+      "test_code_bytes": 7009,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "diagnose-first",
+        "modify-existing"
+      ],
+      "category": "debugging",
+      "description": "Evaluates git bundle merging, conflict resolution, and ARC-AGI style pattern recognition by requiring agents to fetch two git bundles, merge branches, and implement a generalizable transformation function from input/output examples.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/merge-diff-arc-agi-task:20251031",
+      "expert_min": 20.0,
+      "instruction_words": 248,
+      "requirement_lines": 2,
+      "requires_own_tests": false,
+      "tags": [
+        "git",
+        "coding"
+      ],
+      "task_id": "merge-diff-arc-agi-task",
+      "test_code_bytes": 3654,
+      "test_data_bytes": 9302,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "mathematics",
+      "description": "Extracts hidden layer weights from a black-box ReLU neural network by querying outputs and identifying critical points where neurons activate.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/model-extraction-relu-logits:20251031",
+      "expert_min": 480.0,
+      "instruction_words": 96,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "security"
+      ],
+      "task_id": "model-extraction-relu-logits",
+      "test_code_bytes": 2954,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 600.0,
+      "axes": [
+        "spec-dense",
+        "modify-existing"
+      ],
+      "category": "scientific-computing",
+      "description": "Evaluates the ability to migrate legacy Python 2.7 scientific computing code to modern Python 3 with proper dependencies and data processing.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/modernize-scientific-stack:20251031",
+      "expert_min": 120.0,
+      "instruction_words": 163,
+      "requirement_lines": 14,
+      "requires_own_tests": false,
+      "tags": [
+        "python-migration",
+        "scientific-computing",
+        "legacy-modernization",
+        "climate-science",
+        "data-processing"
+      ],
+      "task_id": "modernize-scientific-stack",
+      "test_code_bytes": 3051,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 600.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "underspecified",
+        "greenfield-algorithmic"
+      ],
+      "category": "data-science",
+      "description": "Evaluates the ability to research and identify the best-performing embedding model on the Scandinavian MTEB leaderboard using data science tools and techniques.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/mteb-leaderboard:20251031",
+      "expert_min": 5.0,
+      "instruction_words": 49,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "retrieval",
+        "mteb"
+      ],
+      "task_id": "mteb-leaderboard",
+      "test_code_bytes": 1145,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "underspecified",
+        "greenfield-algorithmic"
+      ],
+      "category": "data-science",
+      "description": "Evaluates the agent's ability to perform semantic text retrieval using MTEB embeddings, computing cosine similarities and correctly ranking documents to find the 5th most similar match to a query.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/mteb-retrieve:20251031",
+      "expert_min": 15.0,
+      "instruction_words": 48,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "data-processing",
+        "data-science",
+        "mteb"
+      ],
+      "task_id": "mteb-retrieve",
+      "test_code_bytes": 1187,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "spec-dense",
+        "quick"
+      ],
+      "category": "data-processing",
+      "description": "Evaluates an agent's ability to merge multi-format data sources (JSON, CSV, Parquet) with inconsistent schemas, applying field mappings and priority-based conflict resolution to produce standardized outputs.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/multi-source-data-merger:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 271,
+      "requirement_lines": 24,
+      "requires_own_tests": false,
+      "tags": [
+        "data-processing",
+        "etl",
+        "schema-mapping",
+        "conflict-resolution",
+        "pandas",
+        "parquet"
+      ],
+      "task_id": "multi-source-data-merger",
+      "test_code_bytes": 2541,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "spec-dense",
+        "quick",
+        "diagnose-first",
+        "environment-engineering"
+      ],
+      "category": "system-administration",
+      "description": "Evaluates the ability to install and configure Nginx with advanced request logging, rate limiting, and custom error pages.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/nginx-request-logging:20251031",
+      "expert_min": 20.0,
+      "instruction_words": 267,
+      "requirement_lines": 18,
+      "requires_own_tests": false,
+      "tags": [
+        "web-server"
+      ],
+      "task_id": "nginx-request-logging",
+      "test_code_bytes": 6581,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "spec-dense",
+        "quick"
+      ],
+      "category": "security",
+      "description": "Evaluates an agent's ability to generate self-signed TLS certificates using OpenSSL, manage cryptographic keys with proper permissions, and create verification scripts.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/openssl-selfsigned-cert:20251031",
+      "expert_min": 20.0,
+      "instruction_words": 197,
+      "requirement_lines": 20,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "file-operations",
+        "security",
+        "system"
+      ],
+      "task_id": "openssl-selfsigned-cert",
+      "test_code_bytes": 6486,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 750.0,
+      "axes": [
+        "underspecified",
+        "diagnose-first"
+      ],
+      "category": "debugging",
+      "description": "Evaluates the ability to fix LaTeX overfull hbox warnings by replacing words with valid synonyms while satisfying compilation and constraint requirements.",
+      "difficulty": "easy",
+      "docker_image": "alexgshaw/overfull-hbox:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 56,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "latex",
+        "document-processing",
+        "combinatorial-optimization"
+      ],
+      "task_id": "overfull-hbox",
+      "test_code_bytes": 4574,
+      "test_data_bytes": 11522,
+      "verifier_timeout_sec": 360.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "modify-existing"
+      ],
+      "category": "security",
+      "description": "Evaluates an agent's ability to perform digital forensics by recovering a deleted password from fragmented data within a disk image using command-line tools.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/password-recovery:20251031",
+      "expert_min": 100.0,
+      "instruction_words": 100,
+      "requirement_lines": 3,
+      "requires_own_tests": false,
+      "tags": [
+        "system",
+        "file-operations",
+        "troubleshooting"
+      ],
+      "task_id": "password-recovery",
+      "test_code_bytes": 1202,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to reverse-engineer and implement a path tracing renderer in C by analyzing a reference image and recreating it algorithmically.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/path-tracing:20251031",
+      "expert_min": 360.0,
+      "instruction_words": 143,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "images"
+      ],
+      "task_id": "path-tracing",
+      "test_code_bytes": 4822,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "modify-existing"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to reverse-engineer a compiled path tracing renderer and recreate functionally identical C source code under size constraints.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/path-tracing-reverse:20251031",
+      "expert_min": 120.0,
+      "instruction_words": 87,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "images"
+      ],
+      "task_id": "path-tracing-reverse",
+      "test_code_bytes": 4076,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "underspecified",
+        "quick",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Create a single polyglot source file that computes Fibonacci numbers when executed as both Python 3 and C code.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/polyglot-c-py:20251031",
+      "expert_min": 20.0,
+      "instruction_words": 52,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "coding"
+      ],
+      "task_id": "polyglot-c-py",
+      "test_code_bytes": 2172,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "underspecified",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to write a polyglot program that compiles and runs correctly as both Rust and C++ code, computing Fibonacci numbers.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/polyglot-rust-c:20251031",
+      "expert_min": 180.0,
+      "instruction_words": 59,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "no-verified-solution"
+      ],
+      "task_id": "polyglot-rust-c",
+      "test_code_bytes": 2246,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "greenfield-algorithmic"
+      ],
+      "category": "optimization",
+      "description": "Evaluates the ability to implement a high-performance C extension for Python that performs portfolio risk and return calculations at least 1.2x faster than a pure Python baseline while maintaining numerical accuracy.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/portfolio-optimization:20251031",
+      "expert_min": 120.0,
+      "instruction_words": 148,
+      "requirement_lines": 2,
+      "requires_own_tests": false,
+      "tags": [
+        "c-programming",
+        "python-extension",
+        "optimization"
+      ],
+      "task_id": "portfolio-optimization",
+      "test_code_bytes": 7906,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "spec-dense"
+      ],
+      "category": "scientific-computing",
+      "description": "Evaluates the ability to design a fusion protein gBlock by querying bioinformatics APIs, selecting proteins based on spectral properties, and applying codon optimization with GC content constraints.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/protein-assembly:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 446,
+      "requirement_lines": 15,
+      "requires_own_tests": false,
+      "tags": [
+        "biology",
+        "cloning",
+        "proteins"
+      ],
+      "task_id": "protein-assembly",
+      "test_code_bytes": 4478,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to complete an incomplete Coq proof of addition commutativity using inductive reasoning and formal verification tactics.",
+      "difficulty": "easy",
+      "docker_image": "alexgshaw/prove-plus-comm:20251031",
+      "expert_min": 5.0,
+      "instruction_words": 99,
+      "requirement_lines": 3,
+      "requires_own_tests": false,
+      "tags": [
+        "coding"
+      ],
+      "task_id": "prove-plus-comm",
+      "test_code_bytes": 1755,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to create a Python package, build it, set up a local PyPI server, and make the package installable from the server.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/pypi-server:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 136,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "system"
+      ],
+      "task_id": "pypi-server",
+      "test_code_bytes": 3802,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "greenfield-algorithmic"
+      ],
+      "category": "model-training",
+      "description": "Evaluates the ability to convert PyTorch model weights to JSON, implement neural network inference in C, and create a command-line tool for MNIST digit prediction.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/pytorch-model-cli:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 89,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "C",
+        "pytorch"
+      ],
+      "task_id": "pytorch-model-cli",
+      "test_code_bytes": 4001,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "spec-dense",
+        "quick",
+        "diagnose-first",
+        "modify-existing"
+      ],
+      "category": "model-training",
+      "description": "Evaluates the ability to reverse-engineer a PyTorch Transformer model architecture from a state dictionary, load pre-trained weights, and selectively fine-tune specific layers to improve performance on a dataset.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/pytorch-model-recovery:20251031",
+      "expert_min": 15.0,
+      "instruction_words": 213,
+      "requirement_lines": 9,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "pytorch",
+        "machine-learning"
+      ],
+      "task_id": "pytorch-model-recovery",
+      "test_code_bytes": 6219,
+      "test_data_bytes": 5032882,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "underspecified",
+        "quick",
+        "environment-engineering"
+      ],
+      "category": "system-administration",
+      "description": "Evaluates the ability to start an Alpine Linux VM in QEMU and configure SSH server access with proper networking and authentication.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/qemu-alpine-ssh:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 51,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "sys-admin"
+      ],
+      "task_id": "qemu-alpine-ssh",
+      "test_code_bytes": 2006,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "underspecified",
+        "quick",
+        "environment-engineering"
+      ],
+      "category": "system-administration",
+      "description": "Evaluates the agent's ability to configure and start a QEMU virtual machine with telnet-accessible serial console, requiring knowledge of QEMU command-line options, network configuration, and system readiness verification.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/qemu-startup:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 57,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "sys-admin"
+      ],
+      "task_id": "qemu-startup",
+      "test_code_bytes": 2405,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "modify-existing"
+      ],
+      "category": "data-science",
+      "description": "Evaluates the ability to optimize a slow SQL query with correlated subqueries by rewriting it using CTEs and window functions while preserving exact output.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/query-optimize:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 87,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "query-optimization",
+        "sql-query"
+      ],
+      "task_id": "query-optimize",
+      "test_code_bytes": 9229,
+      "test_data_bytes": 1140,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "greenfield-algorithmic"
+      ],
+      "category": "scientific-computing",
+      "description": "Evaluates the ability to fit Lorentzian curves to Raman spectroscopy data, extract peak parameters, and perform scientific data analysis using Python.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/raman-fitting:20251031",
+      "expert_min": 5.0,
+      "instruction_words": 77,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "fitting",
+        "analysis",
+        "physics"
+      ],
+      "task_id": "raman-fitting",
+      "test_code_bytes": 2637,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "long-horizon"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to implement a complete chess move generator using only regular expression transformations on FEN notation.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/regex-chess:20251031",
+      "expert_min": 1440.0,
+      "instruction_words": 244,
+      "requirement_lines": 6,
+      "requires_own_tests": false,
+      "tags": [
+        "software-engineering"
+      ],
+      "task_id": "regex-chess",
+      "test_code_bytes": 5985,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "greenfield-algorithmic"
+      ],
+      "category": "data-processing",
+      "description": "Tests the ability to construct a complex regular expression that matches dates in log lines containing valid IPv4 addresses while handling edge cases and boundary conditions.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/regex-log:20251031",
+      "expert_min": 45.0,
+      "instruction_words": 164,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "regex",
+        "string-parsing",
+        "log-analysis"
+      ],
+      "task_id": "regex-log",
+      "test_code_bytes": 4338,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "spec-dense"
+      ],
+      "category": "data-science",
+      "description": "Evaluates the ability to create Python scripts for bidirectional data resharding with file size and directory constraints, using proper dependency management.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/reshard-c4-data:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 203,
+      "requirement_lines": 8,
+      "requires_own_tests": false,
+      "tags": [
+        "coding",
+        "data-processing",
+        "file-operations"
+      ],
+      "task_id": "reshard-c4-data",
+      "test_code_bytes": 7114,
+      "test_data_bytes": 1029394,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 1800.0,
+      "axes": [
+        "spec-dense",
+        "modify-existing"
+      ],
+      "category": "data-science",
+      "description": "Evaluates the ability to convert an RStan Gaussian Process script to functionally equivalent PyStan 3.10.0 code, including complex installation, hyperparameter mapping, and numerical verification of posterior estimates.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/rstan-to-pystan:20251031",
+      "expert_min": 180.0,
+      "instruction_words": 266,
+      "requirement_lines": 17,
+      "requires_own_tests": false,
+      "tags": [
+        "pystan",
+        "rstan",
+        "gaussian-process"
+      ],
+      "task_id": "rstan-to-pystan",
+      "test_code_bytes": 6774,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 1800.0
+    },
+    {
+      "agent_timeout_sec": 7200.0,
+      "axes": [
+        "spec-dense",
+        "long-horizon",
+        "modify-existing",
+        "verification-heavy"
+      ],
+      "category": "data-science",
+      "description": "Evaluates the ability to implement a histopathology image segmentation pipeline using MobileSAM to convert rectangular cell masks to precise polyline contours.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/sam-cell-seg:20251031",
+      "expert_min": 600.0,
+      "instruction_words": 404,
+      "requirement_lines": 21,
+      "requires_own_tests": false,
+      "tags": [
+        "image-processing",
+        "machine-learning",
+        "histopathology"
+      ],
+      "task_id": "sam-cell-seg",
+      "test_code_bytes": 11531,
+      "test_data_bytes": 217039,
+      "verifier_timeout_sec": 7200.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "modify-existing",
+        "verification-heavy"
+      ],
+      "category": "security",
+      "description": "Evaluates the ability to identify and sanitize sensitive API keys and tokens from a Git repository by replacing them with placeholders without modifying unrelated files.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/sanitize-git-repo:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 123,
+      "requirement_lines": 4,
+      "requires_own_tests": false,
+      "tags": [
+        "security",
+        "system",
+        "version-control"
+      ],
+      "task_id": "sanitize-git-repo",
+      "test_code_bytes": 19726,
+      "test_data_bytes": 22216,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 2400.0,
+      "axes": [
+        "long-horizon",
+        "verification-heavy",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to implement a metacircular evaluator in Scheme that can interpret itself and a comprehensive suite of Scheme programs.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/schemelike-metacircular-eval:20251031",
+      "expert_min": 300.0,
+      "instruction_words": 181,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "software-engineering"
+      ],
+      "task_id": "schemelike-metacircular-eval",
+      "test_code_bytes": 25009,
+      "test_data_bytes": 84856,
+      "verifier_timeout_sec": 2400.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "long-horizon"
+      ],
+      "category": "data-querying",
+      "description": "Evaluates the ability to write complex SPARQL queries with multiple constraints, aggregations, and date filtering against an RDF knowledge graph.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/sparql-university:20251031",
+      "expert_min": 800.0,
+      "instruction_words": 186,
+      "requirement_lines": 4,
+      "requires_own_tests": false,
+      "tags": [
+        "knowledge-graph",
+        "sparql-query",
+        "information-retrieval"
+      ],
+      "task_id": "sparql-university",
+      "test_code_bytes": 3028,
+      "test_data_bytes": 10680,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "underspecified",
+        "diagnose-first",
+        "modify-existing"
+      ],
+      "category": "debugging",
+      "description": "Evaluates the ability to recover data from a corrupted SQLite database using binary file analysis and data recovery techniques.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/sqlite-db-truncate:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 42,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "file-operations"
+      ],
+      "task_id": "sqlite-db-truncate",
+      "test_code_bytes": 1705,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "underspecified",
+        "quick",
+        "environment-engineering"
+      ],
+      "category": "system-administration",
+      "description": "Evaluates the ability to compile SQLite from source with gcov instrumentation and make it available in the system PATH.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/sqlite-with-gcov:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 31,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "software-installation",
+        "system"
+      ],
+      "task_id": "sqlite-with-gcov",
+      "test_code_bytes": 2774,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "spec-dense",
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to implement pipeline parallel training for LLaMA using PyTorch distributed primitives with all-forward-all-backward scheduling.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/torch-pipeline-parallelism:20251031",
+      "expert_min": 240.0,
+      "instruction_words": 264,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "system"
+      ],
+      "task_id": "torch-pipeline-parallelism",
+      "test_code_bytes": 6721,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to implement tensor parallelism for PyTorch linear layers with correct weight sharding, distributed forward/backward passes, and gradient computation across multiple processes.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/torch-tensor-parallelism:20251031",
+      "expert_min": 240.0,
+      "instruction_words": 179,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "system"
+      ],
+      "task_id": "torch-tensor-parallelism",
+      "test_code_bytes": 7799,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "underspecified",
+        "greenfield-algorithmic"
+      ],
+      "category": "model-training",
+      "description": "Train a FastText text classification model on Yelp review data that achieves >0.62 accuracy while staying under 150MB in size.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/train-fasttext:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 49,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "data-processing",
+        "data-science"
+      ],
+      "task_id": "train-fasttext",
+      "test_code_bytes": 1857,
+      "test_data_bytes": 11506423,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "modify-existing"
+      ],
+      "category": "scientific-computing",
+      "description": "Evaluates the ability to optimize MuJoCo physics simulation parameters to achieve a 40% speedup while maintaining physical accuracy within specified tolerances.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/tune-mjcf:20251031",
+      "expert_min": 30.0,
+      "instruction_words": 108,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "mujoco",
+        "physics",
+        "simulation",
+        "numerical-optimization"
+      ],
+      "task_id": "tune-mjcf",
+      "test_code_bytes": 4826,
+      "test_data_bytes": 1254,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "video-processing",
+      "description": "Evaluates the ability to build a computer vision script that analyzes hurdle jump videos and extracts takeoff/landing frame numbers using OpenCV.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/video-processing:20251031",
+      "expert_min": 400.0,
+      "instruction_words": 222,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "video-processing"
+      ],
+      "task_id": "video-processing",
+      "test_code_bytes": 5618,
+      "test_data_bytes": 964534,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "quick",
+        "greenfield-algorithmic"
+      ],
+      "category": "security",
+      "description": "Evaluates the agent's ability to analyze a binary executable, identify and exploit a buffer overflow vulnerability to bypass authentication, and extract a hidden secret flag.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/vulnerable-secret:20251031",
+      "expert_min": 20.0,
+      "instruction_words": 72,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "security",
+        "file-operations"
+      ],
+      "task_id": "vulnerable-secret",
+      "test_code_bytes": 2124,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 900.0
+    },
+    {
+      "agent_timeout_sec": 3600.0,
+      "axes": [],
+      "category": "software-engineering",
+      "description": "Evaluates the ability to write a competitive CoreWars Redcode warrior that achieves specific win rates against five diverse opponent strategies.",
+      "difficulty": "medium",
+      "docker_image": "alexgshaw/winning-avg-corewars:20251031",
+      "expert_min": 60.0,
+      "instruction_words": 159,
+      "requirement_lines": 5,
+      "requires_own_tests": false,
+      "tags": [
+        "pmars",
+        "corewars",
+        "gaming"
+      ],
+      "task_id": "winning-avg-corewars",
+      "test_code_bytes": 4129,
+      "test_data_bytes": 0,
+      "verifier_timeout_sec": 3600.0
+    },
+    {
+      "agent_timeout_sec": 900.0,
+      "axes": [
+        "long-horizon",
+        "greenfield-algorithmic"
+      ],
+      "category": "software-engineering",
+      "description": "Evaluates the agent's ability to reverse-engineer a custom compression format and write a compatible compressor program.",
+      "difficulty": "hard",
+      "docker_image": "alexgshaw/write-compressor:20251031",
+      "expert_min": 1440.0,
+      "instruction_words": 62,
+      "requirement_lines": 0,
+      "requires_own_tests": false,
+      "tags": [
+        "coding"
+      ],
+      "task_id": "write-compressor",
+      "test_code_bytes": 4297,
+      "test_data_bytes": 4868,
+      "verifier_timeout_sec": 900.0
+    }
+  ]
+}

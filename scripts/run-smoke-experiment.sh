@@ -1,43 +1,45 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "=== 1. Checking Docker Health ==="
-if ! docker run --rm hello-world >/dev/null 2>&1; then
-    echo "❌ Docker network interface issue detected."
-    echo "Please run: sudo modprobe veth && sudo systemctl restart docker"
-    exit 1
-fi
-echo "✓ Docker is running cleanly."
+# Harbor Smoke Runner
+#
+# Runs the configured matrix across a single task to prove the pipeline
+# end to end: containers build, credentials forward, verifiers emit rewards.
 
-echo "=== 2. Checking Local Credentials ==="
-if [ ! -f "config/local.env" ]; then
-    echo "❌ config/local.env is missing!"
-    echo "Please create config/local.env with CLAUDE_CODE_OAUTH_TOKEN and CODEX_FORCE_AUTH_JSON=1."
-    exit 1
-fi
-echo "✓ config/local.env found."
+USAGE="Usage: $0 [--task ID] [--config PATH] [--force] [--dry-run]"
 
-echo "=== 3. Executing Smoke Matrix (6 Cells) ==="
+TASK="adaptive-rejection-sampler"
+CONFIG="config/experiments.yaml"
+EXTRA=()
 
-CELLS=(
-    "smoke-claude-baseline-rerun|generated/baseline/adaptive-rejection-sampler|claude-code|claude-sonnet-5"
-    "smoke-claude-sdd|generated/sdd/adaptive-rejection-sampler|claude-code|claude-sonnet-5"
-    "smoke-claude-dfg|generated/dfg/adaptive-rejection-sampler|claude-code|claude-sonnet-5"
-    "smoke-codex-baseline|generated/baseline/adaptive-rejection-sampler|codex|gpt-5.6-terra"
-    "smoke-codex-sdd|generated/sdd/adaptive-rejection-sampler|codex|gpt-5.6-terra"
-    "smoke-codex-dfg|generated/dfg/adaptive-rejection-sampler|codex|gpt-5.6-terra"
-)
-
-for item in "${CELLS[@]}"; do
-    IFS="|" read -r job_name task_path agent model <<< "$item"
-    if [ -d "jobs/$job_name" ]; then
-        echo "--> Cleaning previous run: jobs/$job_name"
-        rm -rf "jobs/$job_name"
-    fi
-    echo "--> Starting Cell: $job_name ($agent on $task_path)"
-    harbor run -p "$task_path" -a "$agent" -m "$model" -n 1 --env-file config/local.env --job-name "$job_name"
-    echo "✓ Finished $job_name"
-    echo "----------------------------------------------------"
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --task)
+            TASK="$2"
+            shift 2
+            ;;
+        --config)
+            CONFIG="$2"
+            shift 2
+            ;;
+        --force|--dry-run)
+            EXTRA+=("$1")
+            shift
+            ;;
+        -h|--help)
+            echo "$USAGE"
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1"
+            echo "$USAGE"
+            exit 1
+            ;;
+    esac
 done
 
-echo "=== All 6 Smoke Cells Executed Successfully ==="
+exec ./scripts/run-pilot-experiment.sh \
+    --config "$CONFIG" \
+    --task "$TASK" \
+    --job-prefix smoke \
+    "${EXTRA[@]}"

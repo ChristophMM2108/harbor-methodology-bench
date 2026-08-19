@@ -6,6 +6,28 @@ models:
   claude-code: claude-sonnet-5
   codex: gpt-5.6-terra
 
+# Names dropped from every toolkit payload before it enters a container.
+# Override per toolkit with an `exclude:` key.
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+# Directories inside a toolkit that hold installable agent skills, in precedence
+# order. The first source providing a given skill name wins.
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+# Each entry is one experimental condition. The `baseline` condition is always
+# generated and must not be declared here.
+#
+# Optional per-toolkit keys:
+#   exclude:              names dropped at any depth (defaults to snapshot_excludes)
+#   include:              allowlist of top-level snapshot entries
+#   expect_instructions:  must a CLAUDE.md / AGENTS.md reach the agent workdir?
+#   expect_skills:        must the toolkit's skills be installed for the agent?
+#   skill_sources:        override the global skill_sources for this toolkit
+#
+# Both `expect_*` flags are asserted in both directions by `validate` and
+# `preflight`. See config/experiments.scenarios.yaml for a worked example that
+# separates repository content from the methodology surface.
 toolkits:
   - id: sdd
     snapshot: toolkits/sdd/snapshot
