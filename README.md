@@ -1031,6 +1031,7 @@ The runner also takes:
 | `--config PATH` | Use a different experiment configuration |
 | `--job-prefix NAME` | Job name prefix, default `pilot`; also the `report.py --pattern` to use |
 | `--attempts N` | Repetitions per cell, passed to `harbor -n` |
+| `--timeout-multiplier F` | Scale every task timeout by `F`, for every cell in the run. Record the value with the result: it changes the budget the benchmark declares, and only a run-wide value keeps conditions comparable |
 | `--force` | Re-run cells that already have results |
 | `--dry-run` | Print the Harbor invocations without executing them |
 | `--skip-preflight` | Skip the validate/preflight gate — debugging only |

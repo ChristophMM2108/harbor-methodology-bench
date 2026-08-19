@@ -1,0 +1,33 @@
+# Experiment: SDD Agent Kit against a clean baseline, on the data-science and
+# machine-learning task categories (11 tasks).
+#
+# Two conditions only — `baseline` (always generated, benchmark task and nothing
+# else) and `sdd` (the frozen SDD Agent Kit snapshot in toolkits/sdd/). Codex is
+# left out because its account quota was exhausted in the last matrix run; add
+# the two commented cells below once that is renewed.
+#
+# Relative paths are resolved from this file's parent's parent, i.e. the
+# repository root, so this file must live in config/.
+
+source_root: source-tasks/terminal-bench
+generated_root: generated
+repetitions: 1
+
+models:
+  claude-code: claude-sonnet-5
+  # codex: gpt-5.6-terra
+
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+toolkits:
+  - id: sdd
+    snapshot: toolkits/sdd/snapshot
+
+matrix:
+  - {id: claude-baseline, agent: claude-code, toolkit: baseline}
+  - {id: claude-sdd, agent: claude-code, toolkit: sdd}
+  # - {id: codex-baseline, agent: codex, toolkit: baseline}
+  # - {id: codex-sdd, agent: codex, toolkit: sdd}

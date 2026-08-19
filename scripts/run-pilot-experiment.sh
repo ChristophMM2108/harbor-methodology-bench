@@ -22,6 +22,11 @@ Options:
   --config PATH       Experiment configuration (default config/experiments.yaml)
   --job-prefix NAME   Job name prefix (default 'pilot')
   --attempts N        Repetitions per cell, passed to harbor -n (default 1)
+  --timeout-multiplier F
+                      Scale every task timeout by F (harbor --timeout-multiplier).
+                      Applied to every cell, so a comparison stays fair; record
+                      the value with the result, since it changes the budget the
+                      benchmark declares.
   --force             Re-run cells that already have results
   --dry-run           Print the harbor invocations without executing them
   --skip-preflight    Skip the validate/preflight gate (debugging only)
@@ -33,6 +38,7 @@ EOF
 CONFIG="config/experiments.yaml"
 JOB_PREFIX="pilot"
 ATTEMPTS=1
+TIMEOUT_MULTIPLIER=""
 FORCE=false
 DRY_RUN=false
 SKIP_PREFLIGHT=false
@@ -54,6 +60,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --attempts)
             ATTEMPTS="$2"
+            shift 2
+            ;;
+        --timeout-multiplier)
+            TIMEOUT_MULTIPLIER="$2"
             shift 2
             ;;
         --force)
@@ -121,6 +131,14 @@ if [ ${#CELLS[@]} -eq 0 ]; then
     exit 1
 fi
 
+# Timeout scaling is a property of the whole run, never of a single cell: a
+# condition given more wall-clock than its comparison would be a confound.
+HARBOR_EXTRA=()
+if [ -n "$TIMEOUT_MULTIPLIER" ]; then
+    HARBOR_EXTRA+=(--timeout-multiplier "$TIMEOUT_MULTIPLIER")
+    echo "Task timeouts scaled by ${TIMEOUT_MULTIPLIER}× for every cell in this run."
+fi
+
 TOTAL_RUNS=$((${#TASKS[@]} * ${#CELLS[@]}))
 echo "✓ Selected ${#TASKS[@]} task(s) × ${#CELLS[@]} cell(s) = $TOTAL_RUNS trial(s)"
 for task in "${TASKS[@]}"; do
@@ -170,6 +188,28 @@ if not data.get("passed"):
 PY
 }
 
+# A `result.json` alone does not mean a cell produced data: an interrupted run
+# leaves one behind with `finished_at: null` and its trials cancelled. Skipping
+# such a directory would silently drop the cell from the matrix.
+job_finished() {
+    local job_dir="$1"
+    [ -f "$job_dir/result.json" ] || return 1
+    python3 - "$job_dir/result.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+try:
+    data = json.loads(Path(sys.argv[1]).read_text())
+except (OSError, ValueError):
+    raise SystemExit(1)
+stats = data.get("stats") or {}
+finished = data.get("finished_at") is not None
+cancelled = int(stats.get("n_cancelled_trials") or 0)
+raise SystemExit(0 if finished and not cancelled else 1)
+PY
+}
+
 echo "=== 3. Starting Matrix ($TOTAL_RUNS total runs) ==="
 
 RUN_IDX=0
@@ -189,7 +229,7 @@ for task in "${TASKS[@]}"; do
         echo "       Agent: $agent ($model)"
 
         if [ "$DRY_RUN" = true ]; then
-            echo "   [DRY RUN] harbor run -p $TASK_PATH -a $agent -m $model -n $ATTEMPTS --env-file config/local.env --job-name $JOB_NAME"
+            echo "   [DRY RUN] harbor run -p $TASK_PATH -a $agent -m $model -n $ATTEMPTS ${HARBOR_EXTRA[*]:-} --env-file config/local.env --job-name $JOB_NAME"
             continue
         fi
 
@@ -203,7 +243,7 @@ for task in "${TASKS[@]}"; do
                 rm -rf "jobs/$JOB_NAME"
             else
                 echo "--> Job directory jobs/$JOB_NAME exists. Checking result..."
-                if [ -f "jobs/$JOB_NAME/result.json" ]; then
+                if job_finished "jobs/$JOB_NAME"; then
                     echo "--> Already completed. Skipping. (Use --force to re-run)"
                     PASSED_RUNS=$((PASSED_RUNS + 1))
                     continue
@@ -216,6 +256,7 @@ for task in "${TASKS[@]}"; do
 
         # Execute trial and allow loop to continue even if individual trial errors
         if harbor run -p "$TASK_PATH" -a "$agent" -m "$model" -n "$ATTEMPTS" \
+            ${HARBOR_EXTRA[@]+"${HARBOR_EXTRA[@]}"} \
             --env-file config/local.env --job-name "$JOB_NAME"; then
             echo "✓ Job completed: $JOB_NAME"
             PASSED_RUNS=$((PASSED_RUNS + 1))

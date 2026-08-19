@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experiment runbook — SDD vs baseline on data-science + machine-learning</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #5b6570;
+    --rule: #e2e6ea;
+    --code-bg: #f5f7f9;
+    --accent: #0b5fa5;
+    --warn-bg: #fff7e6;
+    --warn-border: #e0a800;
+    --stop-bg: #fdecec;
+    --stop-border: #c0392b;
+    --ok: #1a7f4b;
+    --btn-bg: #e8ecf0;
+    --btn-fg: #33404d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171a;
+      --fg: #e8eaed;
+      --muted: #9aa4ae;
+      --rule: #2a2f35;
+      --code-bg: #1c2126;
+      --accent: #6db3f2;
+      --warn-bg: #2a2418;
+      --warn-border: #b38600;
+      --stop-bg: #2b1a1a;
+      --stop-border: #d9635a;
+      --ok: #57c98a;
+      --btn-bg: #29313a;
+      --btn-fg: #c8d2dc;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 5rem;
+    max-width: 60rem;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 .5rem; }
+  h2 { font-size: 1.3rem; margin: 2.75rem 0 .75rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 1.05rem; margin: 1.75rem 0 .5rem; }
+  p, li { margin: .5rem 0; }
+  .lede { color: var(--muted); font-size: 1.05rem; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em;
+         background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+  .codeblock { position: relative; margin: 1rem 0; }
+  .codeblock pre { margin: 0; }
+  pre { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px;
+        padding: .9rem 1rem; overflow-x: auto; }
+  pre code { background: none; padding: 0; font-size: .85rem; line-height: 1.5; }
+  .copy-btn {
+    position: absolute; top: .5rem; right: .5rem;
+    font: 600 .72rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: .04em; text-transform: uppercase;
+    color: var(--btn-fg); background: var(--btn-bg);
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: .4rem .55rem; cursor: pointer; opacity: .55;
+    transition: opacity .12s ease, color .12s ease;
+  }
+  .codeblock:hover .copy-btn, .copy-btn:focus-visible { opacity: 1; }
+  .copy-btn[data-state="done"] { opacity: 1; color: var(--ok); border-color: var(--ok); }
+  .copy-btn[data-state="failed"] { opacity: 1; color: var(--stop-border); border-color: var(--stop-border); }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-weight: 600; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  tr.excluded td { color: var(--muted); text-decoration: line-through; }
+  tr.excluded td:last-child { text-decoration: none; }
+  .wrap { overflow-x: auto; }
+  .note { background: var(--code-bg); border-left: 3px solid var(--accent); padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0; }
+  .warn { background: var(--warn-bg); border-left: 3px solid var(--warn-border); padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0; }
+  .stop { background: var(--stop-bg); border-left: 3px solid var(--stop-border); padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0; }
+  .verified { color: var(--ok); font-weight: 600; }
+  .muted { color: var(--muted); }
+  ol.steps > li { margin: 1.5rem 0; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1.25rem; margin: 1rem 0; }
+  .kv dt { font-weight: 600; }
+  .kv dd { margin: 0; }
+  footer { margin-top: 3.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: .875rem; }
+  @media (max-width: 34rem) { .kv { grid-template-columns: 1fr; } .kv dd { margin-bottom: .5rem; } }
+</style>
+</head>
+<body>
+
+<h1>Experiment runbook: SDD Agent Kit vs clean baseline</h1>
+<p class="lede">The <code>data-science</code> and <code>machine-learning</code> benchmark categories,
+minus one excluded outlier — 10 tasks, 2 conditions, 20 trials. Every command below was executed
+against this repository except the two that build images or spend model tokens (preflight and the
+run itself), which are marked as such.</p>
+
+<h2>1. What this experiment is</h2>
+
+<dl class="kv">
+  <dt>Conditions</dt><dd><code>baseline</code> (benchmark task and nothing else, always generated) and <code>sdd</code> (the frozen SDD Agent Kit snapshot already in <code>toolkits/sdd/</code>, SHA <code>dc4b09e730f6e38a43ba85b44991bb6de890b6d9</code>). <code>dfg</code> is deliberately excluded.</dd>
+  <dt>Tasks</dt><dd>10 — the 11 tasks whose <code>[metadata].category</code> is <code>data-science</code> (8) or <code>machine-learning</code> (3), minus <code>caffe-cifar-10</code> (§7).</dd>
+  <dt>Task set file</dt><dd><code>config/tasks-ds-ml.txt</code> — the exclusion lives in one place, and every command reads it.</dd>
+  <dt>Agent</dt><dd><code>claude-code</code> with <code>claude-sonnet-5</code>.</dd>
+  <dt>Matrix</dt><dd>2 cells × 10 tasks × 1 attempt = <strong>20 trials</strong>.</dd>
+  <dt>Job prefix</dt><dd><code>ds-ml</code> → jobs land in <code>jobs/ds-ml-claude-{baseline,sdd}-&lt;task&gt;/</code>.</dd>
+</dl>
+
+<div class="warn">
+<strong>Two decisions taken for you, change them if you disagree.</strong>
+<ul>
+  <li><strong>Codex is left out.</strong> All 15 Codex trials in the last matrix run failed with
+  <code>ApiUsageLimitError</code> before reaching the task (see <code>TODO.md</code>). Including it
+  would add 20 trials that fail at startup. The config carries the two Codex cells commented out —
+  uncomment them once the quota is renewed and re-run the same commands.</li>
+  <li><strong>One attempt per cell.</strong> Enough to see whether the pipeline and the conditions
+  hold on these tasks, but <em>not</em> enough to claim a methodology effect: with 10 tasks and one
+  attempt, a single flaky trial moves the success rate by 10 points. Add <code>--attempts 3</code>
+  when you want a reportable mean — it triples cost and wall-clock.</li>
+</ul>
+</div>
+
+<h2>2. Prerequisites</h2>
+
+<p>All 10 tasks are CPU-only (<code>gpus = 0</code>) and ship prebuilt images, so no GPU or
+Dockerfile-build setup is needed. Each declares 10 GB of storage and up to 8 GB of memory.</p>
+
+<pre><code>docker run --rm hello-world          # daemon healthy
+harbor --version
+claude --version
+uv run pytest                        # 31 passed
+./scripts/freeze-kits.sh             # ok sdd dc4b09e7… / ok dfg d5c0f1a7…</code></pre>
+
+<p>Two things a fresh clone does not have, because both are git-ignored:</p>
+
+<ul>
+  <li><strong>The task suite</strong> — <code>source-tasks/terminal-bench/</code> must hold the 89
+  Terminal-Bench 2.0 tasks. Fetch procedure: README §3. Check with
+  <code>find source-tasks/terminal-bench -mindepth 2 -maxdepth 2 -name task.toml | wc -l</code>.</li>
+  <li><strong>Credentials</strong> — <code>config/local.env</code> with
+  <code>CLAUDE_FORCE_OAUTH=1</code> and <code>CLAUDE_CODE_OAUTH_TOKEN="…"</code> from
+  <code>claude setup-token</code>. The runner refuses to start without this file.</li>
+</ul>
+
+<h2>3. Setup: the two configuration files</h2>
+
+<h3>The experiment configuration</h3>
+
+<p>The shipped <code>config/experiments.yaml</code> declares six cells over two toolkits, so this
+experiment has its own file — <code>config/experiments.sdd-ds-ml.yaml</code>:</p>
+
+<pre><code># Experiment: SDD Agent Kit against a clean baseline, on the data-science and
+# machine-learning task categories.
+
+source_root: source-tasks/terminal-bench
+generated_root: generated
+repetitions: 1
+
+models:
+  claude-code: claude-sonnet-5
+  # codex: gpt-5.6-terra
+
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+toolkits:
+  - id: sdd
+    snapshot: toolkits/sdd/snapshot
+
+matrix:
+  - {id: claude-baseline, agent: claude-code, toolkit: baseline}
+  - {id: claude-sdd, agent: claude-code, toolkit: sdd}
+  # - {id: codex-baseline, agent: codex, toolkit: baseline}
+  # - {id: codex-sdd, agent: codex, toolkit: sdd}</code></pre>
+
+<div class="note">
+<strong>The file must live in <code>config/</code>.</strong> <code>load_config()</code> resolves
+relative paths from the config file's <em>parent's parent</em>
+(<code>src/harbor_methodology_bench/config.py</code>), so a config outside a repository
+subdirectory resolves <code>source_root</code> to the wrong place and fails with
+<code>source root does not exist</code>.
+</div>
+
+<h3>The task set</h3>
+
+<p><code>config/tasks-ds-ml.txt</code> holds the 10 task ids, with the exclusion and its reason as a
+comment header (the reader ignores <code>#</code> comments and blank lines):</p>
+
+<pre><code>distribution-search
+hf-model-inference
+llm-inference-batching-scheduler
+mcmc-sampling-stan
+mteb-leaderboard
+mteb-retrieve
+query-optimize
+reshard-c4-data
+rstan-to-pystan
+sam-cell-seg</code></pre>
+
+<p>Regenerate it at any time — this is the only place the exclusion is expressed:</p>
+
+<pre><code>./scripts/catalogue.sh --config config/experiments.sdd-ds-ml.yaml \
+  --category data-science --category machine-learning --ids-only \
+  | grep -v '^caffe-cifar-10$' > config/tasks-ds-ml.txt</code></pre>
+
+<p>Confirm the matrix resolves to exactly two cells:</p>
+
+<pre><code>uv run harbor-methodology-bench matrix-plan --config config/experiments.sdd-ds-ml.yaml</code></pre>
+<pre><code>claude-baseline	baseline	claude-code	claude-sonnet-5
+claude-sdd	sdd	claude-code	claude-sonnet-5</code></pre>
+
+<h2>4. The commands, in order</h2>
+
+<p>Every command carries the same two flags: <code>--config</code> and <code>--tasks-file</code>.
+Nothing selects by category any more, so <code>caffe-cifar-10</code> cannot re-enter the run by
+accident.</p>
+
+<ol class="steps">
+
+<li>
+<h3>Preview the selection <span class="verified">✓ run</span></h3>
+<pre><code>./scripts/catalogue.sh --config config/experiments.sdd-ds-ml.yaml \
+  --tasks-file config/tasks-ds-ml.txt --ids-only</code></pre>
+<pre><code>distribution-search
+hf-model-inference
+llm-inference-batching-scheduler
+mcmc-sampling-stan
+mteb-leaderboard
+mteb-retrieve
+query-optimize
+reshard-c4-data
+rstan-to-pystan
+sam-cell-seg</code></pre>
+<p class="muted">Drop <code>--ids-only</code> for the axis rollup of the set: spec-dense 7,
+modify-existing 3, greenfield-algorithmic 2, underspecified 2, verification-heavy 2,
+long-horizon 1, quick 1.</p>
+</li>
+
+<li>
+<h3>Generate the variants <span class="verified">✓ run</span></h3>
+<pre><code>./scripts/generate-variants.sh --config config/experiments.sdd-ds-ml.yaml \
+  --tasks-file config/tasks-ds-ml.txt --force</code></pre>
+<pre><code>generated baseline/distribution-search  markers=- skills=0
+generated sdd/distribution-search  markers=CLAUDE.md,AGENTS.md skills=7
+…
+generated baseline/sam-cell-seg  markers=- skills=0
+generated sdd/sam-cell-seg  markers=CLAUDE.md,AGENTS.md skills=7</code></pre>
+<p>20 variant directories under <code>generated/baseline/</code> and <code>generated/sdd/</code>.
+Every <code>sdd</code> line must show both instruction markers and 7 skills; a baseline line must
+show neither.</p>
+</li>
+
+<li>
+<h3>Validate host-side <span class="verified">✓ run</span></h3>
+<pre><code>./scripts/validate-variants.sh --config config/experiments.sdd-ds-ml.yaml \
+  --tasks-file config/tasks-ds-ml.txt</code></pre>
+<pre><code>validated 10 tasks across 2 variants</code></pre>
+<p>This re-derives each generated environment through the code path that produced it and
+hash-compares, so it catches a tampered benchmark file or a hand-edited generated
+<code>Dockerfile</code>.</p>
+</li>
+
+<li>
+<h3>Preflight from inside the containers <span class="muted">— builds 20 images, not yet run</span></h3>
+<pre><code>./scripts/preflight-variants.sh --config config/experiments.sdd-ds-ml.yaml \
+  --tasks-file config/tasks-ds-ml.txt</code></pre>
+<p>Expect one block per task:</p>
+<pre><code>preflight distribution-search ...
+  ok    baseline: workdir=/app markers=- skills=0 payload_files=0
+  ok    sdd: workdir=/app markers=CLAUDE.md,AGENTS.md skills=7 payload_files=47</code></pre>
+<p>This is the step that decides whether the experiment is real: it proves the baseline workdir is
+byte-identical to the untouched base image and that all 7 SDD skills plus the instruction files
+reached the agent's workdir. Budget time and disk for it — 10 base images are pulled on first run,
+and each variant adds one thin payload layer. A <code>warn … archived on collision</code> line is
+tolerable (the benchmark file wins by design); an <code>error</code> on <code>CLAUDE.md</code> is
+not, and the runner will refuse that cell.</p>
+</li>
+
+<li>
+<h3>Dry-run the matrix <span class="verified">✓ run</span></h3>
+<pre><code>./scripts/run-pilot-experiment.sh --config config/experiments.sdd-ds-ml.yaml \
+  --tasks-file config/tasks-ds-ml.txt --job-prefix ds-ml --dry-run</code></pre>
+<pre><code>[20/20] Job: ds-ml-claude-sdd-sam-cell-seg
+       Task: sam-cell-seg (sdd)
+       Agent: claude-code (claude-sonnet-5)
+   [DRY RUN] harbor run -p generated/sdd/sam-cell-seg -a claude-code -m claude-sonnet-5 -n 1 --env-file config/local.env --job-name ds-ml-claude-sdd-sam-cell-seg
+✓ Dry run completed for 20 trial invocations.</code></pre>
+</li>
+
+<li>
+<h3>Run it <span class="muted">— spends model tokens</span></h3>
+<pre><code>./scripts/run-pilot-experiment.sh --config config/experiments.sdd-ds-ml.yaml \
+  --tasks-file config/tasks-ds-ml.txt --job-prefix ds-ml</code></pre>
+<p>The runner re-runs validate and preflight as a gate, then refuses any individual cell whose
+<code>.methodology-bench-preflight.json</code> is missing or failed. It is resumable: a job that
+finished is skipped, one that was interrupted is cleaned and re-run. Pass <code>--force</code> to
+re-run finished cells, <code>--attempts 3</code> for repetitions, and
+<code>--timeout-multiplier F</code> to scale every task's timeouts run-wide.</p>
+</li>
+
+<li>
+<h3>Report <span class="muted">— after the run</span></h3>
+<pre><code>python3 scripts/report.py --jobs-dir jobs/ --pattern "ds-ml-*" \
+  --md-out results/ds-ml_report.md \
+  --json-out results/ds-ml_summary.json</code></pre>
+<p>Per cell: success rate, mean reward, average duration, token consumption, cost, and the
+adherence columns (skills registered, skills invoked, config files named). Per task: which of the 10
+passed under which condition.</p>
+<div class="stop">
+<strong>The two void <code>caffe-cifar-10</code> jobs have already been moved out of the pattern.</strong>
+They used to be <code>jobs/ds-ml-claude-{baseline,sdd}-caffe-cifar-10</code>, matched
+<code>ds-ml-*</code>, and would have dragged both conditions down with a failure about the container
+budget rather than the methodology. They now live at
+<code>jobs/void-caffe-cifar-10-{baseline,sdd}/</code>, so the evidence in §7 stays on disk while the
+report ignores it. Delete them whenever you no longer need it:
+<div class="codeblock"><pre><code>rm -rf jobs/void-caffe-cifar-10-baseline jobs/void-caffe-cifar-10-sdd</code></pre></div>
+</div>
+</li>
+
+</ol>
+
+<h3>All of it, copy-paste</h3>
+<pre><code>C=config/experiments.sdd-ds-ml.yaml
+F=config/tasks-ds-ml.txt
+
+./scripts/catalogue.sh            --config $C --tasks-file $F --ids-only
+./scripts/generate-variants.sh    --config $C --tasks-file $F --force
+./scripts/validate-variants.sh    --config $C --tasks-file $F
+./scripts/preflight-variants.sh   --config $C --tasks-file $F
+./scripts/run-pilot-experiment.sh --config $C --tasks-file $F --job-prefix ds-ml --dry-run
+./scripts/run-pilot-experiment.sh --config $C --tasks-file $F --job-prefix ds-ml
+python3 scripts/report.py --jobs-dir jobs/ --pattern "ds-ml-*" \
+  --md-out results/ds-ml_report.md --json-out results/ds-ml_summary.json</code></pre>
+<p class="muted">A variable holding a single value like <code>$C</code> is safe in zsh; a variable
+holding several words is not — zsh does not word-split unquoted parameters, so a
+<code>$SET="--a x --b y"</code> style variable arrives as one argument and the CLI rejects it. That
+is why the selection is a file rather than a variable.</p>
+
+<h2>5. The task set</h2>
+
+<div class="wrap">
+<table>
+<thead>
+<tr><th>Task</th><th>Category</th><th>Difficulty</th><th class="num">Agent timeout</th><th class="num">CPU / RAM</th><th>Axes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>distribution-search</code></td><td>machine-learning</td><td>medium</td><td class="num">60 min</td><td class="num">1 / 2 GB</td><td>spec-dense</td></tr>
+<tr><td><code>hf-model-inference</code></td><td>data-science</td><td>medium</td><td class="num">15 min</td><td class="num">1 / 2 GB</td><td>quick, spec-dense</td></tr>
+<tr><td><code>llm-inference-batching-scheduler</code></td><td>machine-learning</td><td>hard</td><td class="num">30 min</td><td class="num">1 / 2 GB</td><td>spec-dense, verification-heavy</td></tr>
+<tr><td><code>mcmc-sampling-stan</code></td><td>data-science</td><td>hard</td><td class="num">30 min</td><td class="num">4 / 8 GB</td><td>spec-dense</td></tr>
+<tr><td><code>mteb-leaderboard</code></td><td>data-science</td><td>medium</td><td class="num">60 min</td><td class="num">1 / 4 GB</td><td>greenfield-algorithmic, underspecified</td></tr>
+<tr><td><code>mteb-retrieve</code></td><td>data-science</td><td>medium</td><td class="num">30 min</td><td class="num">1 / 2 GB</td><td>greenfield-algorithmic, underspecified</td></tr>
+<tr><td><code>query-optimize</code></td><td>data-science</td><td>medium</td><td class="num">15 min</td><td class="num">1 / 2 GB</td><td>modify-existing</td></tr>
+<tr><td><code>reshard-c4-data</code></td><td>data-science</td><td>medium</td><td class="num">60 min</td><td class="num">1 / 2 GB</td><td>spec-dense</td></tr>
+<tr><td><code>rstan-to-pystan</code></td><td>data-science</td><td>medium</td><td class="num">30 min</td><td class="num">4 / 8 GB</td><td>modify-existing, spec-dense</td></tr>
+<tr><td><code>sam-cell-seg</code></td><td>data-science</td><td>hard</td><td class="num">120 min</td><td class="num">1 / 4 GB</td><td>long-horizon, modify-existing, spec-dense, verification-heavy</td></tr>
+<tr class="excluded"><td><code>caffe-cifar-10</code></td><td>machine-learning</td><td>medium</td><td class="num">20 min</td><td class="num">1 / 2 GB</td><td><strong>excluded</strong> — see §7</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>6. Budget</h2>
+
+<p>Agent timeouts across the 10 tasks total <strong>7 h 30 min</strong>, so 20 sequential trials have
+a worst case of about <strong>15 hours</strong> of agent time plus verifier and image-build time.
+Real runs finish well short of that — the only measured Claude Code trials in this repository (five
+easier tasks) averaged 200–800 s and roughly $0.40–$1.30 each.</p>
+
+<p>Extrapolating to this heavier set: order <strong>6–15 hours</strong> wall-clock and
+<strong>$20–$55</strong> for the 20 trials at one attempt. Treat that as an order of magnitude, not
+a forecast — three of these tasks are <code>hard</code> and <code>sam-cell-seg</code> alone allows
+two hours. Shake the pipeline out on the cheapest task first:</p>
+
+<pre><code>./scripts/run-pilot-experiment.sh --config config/experiments.sdd-ds-ml.yaml \
+  --task hf-model-inference --job-prefix ds-ml-probe</code></pre>
+
+<h2>7. Why <code>caffe-cifar-10</code> is excluded</h2>
+
+<p>The first attempt at this experiment lost both <code>caffe-cifar-10</code> trials, and the two
+exception names Harbor printed are both misleading. What actually happened, from the trial artifacts
+and the host kernel log:</p>
+
+<div class="wrap">
+<table>
+<thead><tr><th>Cell</th><th>Harbor said</th><th>What really happened</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>claude-baseline</code></td>
+  <td><code>AgentTimeoutError</code> after 1200 s</td>
+  <td>Genuine budget exhaustion. The agent cloned BVLC Caffe 1.0, apt-installed the dependency
+  stack, patched <code>io.cpp</code> for modern protobuf and OpenCV, ran <code>make all -j2</code>
+  (~3 min), downloaded CIFAR-10, and was still mid-build when the 20-minute agent budget ran out.
+  41 tool calls, no idle time.</td>
+</tr>
+<tr>
+  <td><code>claude-sdd</code></td>
+  <td><code>ApiRateLimitError</code></td>
+  <td><strong>Not a rate limit.</strong> Exit code 137 = SIGKILL. The kernel log shows
+  <code>Memory cgroup out of memory: Killed process … (cc1plus)</code> inside the container's
+  cgroup. Harbor's <code>_classify_exec_error</code> maps exit 137 to
+  <code>ApiRateLimitError</code>, which is simply the wrong label. The <code>rate_limit_event</code>
+  in the agent log reads <code>status: allowed</code> — the account was never throttled.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<p>Root cause of the OOM: <code>nproc</code> inside the container returns <strong>16</strong> — the
+host's core count — because Docker's <code>--cpus</code> quota is a scheduler limit, not a visible
+CPU count. The agent read 16, ran <code>make all -j$(nproc)</code>, and 16 parallel
+<code>cc1plus</code> processes exceeded the task's 2048 MB memory limit. Four cgroup OOM kills were
+logged across the two trials. Both conditions are equally exposed; the baseline simply happened to
+guess <code>-j2</code>.</p>
+
+<p>So the task is an environment-engineering task wearing a machine-learning label: build a C++
+framework from source, on 1 CPU, in 2 GB, within 20 minutes. Neither the bare agent nor the
+SDD-equipped agent gets near the reward, and the failure is a property of the container budget, not
+of the methodology — which is exactly the kind of task that adds variance without adding an answer.
+It is therefore out of the set, by name, in <code>config/tasks-ds-ml.txt</code>.</p>
+
+<h3>If you want it back</h3>
+
+<p>Run it on its own, with more wall-clock, and report it separately from the 10-task result:</p>
+
+<pre><code>./scripts/generate-variants.sh --config config/experiments.sdd-ds-ml.yaml \
+  --task caffe-cifar-10 --force
+./scripts/preflight-variants.sh --config config/experiments.sdd-ds-ml.yaml \
+  --task caffe-cifar-10
+./scripts/run-pilot-experiment.sh --config config/experiments.sdd-ds-ml.yaml \
+  --task caffe-cifar-10 --job-prefix caffe --timeout-multiplier 3 --force</code></pre>
+
+<p>The runner passes <code>--timeout-multiplier</code> through to Harbor and applies it to
+<em>every</em> cell of the run, so the comparison inside that run stays fair. It does change the
+budget the benchmark declares, so report the multiplier with the numbers — and keep in mind that a
+methodology's value can itself be budget-dependent. A separate <code>--job-prefix</code> keeps the
+jobs out of the <code>ds-ml-*</code> report.</p>
+
+<div class="note">
+<strong>Worth knowing in general:</strong> Harbor labels several container-level failures with
+API-sounding exception names. Check <code>&lt;trial&gt;/exception.txt</code> for the exit code before
+believing the label — 137 is a kill (usually OOM), 124 is a command timeout, and a genuine quota
+failure shows up in the agent log's <code>rate_limit_event</code> with a status other than
+<code>allowed</code>.
+</div>
+
+<h2>8. Reading the result honestly</h2>
+
+<ul>
+  <li><strong>No control axis.</strong> Selecting by category, not by axis, gives a set that is 7/10
+  <code>spec-dense</code> — the axis SDD's <code>sdd-specify</code> / <code>sdd-tasks</code> /
+  <code>sdd-analyze</code> skills target. That is a fair test of the claim, but it contains no cheap
+  control, so it cannot show what the methodology <em>costs</em> where it should not help. A
+  companion run with <code>--suite quick --limit 3</code> and the same config supplies that.</li>
+  <li><strong>Availability is not use.</strong> Preflight proves the 7 skills reached the container.
+  The adherence columns show whether the agent invoked them. Zero invocations with a passing
+  preflight is a finding about the toolkit, not a broken run — SDD gates itself to "substantial
+  feature development", so short tasks skipping it is the kit behaving as written.</li>
+  <li><strong>Claude Code loads <code>CLAUDE.md</code> silently.</strong> An empty
+  <code>Config Referenced</code> means the agent never named the file, not that it never received
+  it.</li>
+  <li><strong>10 tasks × 1 attempt is a pipeline check, not a result.</strong> One flaky trial is 10
+  points of success rate. Re-run with <code>--attempts 3</code> before drawing a conclusion.</li>
+  <li><strong>Say that a task was excluded.</strong> A 10-task result is not an 11-task result;
+  <code>config/tasks-ds-ml.txt</code> carries the reason in its header so the exclusion travels with
+  the set.</li>
+</ul>
+
+<h2>9. Housekeeping</h2>
+
+<ul>
+  <li><strong>Resuming after Ctrl-C is safe.</strong> An interrupted run leaves a job directory
+  holding a <code>result.json</code> with <code>finished_at: null</code> and cancelled trials. The
+  runner inspects that file instead of merely testing for its existence, so such a cell is cleaned
+  and re-run rather than counted as done. Cells that finished — including ones that finished with an
+  exception — are skipped; use <code>--force</code> to redo those.</li>
+  <li><code>generated/</code> also holds variant directories from earlier selections. They cannot
+  join this run — the runner resolves its task list from <code>--tasks-file</code>, not from the
+  directory — but <code>rm -rf generated/</code> before step 2 gives a clean tree. The two
+  <code>caffe-cifar-10</code> variants have already been removed.</li>
+  <li><code>jobs/</code> is git-ignored, so the 20 job directories stay local. The tracked artifacts
+  are the two files under <code>results/</code>.</li>
+  <li>Preflight leaves tagged images behind
+  (<code>harbor-methodology-bench-preflight:&lt;condition&gt;-&lt;task&gt;</code>); clear them with
+  <code>docker image prune</code> when convenient.</li>
+  <li>When the Codex quota is renewed: uncomment the model and the two cells in
+  <code>config/experiments.sdd-ds-ml.yaml</code>, then re-run steps 4–7. Existing Claude jobs are
+  skipped, so only the new cells execute.</li>
+</ul>
+
+<footer>
+Runbook for <code>harbor-methodology-bench</code>, branch
+<code>feat/container-payload-layer-and-task-catalogue</code>. Task facts read from
+<code>source-tasks/terminal-bench</code> at pin
+<code>2fd12b88aafdd04a52c298e3940bcb189f9766d6</code>; SDD snapshot
+<code>dc4b09e730f6e38a43ba85b44991bb6de890b6d9</code>.
+</footer>
+
+<script>
+(function () {
+  var LABEL = 'Copy';
+  document.querySelectorAll('pre').forEach(function (pre) {
+    var host = pre.parentElement;
+    if (!host || !host.classList.contains('codeblock')) {
+      host = document.createElement('div');
+      host.className = 'codeblock';
+      pre.parentNode.insertBefore(host, pre);
+      host.appendChild(pre);
+    }
+    if (host.querySelector('.copy-btn')) return;
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-btn';
+    btn.textContent = LABEL;
+    btn.setAttribute('aria-label', 'Copy this block to the clipboard');
+
+    btn.addEventListener('click', function () {
+      var text = pre.innerText.replace(/\s+$/, '');
+      copy(text).then(function () {
+        flag('Copied', 'done');
+      }).catch(function () {
+        flag('Ctrl+C', 'failed');
+      });
+    });
+
+    function flag(label, state) {
+      btn.textContent = label;
+      btn.setAttribute('data-state', state);
+      window.setTimeout(function () {
+        btn.textContent = LABEL;
+        btn.removeAttribute('data-state');
+      }, 1600);
+    }
+
+    host.appendChild(btn);
+  });
+
+  // navigator.clipboard is unavailable in some browsers when a page is opened
+  // straight off the filesystem, so fall back to a selection-based copy.
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.top = '-1000px';
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      document.body.removeChild(area);
+      ok ? resolve() : reject(new Error('copy rejected'));
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

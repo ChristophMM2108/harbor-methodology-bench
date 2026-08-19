@@ -1,0 +1,26 @@
+# Task set: every data-science and machine-learning task except caffe-cifar-10.
+#
+# Regenerate with:
+#   ./scripts/catalogue.sh --config config/experiments.sdd-ds-ml.yaml \
+#     --category data-science --category machine-learning --ids-only \
+#     | grep -v '^caffe-cifar-10$' > config/tasks-ds-ml.txt
+#
+# caffe-cifar-10 is excluded deliberately. It asks the agent to build BVLC Caffe
+# 1.0 from source and train CIFAR-10 within a 1200 s agent budget, on 1 CPU and
+# 2048 MB. Both conditions failed on the environment rather than on the task:
+# the baseline exhausted the budget mid-build, and the SDD cell was OOM-killed
+# (exit 137, which Harbor mislabels as ApiRateLimitError) after running
+# `make -j$(nproc)` — nproc reports the host's 16 cores because Docker's --cpus
+# quota is a scheduler limit, not a visible core count. It measures the
+# container budget, not the methodology.
+
+distribution-search
+hf-model-inference
+llm-inference-batching-scheduler
+mcmc-sampling-stan
+mteb-leaderboard
+mteb-retrieve
+query-optimize
+reshard-c4-data
+rstan-to-pystan
+sam-cell-seg
