@@ -4,11 +4,18 @@ __pycache__/
 .venv/
 
 # Generated benchmark tasks and large source datasets
-/generated/
+/generated/*
 /source-tasks/terminal-bench/
 
-# Keep the directory layout available in a clean clone.
-!generated/.gitkeep
+# Raw Harbor execution output: one directory per job, agent trajectories and
+# session state included. Reproduced by re-running a job; reports in results/
+# are the durable artifact.
+/jobs/*
+
+# Keep the directory layout available in a clean clone. A negation only works
+# when the parent directory itself is not excluded, hence the `/*` patterns above.
+!/generated/.gitkeep
+!/jobs/.gitkeep
 
 # Trial outputs
 /results/raw/

@@ -1,8 +1,0 @@
-{
-  "id": "2",
-  "subject": "Fix numpy 2.0 deprecated aliases (np.int, np.float, np.bool)",
-  "description": "Fix ccomplexity.pyx (np.int), periodiccell.py (np.int), spacecurve.py (np.float, np.bool)",
-  "status": "completed",
-  "blocks": [],
-  "blockedBy": []
-}

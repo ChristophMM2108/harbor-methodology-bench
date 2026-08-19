@@ -1191,7 +1191,7 @@ harbor-methodology-bench/
 ├── source-tasks/terminal-bench/    # Source benchmark tasks
 ├── toolkits/<id>/                  # SOURCE, GIT_SHA, BRANCH, VERSION, snapshot/
 ├── generated/<condition>/<task>/   # Generated Harbor tasks (git-ignored)
-├── jobs/                           # Raw Harbor execution output
+├── jobs/                           # Raw Harbor execution output (git-ignored)
 ├── docs/task-catalogue.md          # Generated task catalogue (see §6)
 ├── results/                        # Aggregated reports, summaries, catalogue JSON
 ├── scripts/                        # Thin wrappers around the CLI, plus runners
