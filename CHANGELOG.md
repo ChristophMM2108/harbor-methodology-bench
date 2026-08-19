@@ -5,6 +5,19 @@ active development and does not yet publish versioned releases.
 
 ## Unreleased
 
+### Changed — `jobs/` is no longer tracked
+
+Raw Harbor execution output is machine-generated and large: one directory per
+job carrying agent trajectories, verifier logs and CLI session state, including
+`.claude.json` backups. It is now git-ignored (`jobs/.gitkeep` preserves the
+directory in a clean clone) and the 1,529 previously committed files are
+untracked; they remain on disk locally. Aggregated reports under `results/` are
+the durable artifact, and any job can be reproduced by re-running its cell.
+
+The `generated/` ignore rule was corrected at the same time: a `!generated/.gitkeep`
+negation cannot re-include a file whose parent directory is excluded, so both
+patterns are now `/<dir>/*`.
+
 ### Added — README: fetching the benchmark task suite
 
 `source-tasks/terminal-bench/` is git-ignored, so a fresh clone previously had no

@@ -1,8 +1,0 @@
-{
-  "id": "1",
-  "subject": "Fix setup.py distutils import (Python 3.13)",
-  "description": "Replace distutils.extension.Extension import with setuptools.Extension since distutils was removed in Python 3.12+",
-  "status": "completed",
-  "blocks": [],
-  "blockedBy": []
-}

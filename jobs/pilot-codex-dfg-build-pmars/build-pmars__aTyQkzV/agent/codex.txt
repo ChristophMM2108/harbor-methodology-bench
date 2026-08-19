@@ -1,6 +1,0 @@
-WARNING: proceeding, even though we could not create PATH aliases: Refusing to create helper binaries under temporary dir "/tmp" (codex_home: AbsolutePathBuf("/tmp/codex-home"))
-Reading additional input from stdin...
-{"type":"thread.started","thread_id":"019ffd1b-8aec-70d2-930e-da565704df70"}
-{"type":"turn.started"}
-{"type":"error","message":"You've hit your usage limit. To continue using Codex and get access to GPT-5.3-Codex, start a free trial of Plus today (https://chatgpt.com/explore/plus), or try again at Sep 11th, 2026 9:57 PM."}
-{"type":"turn.failed","error":{"message":"You've hit your usage limit. To continue using Codex and get access to GPT-5.3-Codex, start a free trial of Plus today (https://chatgpt.com/explore/plus), or try again at Sep 11th, 2026 9:57 PM."}}
