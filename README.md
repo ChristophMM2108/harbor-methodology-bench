@@ -1193,7 +1193,11 @@ harbor-methodology-bench/
 ├── toolkits/<id>/                  # SOURCE, GIT_SHA, BRANCH, VERSION, snapshot/
 ├── generated/<condition>/<task>/   # Generated Harbor tasks (git-ignored)
 ├── jobs/                           # Raw Harbor execution output (git-ignored)
-├── docs/task-catalogue.md          # Generated task catalogue (see §6)
+├── docs/
+│   ├── task-catalogue.md           # Generated task catalogue (see §6)
+│   ├── evaluation-pipeline.md      # How a trial becomes reward/duration/cost (see below)
+│   ├── evaluation-pipeline.html    # Same document, standalone page
+│   └── experiment-sdd-ds-ml.html   # Runbook for the SDD vs baseline DS/ML experiment
 ├── results/                        # Aggregated reports, summaries, catalogue JSON
 ├── scripts/                        # Thin wrappers around the CLI, plus runners
 ├── src/harbor_methodology_bench/
@@ -1212,6 +1216,27 @@ harbor-methodology-bench/
 ├── CHANGELOG.md
 └── TODO.md                         # Roadmap and open questions
 ```
+
+### Documentation
+
+| Document | Read it for |
+|---|---|
+| [`docs/evaluation-pipeline.md`](docs/evaluation-pipeline.md) | The evaluation process end to end: how `instruction.md` reaches the agent, how the verifier produces a reward, how tokens, cost and duration are computed and aggregated, and the measurement hazards in each metric. Diagrams render on GitHub. |
+| [`docs/evaluation-pipeline.html`](docs/evaluation-pipeline.html) | The same document as a standalone page for offline reading or printing. |
+| [`docs/task-catalogue.md`](docs/task-catalogue.md) | Generated classification of every source task, with the axes and suites used for selection (§6). |
+| [`docs/experiment-sdd-ds-ml.html`](docs/experiment-sdd-ds-ml.html) | Runbook for the SDD-versus-baseline experiment on the data-science and machine-learning categories. |
+
+GitHub serves `.html` files as plain text rather than rendering them, so the standalone pages are only
+viewable in a browser after cloning — or through GitHub Pages. To publish them, open
+**Settings → Pages**, set the source to branch `main` and folder `/docs`, and the document becomes
+available at:
+
+```text
+https://christophmm2108.github.io/harbor-methodology-bench/evaluation-pipeline.html
+```
+
+Pages serves `/docs` as the site root, so every HTML document under `docs/` is published — including
+the experiment runbook at `…github.io/harbor-methodology-bench/experiment-sdd-ds-ml.html`.
 
 ---
 
