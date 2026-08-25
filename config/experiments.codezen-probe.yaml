@@ -1,0 +1,75 @@
+# Probe configuration — Claude Code only
+# --------------------------------------
+# Identical to config/experiments.codezen.yaml in every respect that defines a
+# condition: the same three toolkit entries, cut from the same snapshots, with
+# the same excludes. Only the matrix differs — the four `codex-*` cells are
+# absent.
+#
+# That matters for interpretation. Because the conditions are byte-identical
+# between the two files, a probe result is evidence about the same conditions the
+# 12-task experiment will measure, not merely a rehearsal of them. If this file
+# and experiments.codezen.yaml ever diverge in `toolkits:`, that guarantee is
+# gone — change both or neither.
+#
+# Why Claude Code only: the probe's question is "do either toolkit's skills fire
+# at all when the agent is handed a bare Harbor task prompt". One CLI answers
+# that at half the trial count. The cost is that nothing is learned about Codex —
+# including CodeZen's own Codex support, which its `.codex-plugin/` and
+# `codex-hooks.json` exist to provide. That is deliberate for a probe and is
+# recovered in the 12-task run.
+#
+# 3 tasks x 4 cells x 1 attempt = 12 trials.
+
+source_root: source-tasks/terminal-bench
+generated_root: generated
+repetitions: 1                             # a probe, not a measurement: one
+                                           # attempt cannot separate a
+                                           # methodology effect from noise
+
+models:
+  claude-code: claude-sonnet-5
+  codex: gpt-5.6-terra                     # declared but unused by this matrix,
+                                           # so the two files stay comparable
+
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+# --- Conditions: keep byte-identical to config/experiments.codezen.yaml -------
+
+toolkits:
+  - id: sdd
+    snapshot: toolkits/sdd/snapshot
+
+  - id: codezen-full
+    snapshot: toolkits/codezen/snapshot
+
+  - id: codezen-viable
+    snapshot: toolkits/codezen/snapshot
+    # `exclude` drops matching names at any depth, and each name below resolves
+    # to exactly two paths in the snapshot — the skill's directory under
+    # .claude/skills and under .agents/skills. Verified: nothing in standards/
+    # or plugin/ shares a name with any entry here.
+    #
+    # Dropped, and why each cannot run in a benchmark container:
+    #   tdd, fix          launch a Docker sandbox; no daemon inside the container
+    #   setup             interactive credential manager
+    #   brainstorm        requires a human in the dialogue
+    #   agentic-e2e       drives a running system under test
+    #   sut-bootstrap     bootstraps a running system under test
+    #   to-notion         requires the Notion MCP server
+    #
+    # Kept: noc-tdd, noc-fix, code-review, security-review.
+    exclude: [".git", ".venv", "venv", "node_modules", "__pycache__",
+              ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store",
+              "tdd", "fix", "setup", "brainstorm",
+              "agentic-e2e", "sut-bootstrap", "to-notion"]
+
+# --- Matrix: the only intentional difference ---------------------------------
+
+matrix:
+  - {id: claude-baseline,       agent: claude-code, toolkit: baseline}
+  - {id: claude-sdd,            agent: claude-code, toolkit: sdd}
+  - {id: claude-codezen-full,   agent: claude-code, toolkit: codezen-full}
+  - {id: claude-codezen-viable, agent: claude-code, toolkit: codezen-viable}

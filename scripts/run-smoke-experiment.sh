@@ -6,6 +6,9 @@ set -euo pipefail
 # Runs the configured matrix across a single task to prove the pipeline
 # end to end: containers build, credentials forward, verifiers emit rewards.
 
+# Every path below is relative to the repository root, so run from anywhere.
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.."
+
 USAGE="Usage: $0 [--task ID] [--config PATH] [--force] [--dry-run]"
 
 TASK="adaptive-rejection-sampler"

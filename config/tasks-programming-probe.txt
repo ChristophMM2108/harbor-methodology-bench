@@ -1,0 +1,24 @@
+# Probe set — 3 complex programming tasks
+#
+# Purpose: prove the 8-cell matrix runs end to end on hard programming work, and
+# find out whether either methodology's skills are invoked at all, before
+# committing to the 12-task run. This file is a strict subset of
+# config/tasks-programming.txt, so a probe result carries over as evidence about
+# the same three tasks in the larger experiment.
+#
+# Selected for complexity *with* budget headroom. Several nominally harder
+# software-engineering tasks (gpt2-codegolf, write-compressor: 24-hour expert
+# estimate, 15-minute agent budget) were rejected because every condition floors
+# at reward 0 there, which measures nothing about a methodology.
+#
+# One task per kind of work the two toolkits claim, so a single probe exercises
+# all three skill paths:
+#
+#   task                          diff  expert  budget  the path it exercises
+#   circuit-fibsqrt               hard   960m     60m   build from scratch against a 13 kB test surface
+#   fix-ocaml-gc                  hard  1440m     60m   root-cause, then change code the agent did not write
+#   schemelike-metacircular-eval  med    300m     40m   long-horizon build, largest test surface in the set (24 kB)
+
+circuit-fibsqrt
+fix-ocaml-gc
+schemelike-metacircular-eval

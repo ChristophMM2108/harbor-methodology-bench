@@ -1,0 +1,55 @@
+# Programming task set — 12 tasks
+#
+# Every task here has [metadata].category of `software-engineering` or
+# `debugging`: the tightest reading of "programming task" the benchmark's own
+# metadata supports. file-operations and data-processing tasks are excluded even
+# where they involve code, so the set says one thing.
+#
+# Selected for complexity with usable budget headroom, and for spread across the
+# kinds of work the two toolkits claim. Rejected on purpose:
+#   gpt2-codegolf, write-compressor, make-doom-for-mips  24h/8h expert estimate
+#                                                        against a 15m agent
+#                                                        budget — every condition
+#                                                        floors at 0
+#   build-pov-ray                                        200-minute budget would
+#                                                        dominate wall-clock
+#   polyglot-c-py, fix-git, prove-plus-comm              5-20 minute expert
+#                                                        estimate; not complex
+#
+# The first three are the probe set (config/tasks-programming-probe.txt).
+#
+#   task                          diff  expert  budget  axes
+#   ----------------------------------------------------------------------------
+#   circuit-fibsqrt               hard   960m     60m   long-horizon, verification-heavy, greenfield
+#   fix-ocaml-gc                  hard  1440m     60m   long-horizon, diagnose-first, modify-existing
+#   schemelike-metacircular-eval  med    300m     40m   long-horizon, verification-heavy, greenfield
+#   regex-chess                   hard  1440m     60m   long-horizon
+#   make-mips-interpreter         hard   480m     30m   long-horizon, greenfield
+#   path-tracing                  hard   360m     30m   long-horizon, greenfield
+#   path-tracing-reverse          hard   120m     30m   modify-existing
+#   torch-pipeline-parallelism    hard   240m     15m   spec-dense, long-horizon, greenfield
+#   cancel-async-tasks            hard   120m     15m   greenfield
+#   custom-memory-heap-crash      med     30m     30m   diagnose-first, modify-existing
+#   build-cython-ext              med     60m     15m   diagnose-first, modify-existing, environment-engineering
+#   kv-store-grpc                 med     15m     15m   quick
+#
+# kv-store-grpc is the in-set control: the one `quick` task, where methodology
+# overhead should show up as cost with little gain.
+#
+# Known thinness: only torch-pipeline-parallelism carries `spec-dense`, which is
+# SDD's strongest claim. That is a property of the benchmark's programming
+# tasks, not of this selection — run `--suite spec-dense` separately if the
+# comparison needs SDD's home axis.
+
+circuit-fibsqrt
+fix-ocaml-gc
+schemelike-metacircular-eval
+regex-chess
+make-mips-interpreter
+path-tracing
+path-tracing-reverse
+torch-pipeline-parallelism
+cancel-async-tasks
+custom-memory-heap-crash
+build-cython-ext
+kv-store-grpc

@@ -249,29 +249,35 @@ task directories sit at the repository root. Fetch it at a pinned commit and cop
 in every directory that has a `task.toml`:
 
 ```bash
+Run this from the repository root; every path in it is relative to the checkout,
+so nothing depends on where the repository lives.
+
+```bash
 REPO=https://github.com/harbor-framework/terminal-bench-2.git
 REF=2fd12b88aafdd04a52c298e3940bcb189f9766d6      # the pin this repository uses
 DEST=source-tasks/terminal-bench
+WORK="$(mktemp -d)"                              # scratch checkout, removed at the end
 
 # 1. Shallow-fetch the pinned commit into a scratch checkout
-rm -rf /tmp/terminal-bench-2 && mkdir -p /tmp/terminal-bench-2
-git -C /tmp/terminal-bench-2 init -q .
-git -C /tmp/terminal-bench-2 remote add origin "$REPO"
-git -C /tmp/terminal-bench-2 fetch -q --depth 1 origin "$REF"
-git -C /tmp/terminal-bench-2 checkout -q FETCH_HEAD
+git -C "$WORK" init -q .
+git -C "$WORK" remote add origin "$REPO"
+git -C "$WORK" fetch -q --depth 1 origin "$REF"
+git -C "$WORK" checkout -q FETCH_HEAD
 
 # 2. Copy every task directory (a directory is a task if it has a task.toml)
 mkdir -p "$DEST"
-for manifest in /tmp/terminal-bench-2/*/task.toml; do
+for manifest in "$WORK"/*/task.toml; do
   cp -a "$(dirname "$manifest")" "$DEST/"
 done
 
 # 3. Pin the provenance, the same way toolkits are pinned
-echo "$REPO"                                   > "$DEST/SOURCE"
-git -C /tmp/terminal-bench-2 rev-parse FETCH_HEAD > "$DEST/GIT_SHA"
-echo main                                      > "$DEST/BRANCH"
+echo "$REPO"                            > "$DEST/SOURCE"
+git -C "$WORK" rev-parse FETCH_HEAD     > "$DEST/GIT_SHA"
+echo main                               > "$DEST/BRANCH"
 echo "Terminal-Bench 2.0 task source; copied from directories containing task.toml" \
-                                               > "$DEST/README.md"
+                                        > "$DEST/README.md"
+
+rm -rf "$WORK"
 ```
 
 Verify the result — 89 tasks at the pin above, and the catalogue reads them:
@@ -295,13 +301,19 @@ and need no provenance file; see §7 for authoring them.
   commit. Populate a snapshot from a real checkout:
 
   ```bash
+  REPO=/path/to/repo            # any local checkout of the toolkit
+
   mkdir -p toolkits/mykit/snapshot
-  git -C /path/to/repo rev-parse HEAD          > toolkits/mykit/GIT_SHA
-  git -C /path/to/repo rev-parse --abbrev-ref HEAD > toolkits/mykit/BRANCH
-  git -C /path/to/repo rev-parse --short HEAD  > toolkits/mykit/VERSION
-  echo /path/to/repo                           > toolkits/mykit/SOURCE
-  git -C /path/to/repo archive HEAD | tar -x -C toolkits/mykit/snapshot
+  git -C "$REPO" rev-parse HEAD              > toolkits/mykit/GIT_SHA
+  git -C "$REPO" rev-parse --abbrev-ref HEAD > toolkits/mykit/BRANCH
+  git -C "$REPO" rev-parse --short HEAD      > toolkits/mykit/VERSION
+  git -C "$REPO" remote get-url origin       > toolkits/mykit/SOURCE
+  git -C "$REPO" archive HEAD | tar -x -C toolkits/mykit/snapshot
   ```
+
+  `SOURCE` records the **remote URL**, not the local checkout path: paired with
+  `GIT_SHA` that is enough for anyone to re-derive the snapshot, whereas a path
+  under someone's home directory is provenance only they can follow.
 
   ```bash
   ./scripts/freeze-kits.sh      # verifies metadata and SHA format
@@ -530,14 +542,16 @@ Freeze the same repository twice at different refs and declare each as its own
 condition:
 
 ```bash
+REPO=/path/to/repo
+
 for ref in main feature/new-skills; do
   id="mykit-$(echo "$ref" | tr '/' '-')"
   mkdir -p "toolkits/$id/snapshot"
-  git -C /path/to/repo rev-parse "$ref"       > "toolkits/$id/GIT_SHA"
-  echo "$ref"                                 > "toolkits/$id/BRANCH"
-  git -C /path/to/repo rev-parse --short "$ref" > "toolkits/$id/VERSION"
-  echo /path/to/repo                          > "toolkits/$id/SOURCE"
-  git -C /path/to/repo archive "$ref" | tar -x -C "toolkits/$id/snapshot"
+  git -C "$REPO" rev-parse "$ref"         > "toolkits/$id/GIT_SHA"
+  echo "$ref"                             > "toolkits/$id/BRANCH"
+  git -C "$REPO" rev-parse --short "$ref" > "toolkits/$id/VERSION"
+  git -C "$REPO" remote get-url origin    > "toolkits/$id/SOURCE"
+  git -C "$REPO" archive "$ref" | tar -x -C "toolkits/$id/snapshot"
 done
 ```
 
@@ -1161,6 +1175,13 @@ without invoking any of them.
 described in §6. Every command above accepts `--config <path>` to select an
 experiment configuration.
 
+Every script resolves the repository root from its own location, so it can be
+invoked by any path from any working directory. Path arguments (`--config`,
+`--tasks-file`) and the paths inside a configuration file are interpreted
+relative to the repository root, never to your shell's current directory, so a
+command line means the same thing wherever it is run. No script, configuration
+file or generated artefact contains an absolute host path.
+
 The underlying CLI is `uv run harbor-methodology-bench <command>`; `preflight`
 also accepts `--max-probe-files`, `--build-timeout-sec` and `--run-timeout-sec`,
 and `matrix-plan` prints the configured cells the runners consume.
@@ -1187,6 +1208,10 @@ harbor-methodology-bench/
 ├── config/
 │   ├── experiments.yaml            # Default matrix, conditions, models
 │   ├── experiments.scenarios.yaml  # Worked four-condition example
+│   ├── experiments.codezen.yaml    # CodeZen vs SDD vs baseline, 8 cells
+│   ├── experiments.codezen-probe.yaml  # Same conditions, Claude-only, 4 cells
+│   ├── tasks-programming.txt       # 12 complex programming tasks
+│   ├── tasks-programming-probe.txt # The 3-task probe subset
 │   ├── benchmark.env.example       # Environment template
 │   └── local.env                   # Host credentials (git-ignored)
 ├── source-tasks/terminal-bench/    # Source benchmark tasks
@@ -1197,7 +1222,9 @@ harbor-methodology-bench/
 │   ├── task-catalogue.md           # Generated task catalogue (see §6)
 │   ├── evaluation-pipeline.md      # How a trial becomes reward/duration/cost (see below)
 │   ├── evaluation-pipeline.html    # Same document, standalone page
-│   └── experiment-sdd-ds-ml.html   # Runbook for the SDD vs baseline DS/ML experiment
+│   ├── experiment-sdd-ds-ml.html   # Runbook for the SDD vs baseline DS/ML experiment
+│   ├── experiment-codezen-vs-sdd.html  # Runbook for CodeZen vs SDD vs baseline
+│   └── experiment-programming-tasks.html  # 3-task probe + 12-task programming run
 ├── results/                        # Aggregated reports, summaries, catalogue JSON
 ├── scripts/                        # Thin wrappers around the CLI, plus runners
 ├── src/harbor_methodology_bench/
@@ -1225,6 +1252,8 @@ harbor-methodology-bench/
 | [`docs/evaluation-pipeline.html`](docs/evaluation-pipeline.html) | The same document as a standalone page for offline reading or printing. |
 | [`docs/task-catalogue.md`](docs/task-catalogue.md) | Generated classification of every source task, with the axes and suites used for selection (§6). |
 | [`docs/experiment-sdd-ds-ml.html`](docs/experiment-sdd-ds-ml.html) | Runbook for the SDD-versus-baseline experiment on the data-science and machine-learning categories. |
+| [`docs/experiment-codezen-vs-sdd.html`](docs/experiment-codezen-vs-sdd.html) | Runbook for the four-condition CodeZen-versus-SDD-versus-baseline experiment on `verification-heavy`, including how a plugin-shipped methodology is reprojected as a repository so it can be measured at all. |
+| [`docs/experiment-programming-tasks.html`](docs/experiment-programming-tasks.html) | Instructions for the paired programming-task experiments: a 3-task probe that decides whether the 12-task measurement is worth paying for, and the 12-task run itself. Includes the task-selection rule and the decision gate between them. |
 
 GitHub serves `.html` files as plain text rather than rendering them, so the standalone pages are only
 viewable in a browser after cloning — or through GitHub Pages. To publish them, open
@@ -1273,6 +1302,16 @@ with `docker image prune` when convenient.
   in §3.
 - **Adherence detection is textual**, based on the agent's trajectory and startup
   log. It cannot see a `CLAUDE.md` that a CLI loads silently.
+- **A snapshot may carry absolute host paths from the machine it was frozen on**,
+  and the framework deliberately does not rewrite them: a snapshot is
+  byte-identical to its `GIT_SHA`, and editing it would make the pin a lie. The
+  installed DFG snapshot is a live example —
+  `toolkits/dfg/snapshot/.claude/settings.json` registers hooks under
+  `/home/<author>/…`, which do not exist inside the container, so those hooks
+  fail silently in every `dfg` trial. Preflight does not catch this, because the
+  files it asserts on *are* present. Grep a new snapshot for absolute paths
+  before trusting a condition built from it, and treat any you find as a known
+  confound of that condition rather than a repository defect here.
 - **Task axes are heuristics** over each task's own metadata, not curated labels.
   They are good enough to choose a task set deliberately and bad enough to produce
   the occasional odd member; audit `docs/task-catalogue.md` before publishing a

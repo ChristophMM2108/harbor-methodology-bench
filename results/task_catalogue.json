@@ -11,7 +11,7 @@
     "verification-heavy": "Graded by a large test surface, or the prompt requires the agent to write tests."
   },
   "n_tasks": 89,
-  "source_root": "/home/chriz/GitRepos/harbor-methodology-bench/source-tasks/terminal-bench",
+  "source_root": "source-tasks/terminal-bench",
   "suites": {
     "balanced": [
       "chess-best-move",

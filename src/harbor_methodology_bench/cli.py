@@ -251,11 +251,11 @@ def catalogue(
 
     if md_out:
         md_out.parent.mkdir(parents=True, exist_ok=True)
-        md_out.write_text(render_markdown(facts, settings.source_root))
+        md_out.write_text(render_markdown(facts, settings.source_root, settings.root))
         typer.echo(f"wrote {md_out}")
     if json_out:
         json_out.parent.mkdir(parents=True, exist_ok=True)
-        json_out.write_text(render_json(facts, settings.source_root))
+        json_out.write_text(render_json(facts, settings.source_root, settings.root))
         typer.echo(f"wrote {json_out}")
     if md_out or json_out:
         return

@@ -7,6 +7,9 @@ set -euo pipefail
 # group of tasks. Both the task list and the matrix cells come from the CLI, so
 # this script never needs editing to change either.
 
+# Every path below is relative to the repository root, so run from anywhere.
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.."
+
 USAGE=$(cat <<'EOF'
 Usage: $0 [SELECTION] [OPTIONS]
 

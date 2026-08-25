@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Programming-task experiments — 3-task probe and 12-task measurement</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #5b6570;
+    --rule: #e2e6ea;
+    --code-bg: #f5f7f9;
+    --accent: #0b5fa5;
+    --warn-bg: #fff7e6;
+    --warn-border: #e0a800;
+    --stop-bg: #fdecec;
+    --stop-border: #c0392b;
+    --ok: #1a7f4b;
+    --btn-bg: #e8ecf0;
+    --btn-fg: #33404d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171a;
+      --fg: #e8eaed;
+      --muted: #9aa4ae;
+      --rule: #2a2f35;
+      --code-bg: #1c2126;
+      --accent: #6db3f2;
+      --warn-bg: #2a2418;
+      --warn-border: #b38600;
+      --stop-bg: #2b1a1a;
+      --stop-border: #d9635a;
+      --ok: #57c98a;
+      --btn-bg: #29313a;
+      --btn-fg: #c8d2dc;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 5rem;
+    max-width: 60rem;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 .5rem; }
+  h2 { font-size: 1.3rem; margin: 2.75rem 0 .75rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 1.05rem; margin: 1.75rem 0 .5rem; }
+  p, li { margin: .5rem 0; }
+  .lede { color: var(--muted); font-size: 1.05rem; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em;
+         background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+  .codeblock { position: relative; margin: 1rem 0; }
+  .codeblock pre { margin: 0; }
+  pre { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px;
+        padding: .9rem 1rem; overflow-x: auto; }
+  pre code { background: none; padding: 0; font-size: .85rem; line-height: 1.5; }
+  .copy-btn {
+    position: absolute; top: .5rem; right: .5rem;
+    font: 600 .72rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: .04em; text-transform: uppercase;
+    color: var(--btn-fg); background: var(--btn-bg);
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: .4rem .55rem; cursor: pointer; opacity: .55;
+    transition: opacity .12s ease, color .12s ease;
+  }
+  .codeblock:hover .copy-btn, .copy-btn:focus-visible { opacity: 1; }
+  .copy-btn[data-state="done"] { opacity: 1; color: var(--ok); border-color: var(--ok); }
+  .copy-btn[data-state="failed"] { opacity: 1; color: var(--stop-border); border-color: var(--stop-border); }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-weight: 600; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  tr.excluded td { color: var(--muted); text-decoration: line-through; }
+  tr.excluded td:last-child { text-decoration: none; }
+  .wrap { overflow-x: auto; }
+  .note { background: var(--code-bg); border-left: 3px solid var(--accent); padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0; }
+  .warn { background: var(--warn-bg); border-left: 3px solid var(--warn-border); padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0; }
+  .stop { background: var(--stop-bg); border-left: 3px solid var(--stop-border); padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0; }
+  .verified { color: var(--ok); font-weight: 600; }
+  .muted { color: var(--muted); }
+  ol.steps > li { margin: 1.5rem 0; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1.25rem; margin: 1rem 0; }
+  .kv dt { font-weight: 600; }
+  .kv dd { margin: 0; }
+  footer { margin-top: 3.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: .875rem; }
+  @media (max-width: 34rem) { .kv { grid-template-columns: 1fr; } .kv dd { margin-bottom: .5rem; } }
+</style>
+</head>
+<body>
+
+<h1>Two programming-task experiments: probe, then measure</h1>
+<p class="lede">A 3-task probe that answers <em>is this worth paying for</em>, and a 12-task experiment
+that produces the result. Same four conditions, same eight cells, same commands — only the task file,
+the job prefix and the attempt count change. Everything below was executed against this repository
+except the two runs themselves, which spend model tokens.</p>
+
+<h2>1. The two experiments</h2>
+
+<div class="wrap">
+<table>
+  <thead><tr><th></th><th>A — probe</th><th>B — measure</th></tr></thead>
+  <tbody>
+    <tr><td>Tasks</td><td>3</td><td>12 (superset of A)</td></tr>
+    <tr><td>Task file</td><td><code>config/tasks-programming-probe.txt</code></td><td><code>config/tasks-programming.txt</code></td></tr>
+    <tr><td>Configuration</td><td><code>config/experiments.codezen-probe.yaml</code></td><td><code>config/experiments.codezen.yaml</code></td></tr>
+    <tr><td>Cells</td><td>4 — Claude Code only</td><td>8 — both CLIs</td></tr>
+    <tr><td>Attempts</td><td>1</td><td>3</td></tr>
+    <tr><td>Trials</td><td class="num"><strong>12</strong></td><td class="num"><strong>288</strong> (96 Harbor invocations × <code>-n 3</code>)</td></tr>
+    <tr><td>Job prefix</td><td><code>probe3</code></td><td><code>prog12</code></td></tr>
+    <tr><td>Answers</td><td>Does the matrix run on hard programming work? Are either toolkit's skills invoked <em>at all</em>?</td><td>Do the methodologies change measured performance, and do they differ from each other?</td></tr>
+    <tr><td>Reportable?</td><td>No — one attempt, 3 tasks. A single flaky trial moves a success rate by 33 points.</td><td>Yes — 3 attempts gives a mean with a standard error.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The four conditions are <code>baseline</code>, <code>sdd</code>, <code>codezen-full</code> and
+<code>codezen-viable</code> — see <a href="experiment-codezen-vs-sdd.html">the CodeZen runbook</a> for
+why CodeZen appears twice and what the pair isolates.</p>
+
+<p>The two configuration files declare those conditions <strong>identically</strong>: same
+<code>toolkits:</code>, same snapshots, same <code>exclude</code> lists, same
+<code>skill_sources</code>. The probe file differs from the measurement file in exactly two places —
+the four <code>codex-*</code> matrix cells are absent, and <code>repetitions</code> is 1. Verified:</p>
+
+<pre><code>python3 -c "
+import yaml
+a=yaml.safe_load(open('config/experiments.codezen.yaml'))
+b=yaml.safe_load(open('config/experiments.codezen-probe.yaml'))
+for k in ('source_root','generated_root','snapshot_excludes','skill_sources','toolkits','models'):
+    print(k, 'IDENTICAL' if a[k]==b[k] else 'DIFFERS')"</code></pre>
+
+<pre><code>source_root        IDENTICAL
+generated_root     IDENTICAL
+snapshot_excludes  IDENTICAL
+skill_sources      IDENTICAL
+toolkits           IDENTICAL
+models             IDENTICAL</code></pre>
+
+<p>That equality is what makes A's result evidence about the conditions B will measure, rather than a
+rehearsal of them. If the two files ever diverge under <code>toolkits:</code>, the guarantee is gone —
+change both or neither.</p>
+
+<div class="note">
+<strong>Why the probe is Claude Code only.</strong> Its question is narrow: <em>do either toolkit's
+skills fire at all when the agent is handed a bare Harbor task prompt?</em> One CLI answers that at
+half the trial count. The cost is that nothing is learned about Codex — including CodeZen's own Codex
+support, which its <code>.codex-plugin/</code> and <code>codex-hooks.json</code> exist to provide.
+Both Codex cells return in experiment B.
+</div>
+
+<div class="note">
+<strong>A is a strict subset of B, by design.</strong> The three probe tasks are the first three lines
+of the 12-task file. The job prefixes differ (<code>probe3</code> / <code>prog12</code>), so B never
+collides with A's job directories and both results survive independently — but they are results about
+the same three tasks, so a contradiction between them is a signal about run-to-run variance rather
+than about the tasks.
+</div>
+
+<h2>2. Why these tasks</h2>
+
+<p>"Programming task" is taken to mean <code>[metadata].category</code> of
+<code>software-engineering</code> or <code>debugging</code> — the tightest reading the benchmark's own
+metadata supports. <code>file-operations</code> and <code>data-processing</code> tasks are excluded
+even where they involve writing code, so the set means one thing.</p>
+
+<div class="warn">
+<strong>The trap this selection avoids.</strong> The benchmark's most impressive-looking hard tasks
+pair an enormous expert estimate with a tiny agent budget: <code>gpt2-codegolf</code> is a
+<strong>2400-minute</strong> human task with a <strong>15-minute</strong> agent budget;
+<code>write-compressor</code> is 1440 against 15. Every condition floors at reward 0 there, and a
+floor measures nothing about a methodology. Complexity was therefore selected <em>with budget
+headroom</em>, not on expert estimate alone.
+</div>
+
+<h3>Rejected, and why</h3>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>Task</th><th>Reason</th></tr></thead>
+  <tbody>
+    <tr><td><code>gpt2-codegolf</code>, <code>write-compressor</code>, <code>make-doom-for-mips</code></td><td>24h / 24h / 8h expert estimate against a 15-minute agent budget — guaranteed floor effect</td></tr>
+    <tr><td><code>build-pov-ray</code></td><td>200-minute agent budget would dominate the run's wall-clock on its own</td></tr>
+    <tr><td><code>fix-git</code>, <code>prove-plus-comm</code>, <code>polyglot-c-py</code></td><td>5–20 minute expert estimate; not complex work</td></tr>
+    <tr><td><code>headless-terminal</code>, <code>winning-avg-corewars</code></td><td>Match no axis at all, so nothing predicts whether a methodology should help</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>The 12 tasks</h3>
+
+<div class="wrap">
+<table>
+  <thead><tr>
+    <th>Task</th><th>Category</th><th>Diff</th><th class="num">Expert</th><th class="num">Budget</th>
+    <th class="num">test kB</th><th>Axes</th><th class="num">In A</th>
+  </tr></thead>
+  <tbody>
+    <tr><td><code>circuit-fibsqrt</code></td><td>software-engineering</td><td>hard</td><td class="num">960m</td><td class="num">60m</td><td class="num">13</td><td>long-horizon, verification-heavy, greenfield</td><td class="num">✓</td></tr>
+    <tr><td><code>fix-ocaml-gc</code></td><td>software-engineering</td><td>hard</td><td class="num">1440m</td><td class="num">60m</td><td class="num">1</td><td>long-horizon, diagnose-first, modify-existing</td><td class="num">✓</td></tr>
+    <tr><td><code>schemelike-metacircular-eval</code></td><td>software-engineering</td><td>medium</td><td class="num">300m</td><td class="num">40m</td><td class="num">24</td><td>long-horizon, verification-heavy, greenfield</td><td class="num">✓</td></tr>
+    <tr><td><code>regex-chess</code></td><td>software-engineering</td><td>hard</td><td class="num">1440m</td><td class="num">60m</td><td class="num">5</td><td>long-horizon</td><td class="num">—</td></tr>
+    <tr><td><code>make-mips-interpreter</code></td><td>software-engineering</td><td>hard</td><td class="num">480m</td><td class="num">30m</td><td class="num">4</td><td>long-horizon, greenfield</td><td class="num">—</td></tr>
+    <tr><td><code>path-tracing</code></td><td>software-engineering</td><td>hard</td><td class="num">360m</td><td class="num">30m</td><td class="num">4</td><td>long-horizon, greenfield</td><td class="num">—</td></tr>
+    <tr><td><code>path-tracing-reverse</code></td><td>software-engineering</td><td>hard</td><td class="num">120m</td><td class="num">30m</td><td class="num">3</td><td>modify-existing</td><td class="num">—</td></tr>
+    <tr><td><code>torch-pipeline-parallelism</code></td><td>software-engineering</td><td>hard</td><td class="num">240m</td><td class="num">15m</td><td class="num">6</td><td>spec-dense, long-horizon, greenfield</td><td class="num">—</td></tr>
+    <tr><td><code>cancel-async-tasks</code></td><td>software-engineering</td><td>hard</td><td class="num">120m</td><td class="num">15m</td><td class="num">5</td><td>greenfield</td><td class="num">—</td></tr>
+    <tr><td><code>custom-memory-heap-crash</code></td><td>debugging</td><td>medium</td><td class="num">30m</td><td class="num">30m</td><td class="num">6</td><td>diagnose-first, modify-existing</td><td class="num">—</td></tr>
+    <tr><td><code>build-cython-ext</code></td><td>debugging</td><td>medium</td><td class="num">60m</td><td class="num">15m</td><td class="num">6</td><td>diagnose-first, modify-existing, environment-engineering</td><td class="num">—</td></tr>
+    <tr><td><code>kv-store-grpc</code></td><td>software-engineering</td><td>medium</td><td class="num">15m</td><td class="num">15m</td><td class="num">6</td><td>quick <em>(the control)</em></td><td class="num">—</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The three probe tasks were picked to exercise one distinct skill path each, so a single 12-trial
+run touches all of them: <code>circuit-fibsqrt</code> builds from scratch against a 13 kB test
+surface, <code>fix-ocaml-gc</code> requires root-causing before changing code the agent did not write,
+and <code>schemelike-metacircular-eval</code> is a long-horizon build with the largest test surface in
+the set. All three carry a 40–60 minute agent budget, which is the headroom a methodology needs in
+order to be able to pay for itself.</p>
+
+<p><code>kv-store-grpc</code> is the in-set control: the one <code>quick</code> task, where
+methodology overhead should show up as cost with little gain.</p>
+
+<div class="note">
+<strong>Known thinness, stated up front.</strong> Only <code>torch-pipeline-parallelism</code> carries
+<code>spec-dense</code>, which is SDD's strongest claim. That is a property of the benchmark's
+programming tasks, not of this selection — the programming categories simply contain few spec-dense
+prompts. If the comparison needs SDD's home axis, run <code>--suite spec-dense</code> as a third
+experiment rather than stretching this one.
+</div>
+
+<h2>3. Prerequisites</h2>
+
+<pre><code>docker run --rm hello-world                                          # daemon healthy
+harbor --version
+claude --version
+codex --version
+uv run pytest                                                        # 31 passed
+./scripts/freeze-kits.sh --config config/experiments.codezen.yaml</code></pre>
+
+<p><span class="verified">✓ run</span> — all three snapshots intact:</p>
+
+<pre><code>ok  sdd             dc4b09e730f6e38a43ba85b44991bb6de890b6d9
+ok  codezen-full    cc50eba852ca516fa5e3a2334aff6873acc30226
+ok  codezen-viable  cc50eba852ca516fa5e3a2334aff6873acc30226</code></pre>
+
+<p>Also needed, and both git-ignored so a fresh clone lacks them:
+<code>source-tasks/terminal-bench/</code> (§3 of the repository README has the fetch block) and
+<code>config/local.env</code> with forwarded agent credentials.</p>
+
+<div class="warn">
+<strong>Codex quota is an experiment-B concern only.</strong> Every Codex trial in an earlier matrix
+run failed with <code>ApiUsageLimitError</code> before reaching the task. The probe is Claude-only, so
+it is unaffected; four of experiment B's eight cells are Codex. Confirm the quota before starting B
+rather than discovering it mid-run — the four <code>codex-*</code> cells in
+<code>config/experiments.codezen.yaml</code> can be commented out if it is still exhausted.
+</div>
+
+<h2>4. Experiment A — the probe</h2>
+
+<p>All four steps below have been run against this repository. Copy them as a block.</p>
+
+<h3>Preview the selection <span class="verified">✓ run</span></h3>
+
+<pre><code>./scripts/catalogue.sh \
+  --config config/experiments.codezen-probe.yaml \
+  --tasks-file config/tasks-programming-probe.txt --ids-only</code></pre>
+
+<pre><code>circuit-fibsqrt
+fix-ocaml-gc
+schemelike-metacircular-eval</code></pre>
+
+<h3>Generate, validate, preflight <span class="verified">✓ run</span></h3>
+
+<pre><code>./scripts/generate-variants.sh  --config config/experiments.codezen-probe.yaml \
+  --tasks-file config/tasks-programming-probe.txt --force
+./scripts/validate-variants.sh  --config config/experiments.codezen-probe.yaml \
+  --tasks-file config/tasks-programming-probe.txt
+./scripts/preflight-variants.sh --config config/experiments.codezen-probe.yaml \
+  --tasks-file config/tasks-programming-probe.txt</code></pre>
+
+<p>Note that these three steps build all four conditions regardless of which config you pass — a
+variant is a property of the task and the condition, not of the matrix. So the probe's generated
+variants and preflight reports are exactly the ones experiment B will reuse; nothing is rebuilt for
+Codex later.</p>
+
+<p>Generation reports what each condition puts in front of the agent — the skill counts are the
+design, not an accident:</p>
+
+<pre><code>generated baseline/circuit-fibsqrt        markers=- skills=0
+generated sdd/circuit-fibsqrt             markers=CLAUDE.md,AGENTS.md skills=7
+generated codezen-full/circuit-fibsqrt    markers=CLAUDE.md,AGENTS.md skills=11
+generated codezen-viable/circuit-fibsqrt  markers=CLAUDE.md,AGENTS.md skills=4
+… same for the other two tasks
+
+validated 3 tasks across 4 variants</code></pre>
+
+<p>Preflight builds 12 images and probes each container from the inside. All 12 pass, with no
+collision warnings on any of the three tasks:</p>
+
+<pre><code>preflight circuit-fibsqrt ...
+  ok  baseline:        workdir=/app markers=- skills=0 payload_files=0
+  ok  sdd:             workdir=/app markers=CLAUDE.md,AGENTS.md skills=7  payload_files=47
+  ok  codezen-full:    workdir=/app markers=CLAUDE.md,AGENTS.md skills=11 payload_files=56
+  ok  codezen-viable:  workdir=/app markers=CLAUDE.md,AGENTS.md skills=4  payload_files=42
+preflight fix-ocaml-gc ...                    (same four lines)
+preflight schemelike-metacircular-eval ...    (same four lines)
+preflight passed for 3 tasks</code></pre>
+
+<h3>Dry-run, then run <span class="verified">✓ dry-run verified</span></h3>
+
+<pre><code>./scripts/run-pilot-experiment.sh --config config/experiments.codezen-probe.yaml \
+  --tasks-file config/tasks-programming-probe.txt \
+  --job-prefix probe3 --attempts 1 --dry-run</code></pre>
+
+<pre><code>✓ Selected 3 task(s) × 4 cell(s) = 12 trial(s)
+✓ Dry run completed for 12 trial invocations.</code></pre>
+
+<p>Drop <code>--dry-run</code> to spend tokens:</p>
+
+<pre><code>./scripts/run-pilot-experiment.sh --config config/experiments.codezen-probe.yaml \
+  --tasks-file config/tasks-programming-probe.txt \
+  --job-prefix probe3 --attempts 1</code></pre>
+
+<h3>Report</h3>
+
+<pre><code>python3 scripts/report.py --pattern "probe3-*" \
+  --md-out results/probe3_report.md \
+  --json-out results/probe3_summary.json</code></pre>
+
+<h2>5. The decision gate between A and B</h2>
+
+<p>Read A's report before running B. Three outcomes, three different next moves:</p>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>What A shows</th><th>What it means</th><th>Do this</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Non-zero <code>Skills Used</code> in any CodeZen or SDD cell</td>
+      <td>The methodologies are actually engaging with the task. B will measure something.</td>
+      <td>Run B as specified.</td>
+    </tr>
+    <tr>
+      <td><code>Skills Used</code> = 0 everywhere, but rewards differ between conditions</td>
+      <td>The instruction files are having an effect without any skill being named — plausible, since Claude Code loads <code>CLAUDE.md</code> silently.</td>
+      <td>Run B, and treat adherence telemetry as uninformative rather than as evidence of no effect.</td>
+    </tr>
+    <tr>
+      <td><code>Skills Used</code> = 0 <em>and</em> rewards indistinguishable across all four conditions</td>
+      <td>Nothing in a bare Harbor task prompt triggers either methodology. B would spend 288 trials confirming a null.</td>
+      <td><strong>Do not run B as-is.</strong> Fix the trigger first — see below.</td>
+    </tr>
+    <tr>
+      <td>Every condition scores 0 on a task</td>
+      <td>Floor effect: that task is too hard for the budget, exactly what the selection tried to avoid.</td>
+      <td>Drop that task from <code>config/tasks-programming.txt</code> before running B.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="warn">
+<strong>The most likely outcome is the third one.</strong> Both toolkits gate themselves on being
+asked: SDD's own <code>CLAUDE.md</code> says to use its skills "for substantial feature development",
+and CodeZen's skills are user-invocable. Harbor hands the agent a bare task prompt with no
+instruction to use a method. If A comes back with zero adherence across the board, that is a real
+finding about the toolkits — and the honest response is to say so, not to spend $300 on 288 trials
+restating it at higher confidence.
+</div>
+
+<h2>6. Experiment B — the measurement</h2>
+
+<p>Identical commands; only the task file, prefix and attempt count change. Generation and validation
+have been run <span class="verified">✓</span>; preflight for the remaining 9 tasks has not.</p>
+
+<pre><code>TASKS="--tasks-file config/tasks-programming.txt"
+CFG="--config config/experiments.codezen.yaml"
+
+./scripts/generate-variants.sh  $CFG $TASKS --force      # ✓ run: 48 variants
+./scripts/validate-variants.sh  $CFG $TASKS              # ✓ run: validated 12 tasks across 4 variants
+./scripts/preflight-variants.sh $CFG $TASKS              # builds 48 images; 12 already pass
+
+./scripts/run-pilot-experiment.sh $CFG $TASKS \
+  --job-prefix prog12 --attempts 3 --dry-run             # ✓ run: 96 invocations
+./scripts/run-pilot-experiment.sh $CFG $TASKS \
+  --job-prefix prog12 --attempts 3
+
+python3 scripts/report.py --pattern "prog12-*" \
+  --md-out results/prog12_report.md \
+  --json-out results/prog12_summary.json</code></pre>
+
+<div class="note">
+<strong>In <code>zsh</code>, quote or splat those variables.</strong> zsh does not word-split
+unquoted parameter expansions, so <code>$CFG</code> arrives as one argument and the CLI rejects it
+with <code>No such option</code>. Use <code>${=CFG}</code>, or run the commands with the flags written
+out, or use <code>bash</code>. The scripts themselves are <code>sh</code>/<code>bash</code> and are
+unaffected — this only bites when you build the command line from shell variables interactively.
+</div>
+
+<p>Preflight is the step to run before walking away: it builds every image and asserts every
+condition without spending a single model token. Doing it up front turns a mid-run failure into a
+five-minute fix.</p>
+
+<h2>7. Budget and wall-clock</h2>
+
+<div class="wrap">
+<table>
+  <thead><tr><th></th><th class="num">Trials</th><th class="num">Agent-budget ceiling</th><th class="num">Planning cost</th></tr></thead>
+  <tbody>
+    <tr><td>A — probe</td><td class="num">12</td><td class="num">~11 h serial</td><td class="num">$12–36</td></tr>
+    <tr><td>B — measure</td><td class="num">288</td><td class="num">~160 h serial</td><td class="num">$290–865</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The <em>ceiling</em> column is the sum of the tasks' own <code>[agent].timeout_sec</code> across
+every cell and attempt — the worst case where every trial runs until its budget expires. Real trials
+usually finish well short of it, so treat it as an upper bound on wall-clock, not a forecast.</p>
+
+<p>On cost: the repository's own measured figure is $0.40–$1.30 per trial, but that was on a mixed,
+cheaper task set. These tasks carry 15–60 minute budgets, so plan at <strong>$1–3 per
+trial</strong>.</p>
+
+<h3>If B is too large</h3>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>Cut</th><th class="num">Trials</th><th>Costs you</th></tr></thead>
+  <tbody>
+    <tr><td><code>--attempts 1</code></td><td class="num">96</td><td>The confidence interval. Shows the shape; not reportable as a mean.</td></tr>
+    <tr><td>Comment out the 4 <code>codex-*</code> cells</td><td class="num">144</td><td>The cross-CLI signal — which is also the only test of CodeZen's Codex support.</td></tr>
+    <tr><td>Drop <code>codezen-full</code>, keep <code>codezen-viable</code></td><td class="num">216</td><td>The ability to price CodeZen's seven unusable skills.</td></tr>
+    <tr><td><code>--timeout-multiplier 0.5</code></td><td class="num">288</td><td>Nothing structural, but it halves every task's declared budget. Legitimate — it is applied run-wide, so conditions stay comparable — provided you record the value with the result.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Prefer cutting attempts or cells over cutting tasks: 12 tasks is already near the floor for saying
+anything about a task set rather than about individual tasks.</p>
+
+<h2>8. Reading the result honestly</h2>
+
+<p>The framework keeps two questions apart, and so should the write-up: <em>was the methodology
+available</em> — preflight proves it, from inside the container — and <em>did the agent use it</em> —
+<code>report.py</code> adherence, read from the trajectory. A passing preflight with zero adherence is
+a finding about the toolkit, not a broken experiment.</p>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>Comparison</th><th>Isolates</th></tr></thead>
+  <tbody>
+    <tr><td><code>sdd</code> vs <code>baseline</code></td><td>Does SDD help on complex programming work?</td></tr>
+    <tr><td><code>codezen-viable</code> vs <code>baseline</code></td><td>Does CodeZen's <em>method</em> help?</td></tr>
+    <tr><td><code>codezen-full</code> vs <code>codezen-viable</code></td><td>Do CodeZen's seven container-unusable skills cost anything — tokens, distraction, budget burned on a failed <code>tdd</code> pre-flight?</td></tr>
+    <tr><td><code>codezen-viable</code> vs <code>sdd</code></td><td>Do the two methods differ from each other?</td></tr>
+    <tr><td>Any condition on <code>kv-store-grpc</code> vs the same condition on the hard tasks</td><td>Fixed overhead: what the methodology costs where it cannot help.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Confounds to state in any write-up</h3>
+
+<ul>
+  <li><strong>Skill counts are not matched</strong> — 7 (SDD) vs 11 or 4 (CodeZen). Not matchable
+  without editing a toolkit.</li>
+  <li><strong>CodeZen was adapted; SDD was not.</strong> SDD was built as a repository. CodeZen ships
+  as a plugin and was reprojected into one. The diff is a single rewrite, but the comparison is still
+  native-kit versus adapted-plugin.</li>
+  <li><strong>CodeZen has no upstream commit SHA</strong> — the plugin checkout it was cut from is not
+  a git repository, so <code>version: 0.2.0</code> is the only identifier. The kit itself is
+  SHA-pinned.</li>
+  <li><strong>CodeZen's hook is declared, not proven.</strong> Whether a project-level
+  <code>.claude/settings.json</code> hook fires for a non-interactive run inside a container is
+  untested. Read it from the trajectory.</li>
+  <li><strong>Repository bulk differs.</strong> SDD's snapshot brings <code>docs/</code>,
+  <code>tests/</code>, <code>tools/</code>, <code>scripts/</code>; CodeZen's brings
+  <code>standards/</code> and <code>plugin/</code>. Both put non-method files in the agent's working
+  directory.</li>
+  <li><strong>One spec-dense task</strong>, so SDD's strongest claim is barely represented (§2).</li>
+</ul>
+
+<h2>9. Housekeeping</h2>
+
+<p>Preflight leaves one tagged image per condition × task —
+<code>harbor-methodology-bench-preflight:&lt;condition&gt;-&lt;task&gt;</code>, so 48 for the full
+12-task set. They share layers with the task base images, so each costs one thin layer; clear them
+with <code>docker image prune</code> when convenient.</p>
+
+<p><code>generate --force</code> replaces only the selected variants and leaves earlier selections in
+place under <code>generated/</code>. They cannot join a run — the runner resolves its task list from
+the selection, not from the directory — but <code>rm -rf generated/</code> is how to start clean.</p>
+
+<p>Both runners skip cells that already have a finished result, so an interrupted run resumes by
+re-issuing the same command. A job directory whose <code>result.json</code> has
+<code>finished_at: null</code> or cancelled trials counts as unfinished and is re-run — an interrupted
+cell is never silently dropped from the matrix.</p>
+<footer>
+Runbook for <code>harbor-methodology-bench</code>, branch
+<code>feat/container-payload-layer-and-task-catalogue</code>. Task facts read from
+<code>source-tasks/terminal-bench</code> at pin
+<code>2fd12b88aafdd04a52c298e3940bcb189f9766d6</code>. Snapshots: SDD
+<code>dc4b09e730f6e38a43ba85b44991bb6de890b6d9</code>, CodeZen
+<code>cc50eba852ca516fa5e3a2334aff6873acc30226</code> (from CodeZen plugin
+<code>0.2.0</code>, which carries no commit SHA of its own).
+</footer>
+
+<script>
+(function () {
+  var LABEL = 'Copy';
+  document.querySelectorAll('pre').forEach(function (pre) {
+    var host = pre.parentElement;
+    if (!host || !host.classList.contains('codeblock')) {
+      host = document.createElement('div');
+      host.className = 'codeblock';
+      pre.parentNode.insertBefore(host, pre);
+      host.appendChild(pre);
+    }
+    if (host.querySelector('.copy-btn')) return;
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-btn';
+    btn.textContent = LABEL;
+    btn.setAttribute('aria-label', 'Copy this block to the clipboard');
+
+    btn.addEventListener('click', function () {
+      var text = pre.innerText.replace(/\s+$/, '');
+      copy(text).then(function () {
+        flag('Copied', 'done');
+      }).catch(function () {
+        flag('Ctrl+C', 'failed');
+      });
+    });
+
+    function flag(label, state) {
+      btn.textContent = label;
+      btn.setAttribute('data-state', state);
+      window.setTimeout(function () {
+        btn.textContent = LABEL;
+        btn.removeAttribute('data-state');
+      }, 1600);
+    }
+
+    host.appendChild(btn);
+  });
+
+  // navigator.clipboard is unavailable in some browsers when a page is opened
+  // straight off the filesystem, so fall back to a selection-based copy.
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.top = '-1000px';
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      document.body.removeChild(area);
+      ok ? resolve() : reject(new Error('copy rejected'));
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

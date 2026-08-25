@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experiment runbook — CodeZen vs SDD vs baseline on verification-heavy</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #5b6570;
+    --rule: #e2e6ea;
+    --code-bg: #f5f7f9;
+    --accent: #0b5fa5;
+    --warn-bg: #fff7e6;
+    --warn-border: #e0a800;
+    --stop-bg: #fdecec;
+    --stop-border: #c0392b;
+    --ok: #1a7f4b;
+    --btn-bg: #e8ecf0;
+    --btn-fg: #33404d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171a;
+      --fg: #e8eaed;
+      --muted: #9aa4ae;
+      --rule: #2a2f35;
+      --code-bg: #1c2126;
+      --accent: #6db3f2;
+      --warn-bg: #2a2418;
+      --warn-border: #b38600;
+      --stop-bg: #2b1a1a;
+      --stop-border: #d9635a;
+      --ok: #57c98a;
+      --btn-bg: #29313a;
+      --btn-fg: #c8d2dc;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 5rem;
+    max-width: 60rem;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 .5rem; }
+  h2 { font-size: 1.3rem; margin: 2.75rem 0 .75rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 1.05rem; margin: 1.75rem 0 .5rem; }
+  p, li { margin: .5rem 0; }
+  .lede { color: var(--muted); font-size: 1.05rem; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em;
+         background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+  .codeblock { position: relative; margin: 1rem 0; }
+  .codeblock pre { margin: 0; }
+  pre { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px;
+        padding: .9rem 1rem; overflow-x: auto; }
+  pre code { background: none; padding: 0; font-size: .85rem; line-height: 1.5; }
+  .copy-btn {
+    position: absolute; top: .5rem; right: .5rem;
+    font: 600 .72rem/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: .04em; text-transform: uppercase;
+    color: var(--btn-fg); background: var(--btn-bg);
+    border: 1px solid var(--rule); border-radius: 4px;
+    padding: .4rem .55rem; cursor: pointer; opacity: .55;
+    transition: opacity .12s ease, color .12s ease;
+  }
+  .codeblock:hover .copy-btn, .copy-btn:focus-visible { opacity: 1; }
+  .copy-btn[data-state="done"] { opacity: 1; color: var(--ok); border-color: var(--ok); }
+  .copy-btn[data-state="failed"] { opacity: 1; color: var(--stop-border); border-color: var(--stop-border); }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-weight: 600; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  tr.excluded td { color: var(--muted); text-decoration: line-through; }
+  tr.excluded td:last-child { text-decoration: none; }
+  .wrap { overflow-x: auto; }
+  .note { background: var(--code-bg); border-left: 3px solid var(--accent); padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0; }
+  .warn { background: var(--warn-bg); border-left: 3px solid var(--warn-border); padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0; }
+  .stop { background: var(--stop-bg); border-left: 3px solid var(--stop-border); padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0; }
+  .verified { color: var(--ok); font-weight: 600; }
+  .muted { color: var(--muted); }
+  ol.steps > li { margin: 1.5rem 0; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: .35rem 1.25rem; margin: 1rem 0; }
+  .kv dt { font-weight: 600; }
+  .kv dd { margin: 0; }
+  footer { margin-top: 3.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: .875rem; }
+  @media (max-width: 34rem) { .kv { grid-template-columns: 1fr; } .kv dd { margin-bottom: .5rem; } }
+</style>
+</head>
+<body>
+
+<h1>Experiment runbook: CodeZen vs SDD vs clean baseline</h1>
+<p class="lede">Two repository-carried engineering methods, measured against each other and against
+no methodology at all, on the one task axis both of them claim — with a control axis to price their
+overhead. 4 conditions × 2 agents = 8 cells. Every command below was executed against this
+repository except the ones that build all images or spend model tokens, which are marked as such.</p>
+
+<h2>1. What this experiment is</h2>
+
+<dl class="kv">
+  <dt>Question</dt><dd>Does a repository's agent configuration change measured performance — and do two methods making <em>different</em> claims separate from each other?</dd>
+  <dt>Conditions</dt><dd><code>baseline</code>, <code>sdd</code>, <code>codezen-full</code>, <code>codezen-viable</code> (§3).</dd>
+  <dt>Agents</dt><dd><code>claude-code</code> / <code>claude-sonnet-5</code> and <code>codex</code> / <code>gpt-5.6-terra</code>.</dd>
+  <dt>Configuration</dt><dd><code>config/experiments.codezen.yaml</code> — 8 cells, <code>repetitions: 3</code>.</dd>
+  <dt>Task axes</dt><dd><code>verification-heavy</code> (12 tasks) as the head-to-head, <code>quick</code> (23) as the control. 2 tasks overlap, so 33 distinct.</dd>
+  <dt>Job prefix</dt><dd><code>codezen</code> → <code>jobs/codezen-&lt;cell&gt;-&lt;task&gt;/</code>.</dd>
+</dl>
+
+<h3>Why these two axes</h3>
+
+<p><code>verification-heavy</code> is the only axis both toolkits claim, which makes it the only fair
+head-to-head. SDD claims it through <code>sdd-verify</code>; CodeZen claims it through
+<code>noc-tdd</code> (test-first) and <code>code-review</code>. The axis selects tasks graded on a
+large test surface, or whose prompt requires the agent to write the tests — exactly where a
+verification discipline should pay off if it pays off anywhere.</p>
+
+<p><code>quick</code> is the control. These are cheap tasks where methodology overhead should show up
+as cost with little gain. A method that helps on <code>verification-heavy</code> and costs nothing on
+<code>quick</code> is a very different result from one that helps on both, and both are different
+again from one that only adds tokens.</p>
+
+<div class="note">
+<strong>SDD's home axis is deliberately not run.</strong> <code>spec-dense</code> is where SDD makes
+its strongest claim and CodeZen makes none, so including it would measure SDD's advantage rather than
+compare the two. Add it as a follow-up once the head-to-head has a result —
+<code>--suite spec-dense</code> works with every command below unchanged.
+</div>
+
+<h2>2. The new artefact: <code>codezen-agent-kit</code></h2>
+
+<p>SDD already existed as a repository. CodeZen did not: it ships as a Claude Code / Codex
+<strong>plugin</strong>, installed from a marketplace into a plugin cache, and its skills locate their
+own supporting files through the <code>${CLAUDE_PLUGIN_ROOT}</code> variable that only a plugin
+runtime sets. This framework measures a repository by deploying the repository, and there is no
+plugin runtime inside the container to set that variable.</p>
+
+<p>So the method was reprojected as a checkout at <code>~/GitRepos/codezen-agent-kit</code>, laid out
+the way <code>sdd-agent-kit</code> is: <code>CLAUDE.md</code> and <code>AGENTS.md</code> for the
+instructions, <code>.claude/skills/</code> and <code>.agents/skills/</code> for the skills. The
+projection is mechanical and re-runnable — <code>.codezen-kit/sync-from-plugin.sh</code> — so the diff
+against upstream stays auditable instead of becoming a hand-maintained fork.</p>
+
+<h3>The whole diff against upstream</h3>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>Change</th><th>Why it is needed</th><th>Edits upstream text?</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Skills copied into <code>.claude/skills/</code> <em>and</em> <code>.agents/skills/</code></td>
+      <td>The plugin keeps one <code>skills/</code> and points both runtimes at it through its manifests. A checkout has no manifest to do that.</td>
+      <td>No — byte-identical copies</td>
+    </tr>
+    <tr>
+      <td><code>${CLAUDE_PLUGIN_ROOT}/standards/…</code> → <code>standards/…</code></td>
+      <td>The <em>only</em> uses of that variable with no fallback. Unset, they resolve to <code>/standards/…</code> and every read fails — silently, because a skill that cannot read its standards still runs.</td>
+      <td><strong>Yes — this is the entire skill-text diff</strong></td>
+    </tr>
+    <tr>
+      <td><code>hooks/</code> copied to <code>plugin/hooks/</code></td>
+      <td>Every <em>other</em> <code>${CLAUDE_PLUGIN_ROOT}</code> reference is already guarded with a repo-relative <code>elif [[ -f "plugin/hooks/…" ]]</code> that upstream wrote itself. Placing the scripts there makes the <em>unmodified</em> skill text resolve.</td>
+      <td>No</td>
+    </tr>
+    <tr>
+      <td><code>.claude/settings.json</code> added</td>
+      <td>Upstream registers the <code>block-env-edits</code> hook in <code>hooks.json</code> as a plugin path. A checkout declares hooks in project settings instead.</td>
+      <td>No — new file</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Full detail, including the per-skill runnability table, is in the kit's own
+<code>.codezen-kit/UPSTREAM.md</code>.</p>
+
+<p>The kit is published at
+<code>git@github.com:ChristophMM2108/codezen-agent-kit.git</code> (private), which is what
+<code>toolkits/codezen/SOURCE</code> records — a remote URL plus <code>GIT_SHA</code> is enough for
+anyone with access to re-derive the snapshot, which a path under someone's home directory is not.</p>
+
+<div class="warn">
+<strong>Two provenance limits, recorded rather than papered over.</strong>
+<ul>
+  <li><strong>No upstream commit SHA.</strong> <code>~/GitRepos/codezen-main</code> is not a git
+  repository, so the plugin's declared <code>version: 0.2.0</code> is the only identifier available.
+  The <em>kit</em> is pinned by SHA (<code>cc50eba852ca516fa5e3a2334aff6873acc30226</code>); the
+  plugin it was cut from is not. Do not imply commit-level provenance in a published result.</li>
+  <li><strong>The hook is declared, not proven.</strong> Whether a project-level
+  <code>.claude/settings.json</code> hook fires for a non-interactive <code>claude</code> run inside a
+  container — and whether Codex honours any project-level hook file at all — is unverified. Preflight
+  proves the script is present and executable; it cannot prove it fires. Read that out of the
+  trajectory, do not assume it.</li>
+</ul>
+</div>
+
+<h2>3. Why CodeZen appears twice</h2>
+
+<p>CodeZen ships eleven skills. Seven of them need something a benchmark container does not have.
+Shipping only the full payload would leave a null result unattributable: you could not tell whether
+the method does not help, or whether most of it never ran. That is the same failure mode already
+documented for the DFG snapshot in the repository README — files present, preflight green, method
+inert.</p>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>Skill</th><th>Needs</th><th class="num">In <code>codezen-full</code></th><th class="num">In <code>codezen-viable</code></th></tr></thead>
+  <tbody>
+    <tr><td><code>noc-tdd</code></td><td>nothing beyond the repo</td><td class="num">✓</td><td class="num">✓</td></tr>
+    <tr><td><code>noc-fix</code></td><td>a prior <code>code-review</code> result</td><td class="num">✓</td><td class="num">✓</td></tr>
+    <tr><td><code>code-review</code></td><td>subagents</td><td class="num">✓</td><td class="num">✓</td></tr>
+    <tr><td><code>security-review</code></td><td>subagents</td><td class="num">✓</td><td class="num">✓</td></tr>
+    <tr class="excluded"><td><code>tdd</code></td><td>Docker daemon</td><td class="num">✓</td><td class="num">—</td></tr>
+    <tr class="excluded"><td><code>fix</code></td><td>Docker daemon</td><td class="num">✓</td><td class="num">—</td></tr>
+    <tr class="excluded"><td><code>setup</code></td><td>interactive input, API keys</td><td class="num">✓</td><td class="num">—</td></tr>
+    <tr class="excluded"><td><code>brainstorm</code></td><td>a human in the dialogue</td><td class="num">✓</td><td class="num">—</td></tr>
+    <tr class="excluded"><td><code>agentic-e2e</code></td><td>a running system under test</td><td class="num">✓</td><td class="num">—</td></tr>
+    <tr class="excluded"><td><code>sut-bootstrap</code></td><td>a running system under test</td><td class="num">✓</td><td class="num">—</td></tr>
+    <tr class="excluded"><td><code>to-notion</code></td><td>Notion MCP server</td><td class="num">✓</td><td class="num">—</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Both conditions are cut from the <strong>same snapshot and the same
+<code>GIT_SHA</code></strong>, using the framework's <code>exclude</code> key. The difference between
+them is exactly the seven skills above and nothing else — which is what makes the pair
+interpretable:</p>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>What the comparison isolates</th><th>Read it from</th></tr></thead>
+  <tbody>
+    <tr><td>Does CodeZen's <em>method</em> help?</td><td><code>codezen-viable</code> vs <code>baseline</code></td></tr>
+    <tr><td>Do the seven unusable skills cost anything (tokens, distraction, failed invocations)?</td><td><code>codezen-full</code> vs <code>codezen-viable</code></td></tr>
+    <tr><td>Do the two methods differ?</td><td><code>codezen-viable</code> vs <code>sdd</code></td></tr>
+    <tr><td>Does either method help at all?</td><td>both vs <code>baseline</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+<strong>Verified skill counts.</strong> <code>generate</code> reports what each condition puts in
+front of the agent, and the numbers are the design, not an accident:
+<code>sdd</code> 7 · <code>codezen-full</code> 11 · <code>codezen-viable</code> 4 ·
+<code>baseline</code> 0.
+</div>
+
+<h2>4. Prerequisites</h2>
+
+<pre><code>docker run --rm hello-world                                    # daemon healthy
+harbor --version
+claude --version
+codex --version
+uv run pytest                                                  # 31 passed
+./scripts/freeze-kits.sh --config config/experiments.codezen.yaml</code></pre>
+
+<p>That last command is the one that matters here — it proves all three snapshots and their metadata
+are intact: <span class="verified">✓ run</span></p>
+
+<pre><code>ok  sdd             dc4b09e730f6e38a43ba85b44991bb6de890b6d9
+ok  codezen-full    cc50eba852ca516fa5e3a2334aff6873acc30226
+ok  codezen-viable  cc50eba852ca516fa5e3a2334aff6873acc30226</code></pre>
+
+<p>Two things a fresh clone does not have, because both are git-ignored: the task suite under
+<code>source-tasks/terminal-bench/</code> (§3 of the repository README has the fetch block) and
+<code>config/local.env</code> with the forwarded agent credentials (§3 there too). Codex trials in an
+earlier matrix run all failed with <code>ApiUsageLimitError</code> before reaching the task — check
+that quota before committing to the 4 Codex cells.</p>
+
+<h2>5. Rebuilding the kit from scratch</h2>
+
+<p>Only needed if <code>~/GitRepos/codezen-agent-kit</code> is absent, or to move to a newer plugin
+version. The toolkit snapshot in this repository is self-contained otherwise.</p>
+
+<pre><code># 1. Regenerate the kit from a CodeZen plugin checkout
+~/GitRepos/codezen-agent-kit/.codezen-kit/sync-from-plugin.sh ~/GitRepos/codezen-main
+
+# 2. Commit it — the framework pins toolkits by commit SHA
+cd ~/GitRepos/codezen-agent-kit
+git add -A &amp;&amp; git commit -m "chore: sync from codezen plugin"
+
+# 3. Re-freeze the snapshot in the bench
+cd ~/GitRepos/harbor-methodology-bench
+REPO="$HOME/GitRepos/codezen-agent-kit"
+rm -rf toolkits/codezen/snapshot &amp;&amp; mkdir -p toolkits/codezen/snapshot
+git -C "$REPO" rev-parse HEAD              &gt; toolkits/codezen/GIT_SHA
+git -C "$REPO" rev-parse --abbrev-ref HEAD &gt; toolkits/codezen/BRANCH
+git -C "$REPO" rev-parse --short HEAD      &gt; toolkits/codezen/VERSION
+git -C "$REPO" archive HEAD | tar -x -C toolkits/codezen/snapshot
+
+./scripts/freeze-kits.sh --config config/experiments.codezen.yaml</code></pre>
+
+<p>The sync script fails loudly if any unresolvable <code>${CLAUDE_PLUGIN_ROOT}/standards</code>
+reference survives, so a silent regression back to the broken-path state is not possible.</p>
+
+<h2>6. The commands, in order</h2>
+
+<p>Every command takes the same selection flags, so one task group flows through the whole pipeline
+unchanged. <code>$C</code> and <code>$SET</code> below keep it to one place:</p>
+
+<pre><code>C="--config config/experiments.codezen.yaml"
+SET="--suite verification-heavy"        # or: --suite quick</code></pre>
+
+<h3>Preview the selection <span class="verified">✓ run</span></h3>
+
+<pre><code>./scripts/catalogue.sh $C $SET --ids-only</code></pre>
+
+<pre><code>adaptive-rejection-sampler  circuit-fibsqrt  dna-assembly  extract-elf
+filter-js-from-html  financial-document-processor  install-windows-3.11
+large-scale-text-editing  llm-inference-batching-scheduler  sam-cell-seg
+sanitize-git-repo  schemelike-metacircular-eval</code></pre>
+
+<h3>Generate the variants <span class="verified">✓ run, on 1 task</span></h3>
+
+<pre><code>./scripts/generate-variants.sh $C $SET --force</code></pre>
+
+<pre><code>generated baseline/adaptive-rejection-sampler        markers=- skills=0
+generated sdd/adaptive-rejection-sampler             markers=CLAUDE.md,AGENTS.md skills=7
+generated codezen-full/adaptive-rejection-sampler    markers=CLAUDE.md,AGENTS.md skills=11
+generated codezen-viable/adaptive-rejection-sampler  markers=CLAUDE.md,AGENTS.md skills=4</code></pre>
+
+<h3>Validate host-side <span class="verified">✓ run, on 1 task</span></h3>
+
+<pre><code>./scripts/validate-variants.sh $C $SET</code></pre>
+
+<pre><code>validated 1 tasks across 4 variants</code></pre>
+
+<h3>Preflight from inside the containers <span class="verified">✓ run, on 1 task</span></h3>
+
+<pre><code>./scripts/preflight-variants.sh $C $SET</code></pre>
+
+<pre><code>preflight adaptive-rejection-sampler ...
+  ok  baseline:        workdir=/app markers=- skills=0 payload_files=0   expects(instructions=False,skills=False)
+  ok  sdd:             workdir=/app markers=CLAUDE.md,AGENTS.md skills=7  payload_files=47
+  ok  codezen-full:    workdir=/app markers=CLAUDE.md,AGENTS.md skills=11 payload_files=56
+  ok  codezen-viable:  workdir=/app markers=CLAUDE.md,AGENTS.md skills=4  payload_files=42
+preflight passed for 1 tasks</code></pre>
+
+<p><code>payload_files</code> 56 → 42 is the fourteen dropped files: seven skills × two skill trees.
+Running this across all 33 tasks builds 132 images and takes a while, but spends no model tokens —
+do it before the run, not during.</p>
+
+<h3>Prove the <code>standards/</code> rewrite actually worked <span class="verified">✓ run</span></h3>
+
+<p>The one edit to upstream text deserves its own check. Preflight proves files are present; this
+proves the path a skill will actually use resolves from the agent's working directory:</p>
+
+<pre><code>docker run --rm --entrypoint sh \
+  harbor-methodology-bench-preflight:codezen-full-adaptive-rejection-sampler \
+  -c 'pwd; test -f standards/baseline.md &amp;&amp; echo OK-standards; \
+      test -x plugin/hooks/block-env-edits.sh &amp;&amp; echo OK-hook-script'</code></pre>
+
+<pre><code>/app
+OK-standards
+OK-hook-script</code></pre>
+
+<h3>Dry-run the matrix</h3>
+
+<pre><code>./scripts/run-pilot-experiment.sh $C $SET --job-prefix codezen --attempts 3 --dry-run</code></pre>
+
+<h3>Run it <span class="muted">— spends model tokens</span></h3>
+
+<pre><code>./scripts/run-pilot-experiment.sh $C $SET --job-prefix codezen --attempts 3</code></pre>
+
+<h3>Report <span class="muted">— after the run</span></h3>
+
+<pre><code>python3 scripts/report.py --pattern "codezen-*" \
+  --md-out results/codezen_report.md \
+  --json-out results/codezen_summary.json</code></pre>
+
+<h2>7. Budget — read this before starting</h2>
+
+<p>33 tasks × 8 cells × 3 attempts = <strong>792 trials</strong>. At the repository's own measured
+figure of roughly 200–800 s and $0.40–$1.30 per trial, that is <strong>$320–$1,030</strong> and,
+serially, on the order of days of wall-clock.</p>
+
+<div class="stop">
+<strong>Do not launch all 792 at once.</strong> Stage it, and let each stage decide whether the next
+one is worth paying for.
+</div>
+
+<div class="wrap">
+<table>
+  <thead><tr><th class="num">Stage</th><th>Scope</th><th class="num">Trials</th><th class="num">Est. cost</th><th>Decides</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="num">1</td>
+      <td><code>--config config/experiments.codezen-probe.yaml --suite verification-heavy --limit 3 --attempts 1</code></td>
+      <td class="num">12</td>
+      <td class="num">$5–15</td>
+      <td>Does the pipeline hold end to end? Do the CodeZen skills get invoked at all? Claude-only, since one CLI answers that — see <a href="experiment-programming-tasks.html">the programming-task instructions</a> for the same probe-then-measure shape applied to a task set.</td>
+    </tr>
+    <tr>
+      <td class="num">2</td>
+      <td><code>--suite verification-heavy --attempts 3</code></td>
+      <td class="num">288</td>
+      <td class="num">$115–375</td>
+      <td>The head-to-head. This is the result.</td>
+    </tr>
+    <tr>
+      <td class="num">3</td>
+      <td><code>--suite quick --attempts 3</code></td>
+      <td class="num">504</td>
+      <td class="num">$200–655</td>
+      <td>The overhead control. Only worth paying for if stage 2 shows an effect.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p>Cheaper cuts, if stage 2 is still too large: drop to <code>--attempts 1</code> for a shape check
+(96 trials — but a single flaky trial then moves a 12-task success rate by 8 points, so it is not
+reportable), or halve the matrix with a Claude-only run.</p>
+
+<div class="note">
+<strong>Stage 1 is the one with the highest information-per-dollar.</strong> The most likely outcome
+of this whole experiment is <em>zero adherence</em> — CodeZen's skills gate themselves on being
+asked, and Harbor hands the agent a bare task prompt with no instruction to use a method. 12 trials
+tell you that before you spend $375 finding out.
+</div>
+
+<h2>8. Reading the result honestly</h2>
+
+<p>The framework separates two questions and so should the write-up: <em>was the methodology
+available</em> (preflight proves it, in-container) and <em>did the agent use it</em>
+(<code>report.py</code> adherence, read from the trajectory). A passing preflight with zero adherence
+is a finding about the toolkit, not a broken experiment.</p>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>Observation</th><th>What it means</th><th>What it does <em>not</em> mean</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>Skills Used</code> = 0 across every CodeZen cell</td>
+      <td>Nothing in the task prompt prompted a skill, and CodeZen's skills gate on being invoked. A finding about the toolkit's trigger conditions.</td>
+      <td>That the skills were absent — preflight proved they were registered.</td>
+    </tr>
+    <tr>
+      <td><code>Config Referenced</code> = 0 for <code>claude-code</code></td>
+      <td>The agent never named <code>CLAUDE.md</code> in its trajectory.</td>
+      <td>That it never received it. Claude Code loads project memory <em>silently</em> into its system prompt.</td>
+    </tr>
+    <tr>
+      <td><code>codezen-full</code> ≈ <code>codezen-viable</code></td>
+      <td>The seven unusable skills cost nothing measurable — they are dead weight, not a drag.</td>
+      <td>That they work.</td>
+    </tr>
+    <tr>
+      <td><code>codezen-full</code> &lt; <code>codezen-viable</code></td>
+      <td>The unusable skills actively cost something: tokens in the registry, or an agent trying <code>tdd</code>, hitting the Docker pre-flight, and burning budget.</td>
+      <td>Anything about the method itself — that is the <code>viable</code> vs <code>baseline</code> comparison.</td>
+    </tr>
+    <tr>
+      <td>Any CodeZen cell beats <code>sdd</code></td>
+      <td>On <code>verification-heavy</code> tasks, with 3 attempts, for these models.</td>
+      <td>That CodeZen is the better method generally — <code>spec-dense</code>, SDD's home axis, was not run.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Confounds to state in any write-up</h3>
+
+<ul>
+  <li><strong>Skill-count asymmetry.</strong> 7 (SDD) vs 11 or 4 (CodeZen). Not matched, and not
+  matchable without editing one of the toolkits.</li>
+  <li><strong>Hook asymmetry.</strong> SDD ships no hooks; CodeZen ships one, whose firing is
+  unproven (§2).</li>
+  <li><strong>Repository bulk.</strong> SDD's snapshot brings <code>docs/</code>,
+  <code>tests/</code>, <code>tools/</code>, <code>scripts/</code>, <code>kits/</code>; CodeZen's
+  brings <code>standards/</code> and <code>plugin/</code>. Both put non-method files in the agent's
+  working directory. The repository README's <code>include</code>/<code>exclude</code> scenarios B and
+  C are how you subtract that, if it turns out to matter.</li>
+  <li><strong>CodeZen was adapted; SDD was not.</strong> SDD was built as a repository. CodeZen was
+  reprojected into one, and although the diff is one rewrite, the comparison is between a native kit
+  and an adapted plugin.</li>
+  <li><strong>No upstream SHA for CodeZen</strong> (§2).</li>
+</ul>
+
+<h2>9. Housekeeping</h2>
+
+<p>Preflight leaves one tagged image per (condition × task) —
+<code>harbor-methodology-bench-preflight:&lt;condition&gt;-&lt;task&gt;</code>, so 132 of them for the
+full 33-task set. They share layers with the task base images, so each costs one thin layer; clear
+them with <code>docker image prune</code> when convenient.</p>
+
+<p><code>generate --force</code> replaces only the selected variants, leaving earlier selections in
+place under <code>generated/</code>. They cannot join a run — the runner resolves its task list from
+the selection, not from the directory — but <code>rm -rf generated/</code> is how you start clean.</p>
+<footer>
+Runbook for <code>harbor-methodology-bench</code>, branch
+<code>feat/container-payload-layer-and-task-catalogue</code>. Task facts read from
+<code>source-tasks/terminal-bench</code> at pin
+<code>2fd12b88aafdd04a52c298e3940bcb189f9766d6</code>. Snapshots: SDD
+<code>dc4b09e730f6e38a43ba85b44991bb6de890b6d9</code>, CodeZen
+<code>cc50eba852ca516fa5e3a2334aff6873acc30226</code> (from CodeZen plugin
+<code>0.2.0</code>, which carries no commit SHA of its own).
+</footer>
+
+<script>
+(function () {
+  var LABEL = 'Copy';
+  document.querySelectorAll('pre').forEach(function (pre) {
+    var host = pre.parentElement;
+    if (!host || !host.classList.contains('codeblock')) {
+      host = document.createElement('div');
+      host.className = 'codeblock';
+      pre.parentNode.insertBefore(host, pre);
+      host.appendChild(pre);
+    }
+    if (host.querySelector('.copy-btn')) return;
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy-btn';
+    btn.textContent = LABEL;
+    btn.setAttribute('aria-label', 'Copy this block to the clipboard');
+
+    btn.addEventListener('click', function () {
+      var text = pre.innerText.replace(/\s+$/, '');
+      copy(text).then(function () {
+        flag('Copied', 'done');
+      }).catch(function () {
+        flag('Ctrl+C', 'failed');
+      });
+    });
+
+    function flag(label, state) {
+      btn.textContent = label;
+      btn.setAttribute('data-state', state);
+      window.setTimeout(function () {
+        btn.textContent = LABEL;
+        btn.removeAttribute('data-state');
+      }, 1600);
+    }
+
+    host.appendChild(btn);
+  });
+
+  // navigator.clipboard is unavailable in some browsers when a page is opened
+  // straight off the filesystem, so fall back to a selection-based copy.
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var area = document.createElement('textarea');
+      area.value = text;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.top = '-1000px';
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      document.body.removeChild(area);
+      ok ? resolve() : reject(new Error('copy rejected'));
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
