@@ -1,4 +1,4 @@
-# Programming task set — 12 tasks
+# Programming task set — 16 tasks
 #
 # Every task here has [metadata].category of `software-engineering` or
 # `debugging`: the tightest reading of "programming task" the benchmark's own
@@ -7,14 +7,17 @@
 #
 # Selected for complexity with usable budget headroom, and for spread across the
 # kinds of work the two toolkits claim. Rejected on purpose:
-#   gpt2-codegolf, write-compressor, make-doom-for-mips  24h/8h expert estimate
-#                                                        against a 15m agent
-#                                                        budget — every condition
-#                                                        floors at 0
+#   gpt2-codegolf, write-compressor, make-doom-for-mips  24h / 24h / 8h expert
+#                                                        estimate against a 15m
+#                                                        agent budget — every
+#                                                        condition floors at 0
 #   build-pov-ray                                        200-minute budget would
 #                                                        dominate wall-clock
-#   polyglot-c-py, fix-git, prove-plus-comm              5-20 minute expert
+#   fix-git, prove-plus-comm, polyglot-c-py              5–20 minute expert
 #                                                        estimate; not complex
+#   headless-terminal, winning-avg-corewars              match no axis, so
+#                                                        nothing predicts whether
+#                                                        a methodology should help
 #
 # The first three are the probe set (config/tasks-programming-probe.txt).
 #
@@ -28,18 +31,35 @@
 #   path-tracing                  hard   360m     30m   long-horizon, greenfield
 #   path-tracing-reverse          hard   120m     30m   modify-existing
 #   torch-pipeline-parallelism    hard   240m     15m   spec-dense, long-horizon, greenfield
+#   torch-tensor-parallelism      hard   240m     15m   long-horizon, greenfield
+#   polyglot-rust-c               hard   180m     15m   underspecified, greenfield
 #   cancel-async-tasks            hard   120m     15m   greenfield
-#   custom-memory-heap-crash      med     30m     30m   diagnose-first, modify-existing
+#   build-pmars                   med     90m     15m   diagnose-first, environment-engineering
 #   build-cython-ext              med     60m     15m   diagnose-first, modify-existing, environment-engineering
+#   sqlite-db-truncate            med     60m     15m   underspecified, diagnose-first, modify-existing
+#   custom-memory-heap-crash      med     30m     30m   diagnose-first, modify-existing
 #   kv-store-grpc                 med     15m     15m   quick
+#
+# Axis coverage across the 16:
+#   long-horizon 8 · greenfield-algorithmic 8 · diagnose-first 5 ·
+#   modify-existing 5 · verification-heavy 2 · underspecified 2 ·
+#   environment-engineering 2 · spec-dense 1 · quick 1
 #
 # kv-store-grpc is the in-set control: the one `quick` task, where methodology
 # overhead should show up as cost with little gain.
 #
-# Known thinness: only torch-pipeline-parallelism carries `spec-dense`, which is
-# SDD's strongest claim. That is a property of the benchmark's programming
-# tasks, not of this selection — run `--suite spec-dense` separately if the
-# comparison needs SDD's home axis.
+# The four tasks added when this set grew from 12 to 16 were chosen to close its
+# largest gap. At 12 tasks the set had *no* `underspecified` task at all, which
+# left untested an axis both toolkits explicitly claim — SDD through
+# `sdd-clarify`, CodeZen through `brainstorm`. polyglot-rust-c and
+# sqlite-db-truncate supply it. torch-tensor-parallelism pairs with the
+# pipeline-parallelism task already present, and build-pmars adds a second
+# environment-engineering case so that axis rests on more than one task.
+#
+# Remaining thinness: only torch-pipeline-parallelism carries `spec-dense`, which
+# is SDD's strongest claim. That is a property of the benchmark's programming
+# tasks rather than of this selection — run `--suite spec-dense` as a separate
+# experiment if the comparison needs SDD's home axis.
 
 circuit-fibsqrt
 fix-ocaml-gc
@@ -49,7 +69,11 @@ make-mips-interpreter
 path-tracing
 path-tracing-reverse
 torch-pipeline-parallelism
+torch-tensor-parallelism
+polyglot-rust-c
 cancel-async-tasks
-custom-memory-heap-crash
+build-pmars
 build-cython-ext
+sqlite-db-truncate
+custom-memory-heap-crash
 kv-store-grpc

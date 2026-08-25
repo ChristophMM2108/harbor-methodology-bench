@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Programming-task experiments — 3-task probe and 12-task measurement</title>
+<title>Programming-task experiments — 3-task probe and 16-task measurement</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -92,80 +92,78 @@
 </head>
 <body>
 
-<h1>Two programming-task experiments: probe, then measure</h1>
-<p class="lede">A 3-task probe that answers <em>is this worth paying for</em>, and a 12-task experiment
-that produces the result. Same four conditions, same eight cells, same commands — only the task file,
-the job prefix and the attempt count change. Everything below was executed against this repository
-except the two runs themselves, which spend model tokens.</p>
+<h1>Programming-task experiments: probe, then measure</h1>
+<p class="lede">A 3-task probe that answers <em>is this worth paying for</em>, then a 16-task
+measurement split into two independent halves so Codex can be run later, or never. Four conditions
+throughout. Everything below was executed against this repository except the runs themselves, which
+spend model tokens.</p>
 
-<h2>1. The two experiments</h2>
+<h2>1. The three runs</h2>
 
 <div class="wrap">
 <table>
-  <thead><tr><th></th><th>A — probe</th><th>B — measure</th></tr></thead>
+  <thead><tr><th></th><th>A — probe</th><th>B1 — measure, Claude</th><th>B2 — measure, Codex <span class="muted">(optional)</span></th></tr></thead>
   <tbody>
-    <tr><td>Tasks</td><td>3</td><td>12 (superset of A)</td></tr>
-    <tr><td>Task file</td><td><code>config/tasks-programming-probe.txt</code></td><td><code>config/tasks-programming.txt</code></td></tr>
-    <tr><td>Configuration</td><td><code>config/experiments.codezen-probe.yaml</code></td><td><code>config/experiments.codezen.yaml</code></td></tr>
-    <tr><td>Cells</td><td>4 — Claude Code only</td><td>8 — both CLIs</td></tr>
-    <tr><td>Attempts</td><td>1</td><td>3</td></tr>
-    <tr><td>Trials</td><td class="num"><strong>12</strong></td><td class="num"><strong>288</strong> (96 Harbor invocations × <code>-n 3</code>)</td></tr>
-    <tr><td>Job prefix</td><td><code>probe3</code></td><td><code>prog12</code></td></tr>
-    <tr><td>Answers</td><td>Does the matrix run on hard programming work? Are either toolkit's skills invoked <em>at all</em>?</td><td>Do the methodologies change measured performance, and do they differ from each other?</td></tr>
-    <tr><td>Reportable?</td><td>No — one attempt, 3 tasks. A single flaky trial moves a success rate by 33 points.</td><td>Yes — 3 attempts gives a mean with a standard error.</td></tr>
+    <tr><td>Tasks</td><td>3</td><td>16</td><td>16 — the same 16</td></tr>
+    <tr><td>Task file</td><td><code>tasks-programming-probe.txt</code></td><td><code>tasks-programming.txt</code></td><td><code>tasks-programming.txt</code></td></tr>
+    <tr><td>Configuration</td><td><code>experiments.codezen-probe.yaml</code></td><td><code>experiments.codezen-claude.yaml</code></td><td><code>experiments.codezen-codex.yaml</code></td></tr>
+    <tr><td>Cells</td><td>4</td><td>4</td><td>4</td></tr>
+    <tr><td>Attempts</td><td>1</td><td>3</td><td>3</td></tr>
+    <tr><td>Trials</td><td class="num"><strong>12</strong></td><td class="num"><strong>192</strong> (64 invocations × <code>-n 3</code>)</td><td class="num"><strong>192</strong></td></tr>
+    <tr><td>Job prefix</td><td><code>probe3</code></td><td><code>prog16</code></td><td><code>prog16</code> — the same</td></tr>
+    <tr><td>Answers</td><td>Do either toolkit's skills fire <em>at all</em> on a bare Harbor prompt?</td><td>Do the methodologies change measured performance, and do they differ?</td><td>Does any of that hold for a second CLI?</td></tr>
+    <tr><td>Reportable?</td><td>No — 1 attempt, 3 tasks. One flaky trial moves a rate by 33 points.</td><td>Yes — 3 attempts gives a mean with a standard error.</td><td>Yes, and it turns B1's single-CLI result into a cross-CLI one.</td></tr>
   </tbody>
 </table>
 </div>
 
-<p>The four conditions are <code>baseline</code>, <code>sdd</code>, <code>codezen-full</code> and
-<code>codezen-viable</code> — see <a href="experiment-codezen-vs-sdd.html">the CodeZen runbook</a> for
-why CodeZen appears twice and what the pair isolates.</p>
+<h3>Why Codex is a separate run rather than four more cells</h3>
 
-<p>The two configuration files declare those conditions <strong>identically</strong>: same
+<p>B1 and B2 together are exactly the 8-cell matrix that
+<code>config/experiments.codezen.yaml</code> declares — B1 holds the four <code>claude-*</code> cells,
+B2 the four <code>codex-*</code> cells, with no overlap. Splitting them buys three things:</p>
+
+<ul>
+  <li><strong>Codex is optional.</strong> Its quota has failed before (§3). Running B1 alone produces
+  a complete, publishable Claude-only result rather than a half-finished matrix.</li>
+  <li><strong>The Codex quota stops being a scheduling risk.</strong> Run B2 whenever the quota is
+  confirmed — a week later is fine. Nothing about B1 needs re-running.</li>
+  <li><strong>The two still aggregate into one report.</strong> Cell ids carry the agent name
+  (<code>claude-baseline</code>, <code>codex-baseline</code>), so both runs share the job prefix
+  <code>prog16</code> without colliding, and one <code>--pattern "prog16-*"</code> folds them
+  together whenever B2 lands.</li>
+</ul>
+
+<pre><code>prog16-claude-baseline-build-cython-ext     # B1 writes these
+prog16-claude-sdd-build-cython-ext
+prog16-codex-baseline-build-cython-ext      # B2 writes these, later
+prog16-codex-sdd-build-cython-ext</code></pre>
+
+<div class="note">
+<strong>The four configurations declare identical conditions.</strong> Same
 <code>toolkits:</code>, same snapshots, same <code>exclude</code> lists, same
-<code>skill_sources</code>. The probe file differs from the measurement file in exactly two places —
-the four <code>codex-*</code> matrix cells are absent, and <code>repetitions</code> is 1. Verified:</p>
+<code>skill_sources</code> — only the matrix and <code>repetitions</code> differ. That equality is
+what makes A's finding evidence about the conditions B measures, and B1 and B2 comparable to each
+other. It is asserted mechanically rather than promised in a comment:
 
-<pre><code>python3 -c "
-import yaml
-a=yaml.safe_load(open('config/experiments.codezen.yaml'))
-b=yaml.safe_load(open('config/experiments.codezen-probe.yaml'))
-for k in ('source_root','generated_root','snapshot_excludes','skill_sources','toolkits','models'):
-    print(k, 'IDENTICAL' if a[k]==b[k] else 'DIFFERS')"</code></pre>
+<pre><code>uv run pytest tests/test_configs.py -q          # 6 passed</code></pre>
 
-<pre><code>source_root        IDENTICAL
-generated_root     IDENTICAL
-snapshot_excludes  IDENTICAL
-skill_sources      IDENTICAL
-toolkits           IDENTICAL
-models             IDENTICAL</code></pre>
-
-<p>That equality is what makes A's result evidence about the conditions B will measure, rather than a
-rehearsal of them. If the two files ever diverge under <code>toolkits:</code>, the guarantee is gone —
-change both or neither.</p>
-
-<div class="note">
-<strong>Why the probe is Claude Code only.</strong> Its question is narrow: <em>do either toolkit's
-skills fire at all when the agent is handed a bare Harbor task prompt?</em> One CLI answers that at
-half the trial count. The cost is that nothing is learned about Codex — including CodeZen's own Codex
-support, which its <code>.codex-plugin/</code> and <code>codex-hooks.json</code> exist to provide.
-Both Codex cells return in experiment B.
+<code>tests/test_configs.py</code> fails if any CodeZen config's conditions drift, if the two agent
+halves stop partitioning the full matrix, or if the probe task file stops being a subset of the
+16-task set. Verified to fail on an injected divergence, not merely to pass today.
 </div>
 
-<div class="note">
-<strong>A is a strict subset of B, by design.</strong> The three probe tasks are the first three lines
-of the 12-task file. The job prefixes differ (<code>probe3</code> / <code>prog12</code>), so B never
-collides with A's job directories and both results survive independently — but they are results about
-the same three tasks, so a contradiction between them is a signal about run-to-run variance rather
-than about the tasks.
-</div>
+<p>The four conditions are <code>baseline</code>, <code>sdd</code>, <code>codezen-full</code> and
+<code>codezen-viable</code>. See <a href="experiment-codezen-vs-sdd.html">the CodeZen runbook</a> for
+why CodeZen appears twice, what the pair isolates, and how a plugin-shipped methodology was
+reprojected as a repository so it could be measured at all.</p>
 
 <h2>2. Why these tasks</h2>
 
-<p>"Programming task" is taken to mean <code>[metadata].category</code> of
-<code>software-engineering</code> or <code>debugging</code> — the tightest reading the benchmark's own
-metadata supports. <code>file-operations</code> and <code>data-processing</code> tasks are excluded
-even where they involve writing code, so the set means one thing.</p>
+<p>"Programming task" means <code>[metadata].category</code> of <code>software-engineering</code> or
+<code>debugging</code> — the tightest reading the benchmark's own metadata supports.
+<code>file-operations</code> and <code>data-processing</code> tasks are excluded even where they
+involve writing code, so the set says one thing.</p>
 
 <div class="warn">
 <strong>The trap this selection avoids.</strong> The benchmark's most impressive-looking hard tasks
@@ -190,7 +188,7 @@ headroom</em>, not on expert estimate alone.
 </table>
 </div>
 
-<h3>The 12 tasks</h3>
+<h3>The 16 tasks</h3>
 
 <div class="wrap">
 <table>
@@ -207,13 +205,47 @@ headroom</em>, not on expert estimate alone.
     <tr><td><code>path-tracing</code></td><td>software-engineering</td><td>hard</td><td class="num">360m</td><td class="num">30m</td><td class="num">4</td><td>long-horizon, greenfield</td><td class="num">—</td></tr>
     <tr><td><code>path-tracing-reverse</code></td><td>software-engineering</td><td>hard</td><td class="num">120m</td><td class="num">30m</td><td class="num">3</td><td>modify-existing</td><td class="num">—</td></tr>
     <tr><td><code>torch-pipeline-parallelism</code></td><td>software-engineering</td><td>hard</td><td class="num">240m</td><td class="num">15m</td><td class="num">6</td><td>spec-dense, long-horizon, greenfield</td><td class="num">—</td></tr>
+    <tr><td><code>torch-tensor-parallelism</code> <span class="muted">new</span></td><td>software-engineering</td><td>hard</td><td class="num">240m</td><td class="num">15m</td><td class="num">7</td><td>long-horizon, greenfield</td><td class="num">—</td></tr>
+    <tr><td><code>polyglot-rust-c</code> <span class="muted">new</span></td><td>software-engineering</td><td>hard</td><td class="num">180m</td><td class="num">15m</td><td class="num">2</td><td><strong>underspecified</strong>, greenfield</td><td class="num">—</td></tr>
     <tr><td><code>cancel-async-tasks</code></td><td>software-engineering</td><td>hard</td><td class="num">120m</td><td class="num">15m</td><td class="num">5</td><td>greenfield</td><td class="num">—</td></tr>
-    <tr><td><code>custom-memory-heap-crash</code></td><td>debugging</td><td>medium</td><td class="num">30m</td><td class="num">30m</td><td class="num">6</td><td>diagnose-first, modify-existing</td><td class="num">—</td></tr>
+    <tr><td><code>build-pmars</code> <span class="muted">new</span></td><td>software-engineering</td><td>medium</td><td class="num">90m</td><td class="num">15m</td><td class="num">3</td><td>diagnose-first, environment-engineering</td><td class="num">—</td></tr>
     <tr><td><code>build-cython-ext</code></td><td>debugging</td><td>medium</td><td class="num">60m</td><td class="num">15m</td><td class="num">6</td><td>diagnose-first, modify-existing, environment-engineering</td><td class="num">—</td></tr>
+    <tr><td><code>sqlite-db-truncate</code> <span class="muted">new</span></td><td>debugging</td><td>medium</td><td class="num">60m</td><td class="num">15m</td><td class="num">1</td><td><strong>underspecified</strong>, diagnose-first, modify-existing</td><td class="num">—</td></tr>
+    <tr><td><code>custom-memory-heap-crash</code></td><td>debugging</td><td>medium</td><td class="num">30m</td><td class="num">30m</td><td class="num">6</td><td>diagnose-first, modify-existing</td><td class="num">—</td></tr>
     <tr><td><code>kv-store-grpc</code></td><td>software-engineering</td><td>medium</td><td class="num">15m</td><td class="num">15m</td><td class="num">6</td><td>quick <em>(the control)</em></td><td class="num">—</td></tr>
   </tbody>
 </table>
 </div>
+
+<h3>Why the four new tasks are these four</h3>
+
+<p>At 12 tasks the set had <strong>no <code>underspecified</code> task at all</strong> — an axis
+<em>both</em> toolkits explicitly claim: SDD through <code>sdd-clarify</code>, CodeZen through
+<code>brainstorm</code>. A methodology whose pitch is "surface ambiguity before implementing" was
+going to be measured on a set where nothing was ambiguous. <code>polyglot-rust-c</code> and
+<code>sqlite-db-truncate</code> close that gap. <code>torch-tensor-parallelism</code> pairs with the
+pipeline-parallelism task already present, and <code>build-pmars</code> gives
+<code>environment-engineering</code> a second task so the axis does not rest on one.</p>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>Axis</th><th class="num">at 12</th><th class="num">at 16</th></tr></thead>
+  <tbody>
+    <tr><td><code>long-horizon</code></td><td class="num">7</td><td class="num">8</td></tr>
+    <tr><td><code>greenfield-algorithmic</code></td><td class="num">6</td><td class="num">8</td></tr>
+    <tr><td><code>diagnose-first</code></td><td class="num">3</td><td class="num">5</td></tr>
+    <tr><td><code>modify-existing</code></td><td class="num">4</td><td class="num">5</td></tr>
+    <tr><td><code>verification-heavy</code></td><td class="num">2</td><td class="num">2</td></tr>
+    <tr><td><code>underspecified</code></td><td class="num"><strong>0</strong></td><td class="num"><strong>2</strong></td></tr>
+    <tr><td><code>environment-engineering</code></td><td class="num">1</td><td class="num">2</td></tr>
+    <tr><td><code>spec-dense</code></td><td class="num">1</td><td class="num">1</td></tr>
+    <tr><td><code>quick</code></td><td class="num">1</td><td class="num">1</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>kv-store-grpc</code> is the in-set control: the one <code>quick</code> task, where
+methodology overhead should show up as cost with little gain.</p>
 
 <p>The three probe tasks were picked to exercise one distinct skill path each, so a single 12-trial
 run touches all of them: <code>circuit-fibsqrt</code> builds from scratch against a 13 kB test
@@ -222,14 +254,11 @@ and <code>schemelike-metacircular-eval</code> is a long-horizon build with the l
 the set. All three carry a 40–60 minute agent budget, which is the headroom a methodology needs in
 order to be able to pay for itself.</p>
 
-<p><code>kv-store-grpc</code> is the in-set control: the one <code>quick</code> task, where
-methodology overhead should show up as cost with little gain.</p>
-
 <div class="note">
-<strong>Known thinness, stated up front.</strong> Only <code>torch-pipeline-parallelism</code> carries
-<code>spec-dense</code>, which is SDD's strongest claim. That is a property of the benchmark's
-programming tasks, not of this selection — the programming categories simply contain few spec-dense
-prompts. If the comparison needs SDD's home axis, run <code>--suite spec-dense</code> as a third
+<strong>Remaining thinness, stated up front.</strong> Only <code>torch-pipeline-parallelism</code>
+carries <code>spec-dense</code>, which is SDD's strongest claim. That is a property of the benchmark's
+programming tasks rather than of this selection — the programming categories contain few spec-dense
+prompts. If the comparison needs SDD's home axis, run <code>--suite spec-dense</code> as a separate
 experiment rather than stretching this one.
 </div>
 
@@ -238,9 +267,8 @@ experiment rather than stretching this one.
 <pre><code>docker run --rm hello-world                                          # daemon healthy
 harbor --version
 claude --version
-codex --version
-uv run pytest                                                        # 31 passed
-./scripts/freeze-kits.sh --config config/experiments.codezen.yaml</code></pre>
+uv run pytest                                                        # 37 passed
+./scripts/freeze-kits.sh --config config/experiments.codezen-claude.yaml</code></pre>
 
 <p><span class="verified">✓ run</span> — all three snapshots intact:</p>
 
@@ -252,17 +280,17 @@ ok  codezen-viable  cc50eba852ca516fa5e3a2334aff6873acc30226</code></pre>
 <code>source-tasks/terminal-bench/</code> (§3 of the repository README has the fetch block) and
 <code>config/local.env</code> with forwarded agent credentials.</p>
 
-<div class="warn">
-<strong>Codex quota is an experiment-B concern only.</strong> Every Codex trial in an earlier matrix
-run failed with <code>ApiUsageLimitError</code> before reaching the task. The probe is Claude-only, so
-it is unaffected; four of experiment B's eight cells are Codex. Confirm the quota before starting B
-rather than discovering it mid-run — the four <code>codex-*</code> cells in
-<code>config/experiments.codezen.yaml</code> can be commented out if it is still exhausted.
+<div class="note">
+<strong>Codex is not a prerequisite for A or B1.</strong> Neither run touches it — no
+<code>codex --version</code>, no Codex quota, no Codex credentials in
+<code>config/local.env</code>. Every Codex trial in an earlier matrix run failed with
+<code>ApiUsageLimitError</code> before reaching the task, and splitting the matrix is how that stops
+being a blocker. Confirm the quota only when you come to B2 (§7).
 </div>
 
 <h2>4. Experiment A — the probe</h2>
 
-<p>All four steps below have been run against this repository. Copy them as a block.</p>
+<p>All four steps below have been run against this repository.</p>
 
 <h3>Preview the selection <span class="verified">✓ run</span></h3>
 
@@ -283,13 +311,9 @@ schemelike-metacircular-eval</code></pre>
 ./scripts/preflight-variants.sh --config config/experiments.codezen-probe.yaml \
   --tasks-file config/tasks-programming-probe.txt</code></pre>
 
-<p>Note that these three steps build all four conditions regardless of which config you pass — a
-variant is a property of the task and the condition, not of the matrix. So the probe's generated
-variants and preflight reports are exactly the ones experiment B will reuse; nothing is rebuilt for
-Codex later.</p>
-
-<p>Generation reports what each condition puts in front of the agent — the skill counts are the
-design, not an accident:</p>
+<p>These three steps build all four conditions regardless of which config you pass — a variant is a
+property of the task and the condition, not of the matrix. So the probe's generated variants and
+preflight reports are exactly the ones B1 and B2 reuse; nothing is rebuilt per agent.</p>
 
 <pre><code>generated baseline/circuit-fibsqrt        markers=- skills=0
 generated sdd/circuit-fibsqrt             markers=CLAUDE.md,AGENTS.md skills=7
@@ -320,21 +344,19 @@ preflight passed for 3 tasks</code></pre>
 <pre><code>✓ Selected 3 task(s) × 4 cell(s) = 12 trial(s)
 ✓ Dry run completed for 12 trial invocations.</code></pre>
 
-<p>Drop <code>--dry-run</code> to spend tokens:</p>
+<p>Drop <code>--dry-run</code> to spend tokens, then report:</p>
 
 <pre><code>./scripts/run-pilot-experiment.sh --config config/experiments.codezen-probe.yaml \
   --tasks-file config/tasks-programming-probe.txt \
-  --job-prefix probe3 --attempts 1</code></pre>
+  --job-prefix probe3 --attempts 1
 
-<h3>Report</h3>
-
-<pre><code>python3 scripts/report.py --pattern "probe3-*" \
+python3 scripts/report.py --pattern "probe3-*" \
   --md-out results/probe3_report.md \
   --json-out results/probe3_summary.json</code></pre>
 
 <h2>5. The decision gate between A and B</h2>
 
-<p>Read A's report before running B. Three outcomes, three different next moves:</p>
+<p>Read A's report before running B1. Four outcomes, four different next moves:</p>
 
 <div class="wrap">
 <table>
@@ -342,23 +364,23 @@ preflight passed for 3 tasks</code></pre>
   <tbody>
     <tr>
       <td>Non-zero <code>Skills Used</code> in any CodeZen or SDD cell</td>
-      <td>The methodologies are actually engaging with the task. B will measure something.</td>
-      <td>Run B as specified.</td>
+      <td>The methodologies are actually engaging with the task. B1 will measure something.</td>
+      <td>Run B1 as specified.</td>
     </tr>
     <tr>
       <td><code>Skills Used</code> = 0 everywhere, but rewards differ between conditions</td>
       <td>The instruction files are having an effect without any skill being named — plausible, since Claude Code loads <code>CLAUDE.md</code> silently.</td>
-      <td>Run B, and treat adherence telemetry as uninformative rather than as evidence of no effect.</td>
+      <td>Run B1, and treat adherence telemetry as uninformative rather than as evidence of no effect.</td>
     </tr>
     <tr>
       <td><code>Skills Used</code> = 0 <em>and</em> rewards indistinguishable across all four conditions</td>
-      <td>Nothing in a bare Harbor task prompt triggers either methodology. B would spend 288 trials confirming a null.</td>
-      <td><strong>Do not run B as-is.</strong> Fix the trigger first — see below.</td>
+      <td>Nothing in a bare Harbor task prompt triggers either methodology. B1 would spend 192 trials confirming a null.</td>
+      <td><strong>Do not run B1 as-is.</strong> Fix the trigger first — see below.</td>
     </tr>
     <tr>
       <td>Every condition scores 0 on a task</td>
-      <td>Floor effect: that task is too hard for the budget, exactly what the selection tried to avoid.</td>
-      <td>Drop that task from <code>config/tasks-programming.txt</code> before running B.</td>
+      <td>Floor effect: that task is too hard for its budget, exactly what the selection tried to avoid.</td>
+      <td>Drop that task from <code>config/tasks-programming.txt</code> before running B1.</td>
     </tr>
   </tbody>
 </table>
@@ -369,81 +391,135 @@ preflight passed for 3 tasks</code></pre>
 asked: SDD's own <code>CLAUDE.md</code> says to use its skills "for substantial feature development",
 and CodeZen's skills are user-invocable. Harbor hands the agent a bare task prompt with no
 instruction to use a method. If A comes back with zero adherence across the board, that is a real
-finding about the toolkits — and the honest response is to say so, not to spend $300 on 288 trials
+finding about the toolkits — and the honest response is to report it, not to spend hundreds of dollars
 restating it at higher confidence.
 </div>
 
-<h2>6. Experiment B — the measurement</h2>
+<h2>6. Experiment B1 — the measurement, Claude Code</h2>
 
-<p>Identical commands; only the task file, prefix and attempt count change. Generation and validation
-have been run <span class="verified">✓</span>; preflight for the remaining 9 tasks has not.</p>
+<p>Generation and validation have been run <span class="verified">✓</span> for all 16 tasks;
+preflight beyond the three probe tasks has not.</p>
 
-<pre><code>TASKS="--tasks-file config/tasks-programming.txt"
-CFG="--config config/experiments.codezen.yaml"
+<pre><code>./scripts/catalogue.sh --config config/experiments.codezen-claude.yaml \
+  --tasks-file config/tasks-programming.txt --ids-only          # ✓ run: 16 ids
 
-./scripts/generate-variants.sh  $CFG $TASKS --force      # ✓ run: 48 variants
-./scripts/validate-variants.sh  $CFG $TASKS              # ✓ run: validated 12 tasks across 4 variants
-./scripts/preflight-variants.sh $CFG $TASKS              # builds 48 images; 12 already pass
+./scripts/generate-variants.sh --config config/experiments.codezen-claude.yaml \
+  --tasks-file config/tasks-programming.txt --force             # ✓ run: 64 variants
 
-./scripts/run-pilot-experiment.sh $CFG $TASKS \
-  --job-prefix prog12 --attempts 3 --dry-run             # ✓ run: 96 invocations
-./scripts/run-pilot-experiment.sh $CFG $TASKS \
-  --job-prefix prog12 --attempts 3
+./scripts/validate-variants.sh --config config/experiments.codezen-claude.yaml \
+  --tasks-file config/tasks-programming.txt                     # ✓ run: validated 16 tasks across 4 variants
 
-python3 scripts/report.py --pattern "prog12-*" \
-  --md-out results/prog12_report.md \
-  --json-out results/prog12_summary.json</code></pre>
+./scripts/preflight-variants.sh --config config/experiments.codezen-claude.yaml \
+  --tasks-file config/tasks-programming.txt                     # builds 64 images; 12 already pass
 
-<div class="note">
-<strong>In <code>zsh</code>, quote or splat those variables.</strong> zsh does not word-split
-unquoted parameter expansions, so <code>$CFG</code> arrives as one argument and the CLI rejects it
-with <code>No such option</code>. Use <code>${=CFG}</code>, or run the commands with the flags written
-out, or use <code>bash</code>. The scripts themselves are <code>sh</code>/<code>bash</code> and are
-unaffected — this only bites when you build the command line from shell variables interactively.
-</div>
+./scripts/run-pilot-experiment.sh --config config/experiments.codezen-claude.yaml \
+  --tasks-file config/tasks-programming.txt \
+  --job-prefix prog16 --attempts 3 --dry-run                    # ✓ run: 64 invocations
+
+./scripts/run-pilot-experiment.sh --config config/experiments.codezen-claude.yaml \
+  --tasks-file config/tasks-programming.txt \
+  --job-prefix prog16 --attempts 3
+
+python3 scripts/report.py --pattern "prog16-*" \
+  --md-out results/prog16_report.md \
+  --json-out results/prog16_summary.json</code></pre>
 
 <p>Preflight is the step to run before walking away: it builds every image and asserts every
 condition without spending a single model token. Doing it up front turns a mid-run failure into a
 five-minute fix.</p>
 
-<h2>7. Budget and wall-clock</h2>
+<div class="note">
+<strong>In <code>zsh</code>, do not build these command lines from shell variables.</strong> zsh does
+not word-split unquoted parameter expansions, so <code>CFG="--config …"; cmd $CFG</code> arrives as one
+argument and the CLI rejects it with <code>No such option</code>. Use <code>${=CFG}</code>, write the
+flags out as above, or use <code>bash</code>. The scripts themselves are <code>sh</code>/<code>bash</code>
+and are unaffected.
+</div>
+
+<h2>7. Experiment B2 — the same measurement, Codex <span class="muted">(optional, later)</span></h2>
+
+<p>Identical in every respect but the agent. Nothing from B1 is re-run, and no variant is rebuilt —
+the generated tasks and preflight reports are agent-independent.</p>
+
+<div class="warn">
+<strong>Confirm the Codex quota first.</strong> Every Codex trial in an earlier matrix run failed with
+<code>ApiUsageLimitError</code> <em>before reaching the task</em>, which burns wall-clock and produces
+no data. Prove one cell works before launching 64 invocations:
+
+<pre><code>codex --version
+./scripts/run-pilot-experiment.sh --config config/experiments.codezen-codex.yaml \
+  --task kv-store-grpc --job-prefix quotacheck --attempts 1</code></pre>
+
+<code>kv-store-grpc</code> is the cheapest task in the set — a 15-minute budget — so it is the right
+canary. If it returns <code>ApiUsageLimitError</code>, stop; the quota is still exhausted.
+</div>
+
+<pre><code>./scripts/preflight-variants.sh --config config/experiments.codezen-codex.yaml \
+  --tasks-file config/tasks-programming.txt         # no-op if B1 already preflighted
+
+./scripts/run-pilot-experiment.sh --config config/experiments.codezen-codex.yaml \
+  --tasks-file config/tasks-programming.txt \
+  --job-prefix prog16 --attempts 3 --dry-run        # ✓ run: 64 invocations
+
+./scripts/run-pilot-experiment.sh --config config/experiments.codezen-codex.yaml \
+  --tasks-file config/tasks-programming.txt \
+  --job-prefix prog16 --attempts 3</code></pre>
+
+<p>Then re-run the <em>same</em> report command. Because both halves wrote under the
+<code>prog16</code> prefix, one pattern now spans all eight cells and the report becomes the full
+cross-CLI comparison:</p>
+
+<pre><code>python3 scripts/report.py --pattern "prog16-*" \
+  --md-out results/prog16_report.md \
+  --json-out results/prog16_summary.json</code></pre>
+
+<div class="note">
+<strong>Want both halves in one go instead?</strong> <code>config/experiments.codezen.yaml</code>
+declares all eight cells and takes the same task file — one run, 384 trials. The split exists so
+Codex can be deferred, not because the combined matrix is unavailable.
+</div>
+
+<h2>8. Budget and wall-clock</h2>
 
 <div class="wrap">
 <table>
   <thead><tr><th></th><th class="num">Trials</th><th class="num">Agent-budget ceiling</th><th class="num">Planning cost</th></tr></thead>
   <tbody>
-    <tr><td>A — probe</td><td class="num">12</td><td class="num">~11 h serial</td><td class="num">$12–36</td></tr>
-    <tr><td>B — measure</td><td class="num">288</td><td class="num">~160 h serial</td><td class="num">$290–865</td></tr>
+    <tr><td>A — probe</td><td class="num">12</td><td class="num">~11 h</td><td class="num">$12–36</td></tr>
+    <tr><td>B1 — Claude</td><td class="num">192</td><td class="num">~92 h</td><td class="num">$190–575</td></tr>
+    <tr><td>B2 — Codex</td><td class="num">192</td><td class="num">~92 h</td><td class="num">$190–575</td></tr>
+    <tr><td><strong>All three</strong></td><td class="num"><strong>396</strong></td><td class="num"><strong>~195 h</strong></td><td class="num"><strong>$390–1,185</strong></td></tr>
   </tbody>
 </table>
 </div>
 
 <p>The <em>ceiling</em> column is the sum of the tasks' own <code>[agent].timeout_sec</code> across
 every cell and attempt — the worst case where every trial runs until its budget expires. Real trials
-usually finish well short of it, so treat it as an upper bound on wall-clock, not a forecast.</p>
+usually finish well short of it, so treat it as an upper bound on wall-clock, not a forecast. The
+16-task set totals 460 agent-minutes per cell-pass.</p>
 
 <p>On cost: the repository's own measured figure is $0.40–$1.30 per trial, but that was on a mixed,
 cheaper task set. These tasks carry 15–60 minute budgets, so plan at <strong>$1–3 per
 trial</strong>.</p>
 
-<h3>If B is too large</h3>
+<h3>If B1 is still too large</h3>
 
 <div class="wrap">
 <table>
   <thead><tr><th>Cut</th><th class="num">Trials</th><th>Costs you</th></tr></thead>
   <tbody>
-    <tr><td><code>--attempts 1</code></td><td class="num">96</td><td>The confidence interval. Shows the shape; not reportable as a mean.</td></tr>
-    <tr><td>Comment out the 4 <code>codex-*</code> cells</td><td class="num">144</td><td>The cross-CLI signal — which is also the only test of CodeZen's Codex support.</td></tr>
-    <tr><td>Drop <code>codezen-full</code>, keep <code>codezen-viable</code></td><td class="num">216</td><td>The ability to price CodeZen's seven unusable skills.</td></tr>
-    <tr><td><code>--timeout-multiplier 0.5</code></td><td class="num">288</td><td>Nothing structural, but it halves every task's declared budget. Legitimate — it is applied run-wide, so conditions stay comparable — provided you record the value with the result.</td></tr>
+    <tr><td><code>--attempts 1</code></td><td class="num">64</td><td>The confidence interval. Shows the shape; not reportable as a mean.</td></tr>
+    <tr><td>Drop <code>codezen-full</code>, keep <code>codezen-viable</code></td><td class="num">144</td><td>The ability to price CodeZen's seven container-unusable skills.</td></tr>
+    <tr><td><code>--timeout-multiplier 0.5</code></td><td class="num">192</td><td>Nothing structural, but it halves every task's declared budget. Legitimate — it applies run-wide, so conditions stay comparable — provided you record the value with the result.</td></tr>
+    <tr><td>Skip B2 entirely</td><td class="num">192</td><td>The cross-CLI signal. This is the cut the split was built for, and B1 stands alone as a result.</td></tr>
   </tbody>
 </table>
 </div>
 
-<p>Prefer cutting attempts or cells over cutting tasks: 12 tasks is already near the floor for saying
-anything about a task set rather than about individual tasks.</p>
+<p>Prefer cutting attempts, cells or B2 over cutting tasks: 16 tasks is not a large set for saying
+anything about a task <em>population</em> rather than about individual tasks.</p>
 
-<h2>8. Reading the result honestly</h2>
+<h2>9. Reading the result honestly</h2>
 
 <p>The framework keeps two questions apart, and so should the write-up: <em>was the methodology
 available</em> — preflight proves it, from inside the container — and <em>did the agent use it</em> —
@@ -459,6 +535,8 @@ a finding about the toolkit, not a broken experiment.</p>
     <tr><td><code>codezen-full</code> vs <code>codezen-viable</code></td><td>Do CodeZen's seven container-unusable skills cost anything — tokens, distraction, budget burned on a failed <code>tdd</code> pre-flight?</td></tr>
     <tr><td><code>codezen-viable</code> vs <code>sdd</code></td><td>Do the two methods differ from each other?</td></tr>
     <tr><td>Any condition on <code>kv-store-grpc</code> vs the same condition on the hard tasks</td><td>Fixed overhead: what the methodology costs where it cannot help.</td></tr>
+    <tr><td>The two <code>underspecified</code> tasks vs the rest</td><td>Whether "surface ambiguity before implementing" — SDD's <code>sdd-clarify</code>, CodeZen's <code>brainstorm</code> — pays anywhere.</td></tr>
+    <tr><td>B1 vs B2, condition by condition</td><td>Whether a methodology effect is a property of the method or of one CLI. Only available once B2 has run.</td></tr>
   </tbody>
 </table>
 </div>
@@ -482,13 +560,15 @@ a finding about the toolkit, not a broken experiment.</p>
   <code>standards/</code> and <code>plugin/</code>. Both put non-method files in the agent's working
   directory.</li>
   <li><strong>One spec-dense task</strong>, so SDD's strongest claim is barely represented (§2).</li>
+  <li><strong>If B2 is skipped, the result is Claude-only</strong> — and CodeZen ships a
+  <code>.codex-plugin/</code> whose Codex support then goes untested.</li>
 </ul>
 
-<h2>9. Housekeeping</h2>
+<h2>10. Housekeeping</h2>
 
 <p>Preflight leaves one tagged image per condition × task —
-<code>harbor-methodology-bench-preflight:&lt;condition&gt;-&lt;task&gt;</code>, so 48 for the full
-12-task set. They share layers with the task base images, so each costs one thin layer; clear them
+<code>harbor-methodology-bench-preflight:&lt;condition&gt;-&lt;task&gt;</code>, so 64 for the full
+16-task set. They share layers with the task base images, so each costs one thin layer; clear them
 with <code>docker image prune</code> when convenient.</p>
 
 <p><code>generate --force</code> replaces only the selected variants and leaves earlier selections in
@@ -498,7 +578,8 @@ the selection, not from the directory — but <code>rm -rf generated/</code> is 
 <p>Both runners skip cells that already have a finished result, so an interrupted run resumes by
 re-issuing the same command. A job directory whose <code>result.json</code> has
 <code>finished_at: null</code> or cancelled trials counts as unfinished and is re-run — an interrupted
-cell is never silently dropped from the matrix.</p>
+cell is never silently dropped from the matrix. This is also why B2 cannot disturb B1: different cell
+ids mean different job directories.</p>
 <footer>
 Runbook for <code>harbor-methodology-bench</code>, branch
 <code>feat/container-payload-layer-and-task-catalogue</code>. Task facts read from

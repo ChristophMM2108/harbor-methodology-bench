@@ -1209,8 +1209,10 @@ harbor-methodology-bench/
 │   ├── experiments.yaml            # Default matrix, conditions, models
 │   ├── experiments.scenarios.yaml  # Worked four-condition example
 │   ├── experiments.codezen.yaml    # CodeZen vs SDD vs baseline, 8 cells
-│   ├── experiments.codezen-probe.yaml  # Same conditions, Claude-only, 4 cells
-│   ├── tasks-programming.txt       # 12 complex programming tasks
+│   ├── experiments.codezen-probe.yaml   # Same conditions, Claude-only, 1 attempt
+│   ├── experiments.codezen-claude.yaml  # Claude half of the matrix, 4 cells
+│   ├── experiments.codezen-codex.yaml   # Codex half, run separately or not at all
+│   ├── tasks-programming.txt       # 16 complex programming tasks
 │   ├── tasks-programming-probe.txt # The 3-task probe subset
 │   ├── benchmark.env.example       # Environment template
 │   └── local.env                   # Host credentials (git-ignored)
@@ -1239,7 +1241,8 @@ harbor-methodology-bench/
 │   └── validate.py                 # Reproducibility and isolation validator
 ├── tests/
 │   ├── test_variants.py            # Generation, validation, preflight parsing
-│   └── test_catalogue.py           # Classification, suites, selection
+│   ├── test_catalogue.py           # Classification, suites, selection
+│   └── test_configs.py             # Shipped configs declare identical conditions
 ├── CHANGELOG.md
 └── TODO.md                         # Roadmap and open questions
 ```
@@ -1253,7 +1256,7 @@ harbor-methodology-bench/
 | [`docs/task-catalogue.md`](docs/task-catalogue.md) | Generated classification of every source task, with the axes and suites used for selection (§6). |
 | [`docs/experiment-sdd-ds-ml.html`](docs/experiment-sdd-ds-ml.html) | Runbook for the SDD-versus-baseline experiment on the data-science and machine-learning categories. |
 | [`docs/experiment-codezen-vs-sdd.html`](docs/experiment-codezen-vs-sdd.html) | Runbook for the four-condition CodeZen-versus-SDD-versus-baseline experiment on `verification-heavy`, including how a plugin-shipped methodology is reprojected as a repository so it can be measured at all. |
-| [`docs/experiment-programming-tasks.html`](docs/experiment-programming-tasks.html) | Instructions for the paired programming-task experiments: a 3-task probe that decides whether the 12-task measurement is worth paying for, and the 12-task run itself. Includes the task-selection rule and the decision gate between them. |
+| [`docs/experiment-programming-tasks.html`](docs/experiment-programming-tasks.html) | Instructions for the programming-task experiments: a 3-task probe that decides whether the 16-task measurement is worth paying for, then that measurement split into a Claude half and an optional Codex half that can be run later or skipped. Includes the task-selection rule, the decision gate, and the budget. |
 
 GitHub serves `.html` files as plain text rather than rendering them, so the standalone pages are only
 viewable in a browser after cloning — or through GitHub Pages. To publish them, open

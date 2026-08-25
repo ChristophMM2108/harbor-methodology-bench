@@ -1,0 +1,60 @@
+# Claude Code half of the CodeZen vs SDD vs baseline matrix
+# ----------------------------------------------------------
+# Run this first. Four cells, three attempts. Pair it with
+# experiments.codezen-codex.yaml to complete the 8-cell matrix; because cell ids
+# carry the agent name, both runs can share one job prefix and report.py folds
+# them together with a single --pattern.
+#
+# Conditions are declared IDENTICALLY across every config/experiments.codezen*.yaml
+# file: same toolkits, same snapshots, same exclude lists, same skill_sources.
+# Only the matrix and `repetitions` differ. tests/test_configs.py asserts that
+# equality, so a drifting edit fails the suite rather than silently producing two
+# experiments that are not comparable.
+
+source_root: source-tasks/terminal-bench
+generated_root: generated
+repetitions: 3                             # the README's stated minimum for a
+                                           # reportable confidence interval
+
+models:
+  claude-code: claude-sonnet-5
+  codex: gpt-5.6-terra
+
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+toolkits:
+  - id: sdd
+    snapshot: toolkits/sdd/snapshot
+
+  - id: codezen-full
+    snapshot: toolkits/codezen/snapshot
+
+  - id: codezen-viable
+    snapshot: toolkits/codezen/snapshot
+    # `exclude` drops matching names at any depth, and each of these names
+    # resolves to exactly two paths in the snapshot — the skill's directory
+    # under .claude/skills and under .agents/skills. Verified: no file in
+    # standards/ or plugin/ shares a name with any entry below.
+    #
+    # Dropped, and why each one cannot run in a benchmark container:
+    #   tdd, fix          launch a Docker sandbox; no daemon inside the container
+    #   setup             interactive credential manager
+    #   brainstorm        requires a human in the dialogue
+    #   agentic-e2e       drives a running system under test
+    #   sut-bootstrap     bootstraps a running system under test
+    #   to-notion         requires the Notion MCP server
+    #
+    # Kept: noc-tdd, noc-fix, code-review, security-review.
+    exclude: [".git", ".venv", "venv", "node_modules", "__pycache__",
+              ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store",
+              "tdd", "fix", "setup", "brainstorm",
+              "agentic-e2e", "sut-bootstrap", "to-notion"]
+
+matrix:
+  - {id: claude-baseline,       agent: claude-code, toolkit: baseline}
+  - {id: claude-sdd,            agent: claude-code, toolkit: sdd}
+  - {id: claude-codezen-full,   agent: claude-code, toolkit: codezen-full}
+  - {id: claude-codezen-viable, agent: claude-code, toolkit: codezen-viable}
