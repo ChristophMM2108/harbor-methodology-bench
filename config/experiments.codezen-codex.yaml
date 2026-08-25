@@ -12,8 +12,11 @@
 
 source_root: source-tasks/terminal-bench
 generated_root: generated
-repetitions: 3                             # the README's stated minimum for a
-                                           # reportable confidence interval
+repetitions: 2                             # matches the Claude half; the two
+                                           # runs must use the same count to be
+                                           # comparable. Documentary only — the
+                                           # runner takes the real count from
+                                           # `--attempts`
 
 models:
   claude-code: claude-sonnet-5
@@ -52,8 +55,11 @@ toolkits:
               "tdd", "fix", "setup", "brainstorm",
               "agentic-e2e", "sut-bootstrap", "to-notion"]
 
+# Three cells, mirroring experiments.codezen-claude.yaml exactly. The two halves
+# must exercise the SAME conditions or B1 and B2 are not comparable to each
+# other, which is the whole point of running the second half —
+# tests/test_configs.py asserts that.
 matrix:
   - {id: codex-baseline,        agent: codex,       toolkit: baseline}
   - {id: codex-sdd,             agent: codex,       toolkit: sdd}
-  - {id: codex-codezen-full,    agent: codex,       toolkit: codezen-full}
   - {id: codex-codezen-viable,  agent: codex,       toolkit: codezen-viable}

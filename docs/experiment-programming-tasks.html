@@ -107,9 +107,9 @@ spend model tokens.</p>
     <tr><td>Tasks</td><td>3</td><td>16</td><td>16 — the same 16</td></tr>
     <tr><td>Task file</td><td><code>tasks-programming-probe.txt</code></td><td><code>tasks-programming.txt</code></td><td><code>tasks-programming.txt</code></td></tr>
     <tr><td>Configuration</td><td><code>experiments.codezen-probe.yaml</code></td><td><code>experiments.codezen-claude.yaml</code></td><td><code>experiments.codezen-codex.yaml</code></td></tr>
-    <tr><td>Cells</td><td>4</td><td>4</td><td>4</td></tr>
-    <tr><td>Attempts</td><td>1</td><td>3</td><td>3</td></tr>
-    <tr><td>Trials</td><td class="num"><strong>12</strong></td><td class="num"><strong>192</strong> (64 invocations × <code>-n 3</code>)</td><td class="num"><strong>192</strong></td></tr>
+    <tr><td>Cells</td><td>4 — all conditions</td><td>3 — no <code>codezen-full</code></td><td>3 — the same 3</td></tr>
+    <tr><td>Attempts</td><td>1</td><td>2</td><td>2</td></tr>
+    <tr><td>Trials</td><td class="num"><strong>12</strong></td><td class="num"><strong>96</strong> (48 invocations × <code>-n 2</code>)</td><td class="num"><strong>96</strong></td></tr>
     <tr><td>Job prefix</td><td><code>probe3</code></td><td><code>prog16</code></td><td><code>prog16</code> — the same</td></tr>
     <tr><td>Answers</td><td>Do either toolkit's skills fire <em>at all</em> on a bare Harbor prompt?</td><td>Do the methodologies change measured performance, and do they differ?</td><td>Does any of that hold for a second CLI?</td></tr>
     <tr><td>Reportable?</td><td>No — 1 attempt, 3 tasks. One flaky trial moves a rate by 33 points.</td><td>Yes — 3 attempts gives a mean with a standard error.</td><td>Yes, and it turns B1's single-CLI result into a cross-CLI one.</td></tr>
@@ -117,11 +117,41 @@ spend model tokens.</p>
 </table>
 </div>
 
-<h3>Why Codex is a separate run rather than four more cells</h3>
+<h3>What the measurement gives up to cost 96 trials</h3>
 
-<p>B1 and B2 together are exactly the 8-cell matrix that
-<code>config/experiments.codezen.yaml</code> declares — B1 holds the four <code>claude-*</code> cells,
-B2 the four <code>codex-*</code> cells, with no overlap. Splitting them buys three things:</p>
+<p>Two cuts against the full 8-cell, 3-attempt matrix, which would have been 384 trials:</p>
+
+<div class="wrap">
+<table>
+  <thead><tr><th>Cut</th><th>Costs</th><th>Why it was the right cut</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>3 attempts → <strong>2</strong></td>
+      <td>A per-cell standard error across attempts. Two observations barely constrain a variance.</td>
+      <td>With 16 tasks the replication unit can be the <em>task</em> — 32 observations per cell — and condition differences are then tested by paired comparison across tasks, which is where the statistical power actually is.</td>
+    </tr>
+    <tr>
+      <td><code>codezen-full</code> dropped from the measurement</td>
+      <td>The <code>codezen-full</code> vs <code>codezen-viable</code> comparison, which prices CodeZen's seven container-unusable skills.</td>
+      <td>The cheapest of the four comparisons to lose: the probe runs all four conditions, so it samples this one on three tasks before you commit to anything.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="warn">
+<strong>Tasks were deliberately not cut.</strong> 12 tasks × 3 attempts is also 96 trials, and it is
+the <em>weaker</em> design. For detecting a difference between conditions, task-to-task variance
+dominates attempt-to-attempt variance, so breadth buys more than depth at a fixed budget — and
+trimming back to 12 would have dropped both <code>underspecified</code> tasks, the axis both
+toolkits claim (§2).
+</div>
+
+<h3>Why Codex is a separate run rather than three more cells</h3>
+
+<p>B1 and B2 draw disjoint cells from the matrix
+<code>config/experiments.codezen.yaml</code> declares — B1 the <code>claude-*</code> cells, B2 the
+<code>codex-*</code> ones, never both. Splitting them buys three things:</p>
 
 <ul>
   <li><strong>Codex is optional.</strong> Its quota has failed before (§3). Running B1 alone produces
@@ -146,11 +176,12 @@ prog16-codex-sdd-build-cython-ext</code></pre>
 what makes A's finding evidence about the conditions B measures, and B1 and B2 comparable to each
 other. It is asserted mechanically rather than promised in a comment:
 
-<pre><code>uv run pytest tests/test_configs.py -q          # 6 passed</code></pre>
+<pre><code>uv run pytest tests/test_configs.py -q          # 7 passed</code></pre>
 
 <code>tests/test_configs.py</code> fails if any CodeZen config's conditions drift, if the two agent
-halves stop partitioning the full matrix, or if the probe task file stops being a subset of the
-16-task set. Verified to fail on an injected divergence, not merely to pass today.
+halves stop drawing disjoint cells from the full matrix, if they stop exercising the same conditions
+as each other, or if the probe task file stops being a subset of the 16-task set. Verified to fail on
+an injected divergence, not merely to pass today.
 </div>
 
 <p>The four conditions are <code>baseline</code>, <code>sdd</code>, <code>codezen-full</code> and
@@ -267,7 +298,7 @@ experiment rather than stretching this one.
 <pre><code>docker run --rm hello-world                                          # daemon healthy
 harbor --version
 claude --version
-uv run pytest                                                        # 37 passed
+uv run pytest                                                        # 38 passed
 ./scripts/freeze-kits.sh --config config/experiments.codezen-claude.yaml</code></pre>
 
 <p><span class="verified">✓ run</span> — all three snapshots intact:</p>
@@ -374,7 +405,7 @@ python3 scripts/report.py --pattern "probe3-*" \
     </tr>
     <tr>
       <td><code>Skills Used</code> = 0 <em>and</em> rewards indistinguishable across all four conditions</td>
-      <td>Nothing in a bare Harbor task prompt triggers either methodology. B1 would spend 192 trials confirming a null.</td>
+      <td>Nothing in a bare Harbor task prompt triggers either methodology. B1 would spend 96 trials confirming a null.</td>
       <td><strong>Do not run B1 as-is.</strong> Fix the trigger first — see below.</td>
     </tr>
     <tr>
@@ -414,15 +445,22 @@ preflight beyond the three probe tasks has not.</p>
 
 ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-claude.yaml \
   --tasks-file config/tasks-programming.txt \
-  --job-prefix prog16 --attempts 3 --dry-run                    # ✓ run: 64 invocations
+  --job-prefix prog16 --attempts 2 --dry-run                    # ✓ run: 48 invocations
 
 ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-claude.yaml \
   --tasks-file config/tasks-programming.txt \
-  --job-prefix prog16 --attempts 3
+  --job-prefix prog16 --attempts 2
 
 python3 scripts/report.py --pattern "prog16-*" \
   --md-out results/prog16_report.md \
   --json-out results/prog16_summary.json</code></pre>
+
+<div class="warn">
+<strong><code>--attempts 2</code> is not optional here.</strong> The <code>repetitions: 2</code> in the
+configuration file is documentary — it records the intended design and nothing reads it at run time.
+The runner's real count comes from <code>--attempts</code>, and its default is <strong>1</strong>. Omit
+the flag and you get 48 trials rather than 96, with no warning that the design was not honoured.
+</div>
 
 <p>Preflight is the step to run before walking away: it builds every image and asserts every
 condition without spending a single model token. Doing it up front turns a mid-run failure into a
@@ -444,7 +482,7 @@ the generated tasks and preflight reports are agent-independent.</p>
 <div class="warn">
 <strong>Confirm the Codex quota first.</strong> Every Codex trial in an earlier matrix run failed with
 <code>ApiUsageLimitError</code> <em>before reaching the task</em>, which burns wall-clock and produces
-no data. Prove one cell works before launching 64 invocations:
+no data. Prove one cell works before launching 48 invocations:
 
 <pre><code>codex --version
 ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-codex.yaml \
@@ -459,11 +497,14 @@ canary. If it returns <code>ApiUsageLimitError</code>, stop; the quota is still 
 
 ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-codex.yaml \
   --tasks-file config/tasks-programming.txt \
-  --job-prefix prog16 --attempts 3 --dry-run        # ✓ run: 64 invocations
+  --job-prefix prog16 --attempts 2 --dry-run        # ✓ run: 48 invocations
 
 ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-codex.yaml \
   --tasks-file config/tasks-programming.txt \
-  --job-prefix prog16 --attempts 3</code></pre>
+  --job-prefix prog16 --attempts 2</code></pre>
+
+<p>The same <code>--attempts 2</code> as B1, necessarily: two halves run at different attempt counts
+are not comparable, and <code>tests/test_configs.py</code> asserts the configurations agree on it.</p>
 
 <p>Then re-run the <em>same</em> report command. Because both halves wrote under the
 <code>prog16</code> prefix, one pattern now spans all eight cells and the report becomes the full
@@ -475,8 +516,10 @@ cross-CLI comparison:</p>
 
 <div class="note">
 <strong>Want both halves in one go instead?</strong> <code>config/experiments.codezen.yaml</code>
-declares all eight cells and takes the same task file — one run, 384 trials. The split exists so
-Codex can be deferred, not because the combined matrix is unavailable.
+declares all eight cells — both agents, and <code>codezen-full</code> as well — and takes the same
+task file. At <code>--attempts 2</code> that is 256 trials; at <code>--attempts 3</code>, 384. The
+split exists so Codex can be deferred and the trial count held down, not because the combined matrix
+is unavailable.
 </div>
 
 <h2>8. Budget and wall-clock</h2>
@@ -486,9 +529,10 @@ Codex can be deferred, not because the combined matrix is unavailable.
   <thead><tr><th></th><th class="num">Trials</th><th class="num">Agent-budget ceiling</th><th class="num">Planning cost</th></tr></thead>
   <tbody>
     <tr><td>A — probe</td><td class="num">12</td><td class="num">~11 h</td><td class="num">$12–36</td></tr>
-    <tr><td>B1 — Claude</td><td class="num">192</td><td class="num">~92 h</td><td class="num">$190–575</td></tr>
-    <tr><td>B2 — Codex</td><td class="num">192</td><td class="num">~92 h</td><td class="num">$190–575</td></tr>
-    <tr><td><strong>All three</strong></td><td class="num"><strong>396</strong></td><td class="num"><strong>~195 h</strong></td><td class="num"><strong>$390–1,185</strong></td></tr>
+    <tr><td>B1 — Claude</td><td class="num">96</td><td class="num">~46 h</td><td class="num">$96–288</td></tr>
+    <tr><td>B2 — Codex <span class="muted">(optional)</span></td><td class="num">96</td><td class="num">~46 h</td><td class="num">$96–288</td></tr>
+    <tr><td><strong>A + B1</strong> — the Claude-only path</td><td class="num"><strong>108</strong></td><td class="num"><strong>~57 h</strong></td><td class="num"><strong>$108–324</strong></td></tr>
+    <tr><td><strong>All three</strong></td><td class="num"><strong>204</strong></td><td class="num"><strong>~103 h</strong></td><td class="num"><strong>$204–612</strong></td></tr>
   </tbody>
 </table>
 </div>
@@ -508,10 +552,10 @@ trial</strong>.</p>
 <table>
   <thead><tr><th>Cut</th><th class="num">Trials</th><th>Costs you</th></tr></thead>
   <tbody>
-    <tr><td><code>--attempts 1</code></td><td class="num">64</td><td>The confidence interval. Shows the shape; not reportable as a mean.</td></tr>
-    <tr><td>Drop <code>codezen-full</code>, keep <code>codezen-viable</code></td><td class="num">144</td><td>The ability to price CodeZen's seven container-unusable skills.</td></tr>
-    <tr><td><code>--timeout-multiplier 0.5</code></td><td class="num">192</td><td>Nothing structural, but it halves every task's declared budget. Legitimate — it applies run-wide, so conditions stay comparable — provided you record the value with the result.</td></tr>
-    <tr><td>Skip B2 entirely</td><td class="num">192</td><td>The cross-CLI signal. This is the cut the split was built for, and B1 stands alone as a result.</td></tr>
+    <tr><td>Skip B2 entirely</td><td class="num">96</td><td>The cross-CLI signal, and CodeZen's <code>.codex-plugin/</code> goes untested. This is the cut the split was built for, and B1 stands alone as a publishable result — take it first.</td></tr>
+    <tr><td><code>--timeout-multiplier 0.5</code></td><td class="num">96</td><td>No trials, but halves the wall-clock ceiling to ~23 h and roughly halves cost. Legitimate — it applies run-wide, so conditions stay comparable — provided you record the value with the result, since it changes the budget the benchmark declares.</td></tr>
+    <tr><td><code>--attempts 1</code></td><td class="num">48</td><td>All remaining noise protection. At two attempts a disagreeing pair at least <em>flags</em> a flaky cell; at one you cannot tell a flaky trial from a real result.</td></tr>
+    <tr><td>Drop <code>codezen-viable</code> too</td><td class="num">64</td><td>Everything about CodeZen. Only worth it if the probe showed zero CodeZen adherence, in which case say so and stop rather than paying for a null.</td></tr>
   </tbody>
 </table>
 </div>
@@ -532,7 +576,7 @@ a finding about the toolkit, not a broken experiment.</p>
   <tbody>
     <tr><td><code>sdd</code> vs <code>baseline</code></td><td>Does SDD help on complex programming work?</td></tr>
     <tr><td><code>codezen-viable</code> vs <code>baseline</code></td><td>Does CodeZen's <em>method</em> help?</td></tr>
-    <tr><td><code>codezen-full</code> vs <code>codezen-viable</code></td><td>Do CodeZen's seven container-unusable skills cost anything — tokens, distraction, budget burned on a failed <code>tdd</code> pre-flight?</td></tr>
+    <tr><td><code>codezen-full</code> vs <code>codezen-viable</code></td><td>Do CodeZen's seven container-unusable skills cost anything — tokens, distraction, budget burned on a failed <code>tdd</code> pre-flight? <strong>Available from the probe only</strong> (3 tasks, 1 attempt): the measurement drops <code>codezen-full</code> to hold the trial count at 96. Treat it as a signal, not a result.</td></tr>
     <tr><td><code>codezen-viable</code> vs <code>sdd</code></td><td>Do the two methods differ from each other?</td></tr>
     <tr><td>Any condition on <code>kv-store-grpc</code> vs the same condition on the hard tasks</td><td>Fixed overhead: what the methodology costs where it cannot help.</td></tr>
     <tr><td>The two <code>underspecified</code> tasks vs the rest</td><td>Whether "surface ambiguity before implementing" — SDD's <code>sdd-clarify</code>, CodeZen's <code>brainstorm</code> — pays anywhere.</td></tr>
@@ -560,6 +604,15 @@ a finding about the toolkit, not a broken experiment.</p>
   <code>standards/</code> and <code>plugin/</code>. Both put non-method files in the agent's working
   directory.</li>
   <li><strong>One spec-dense task</strong>, so SDD's strongest claim is barely represented (§2).</li>
+  <li><strong>Two attempts, not three.</strong> Below the repository README's stated minimum for a
+  reportable mean. Report condition differences as paired comparisons across the 16 tasks — 32
+  observations per cell — rather than as a per-cell success rate with a standard error over attempts,
+  which two observations cannot support.</li>
+  <li><strong>The measurement compares SDD-as-shipped against a curated CodeZen subset.</strong>
+  <code>codezen-viable</code> is 4 of CodeZen's 11 skills, chosen for being container-runnable; SDD's
+  7 are all shipped and all runnable. That asymmetry favours CodeZen on focus and disfavours it on
+  breadth, and it is the direct consequence of dropping <code>codezen-full</code> from the
+  measurement.</li>
   <li><strong>If B2 is skipped, the result is Claude-only</strong> — and CodeZen ships a
   <code>.codex-plugin/</code> whose Codex support then goes untested.</li>
 </ul>

@@ -59,12 +59,15 @@ def test_codezen_configs_declare_identical_conditions(name: str) -> None:
     )
 
 
-def test_codezen_agent_halves_partition_the_full_matrix() -> None:
-    """The Claude and Codex halves together must be exactly the full matrix.
+def test_codezen_agent_halves_are_disjoint_cells_of_the_full_matrix() -> None:
+    """Each half must draw its cells from the full matrix, and never overlap.
 
-    Not a subset and not a superset: a cell present in the full matrix but in
-    neither half would never be run, and a cell in a half but not in the full
-    matrix would make the two paths disagree about the experiment's size.
+    The halves are allowed to run *fewer* cells than the full matrix declares —
+    the measurement currently skips `codezen-full` to hold the trial count down,
+    while the probe still exercises it. What is not allowed is a half inventing
+    a cell the full matrix does not declare, or the two halves sharing a cell:
+    the first makes the two paths disagree about what the experiment is, and the
+    second means one run would overwrite the other's job directories.
     """
     full = load(REFERENCE)
     claude = load("experiments.codezen-claude.yaml")
@@ -73,9 +76,29 @@ def test_codezen_agent_halves_partition_the_full_matrix() -> None:
     def ids(config) -> set[str]:
         return {cell["id"] for cell in config.matrix}
 
-    halves = ids(claude) | ids(codex)
-    assert halves == ids(full)
+    assert ids(claude) <= ids(full)
+    assert ids(codex) <= ids(full)
     assert not (ids(claude) & ids(codex)), "a cell appears in both agent halves"
+
+
+def test_codezen_agent_halves_exercise_the_same_conditions() -> None:
+    """B1 and B2 must cover identical conditions, or comparing them is invalid.
+
+    The point of running the Codex half is to ask whether a methodology effect
+    belongs to the method or to one CLI. That question needs both halves to have
+    measured the same set of conditions; a condition present in one half only
+    would silently drop out of the cross-CLI comparison.
+    """
+    claude = load("experiments.codezen-claude.yaml")
+    codex = load("experiments.codezen-codex.yaml")
+
+    def toolkits(config) -> set[str]:
+        return {cell["toolkit"] for cell in config.matrix}
+
+    assert toolkits(claude) == toolkits(codex)
+    assert claude.repetitions == codex.repetitions, (
+        "the two halves must use the same attempt count to be comparable"
+    )
 
 
 def test_codezen_probe_is_a_subset_of_the_full_matrix() -> None:

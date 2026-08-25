@@ -1210,7 +1210,7 @@ harbor-methodology-bench/
 │   ├── experiments.scenarios.yaml  # Worked four-condition example
 │   ├── experiments.codezen.yaml    # CodeZen vs SDD vs baseline, 8 cells
 │   ├── experiments.codezen-probe.yaml   # Same conditions, Claude-only, 1 attempt
-│   ├── experiments.codezen-claude.yaml  # Claude half of the matrix, 4 cells
+│   ├── experiments.codezen-claude.yaml  # Claude half, 3 cells × 2 attempts
 │   ├── experiments.codezen-codex.yaml   # Codex half, run separately or not at all
 │   ├── tasks-programming.txt       # 16 complex programming tasks
 │   ├── tasks-programming-probe.txt # The 3-task probe subset
