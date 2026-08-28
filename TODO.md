@@ -64,15 +64,31 @@ Three things the probe settled, and one it did not:
    is a hypothesis, not a finding — one flaky trial moves a rate by 33 points.
 
 **What it did not settle — and this is the important caveat for B1:**
-`skill_tool_calls` is **0 in every single trial**. `report.py` derives
-"skills named" by substring-matching skill names in agent-authored trajectory
-text, which is not the same as the agent invoking the `Skill` tool. In
-`codezen-full` the "named" set is 7–8 skills at once, which reads much more like
-the agent enumerating its own skills directory than like it choosing a method.
-So the honest current statement is: **the instruction files are being read, and
-no toolkit skill was actually invoked in 12 trials.** Whether the methodology is
-*working* through `CLAUDE.md` alone, or the adherence metric is simply too weak
-to tell, is unresolved.
+`skill_tool_calls` read **0 in every trial**, and `report.py` derived "skills
+named" by substring-matching skill names in agent-authored trajectory text, which
+is not the same as invoking the `Skill` tool. In `codezen-full` the "named" set
+was 7–8 skills at once, which reads much more like the agent enumerating its own
+skills directory than like it choosing a method.
+
+**Resolved on 2026-08-28, and the zero was a bug.** The counter matched the
+substring `"name": "Skill"`, but the ATIF trajectory names the field
+`function_name`, so it could never fire. `scripts/report.py` now counts `Skill`
+tool calls whose skill name is one the variant installed, and reports the loose
+text match separately as *Skills Named*. Both reports were regenerated from the
+same job output; every non-adherence number is unchanged.
+
+| Report | Condition | Skills named (loose) | Skills invoked (strict) |
+|---|---|---:|---:|
+| probe3 | `sdd` | 1/3 | 1/3 |
+| probe3 | `codezen-full` | 2/3 | 1/3 |
+| probe3 | `codezen-viable` | 2/3 | 0/3 |
+| prog16 | `sdd` | 2/16 | 1/16 |
+| prog16 | `codezen-viable` | 8/16 | 7/16 |
+
+So the honest statement is now: the instruction files are being read, and a
+toolkit skill *was* invoked — in 8 of 32 toolkit trials in prog16, and 2 of 9 in
+the probe. Mostly as a post-hoc review pass rather than as a method for doing the
+work; see `results/analysis/prog16_discussion.md` §6.
 
 ### Documentation reconciliation (same day, before the run)
 
@@ -118,24 +134,15 @@ Uncommitted right now: `README.md`, `config/tasks-programming.txt`,
 Two commits are cleaner than one: the documentation reconciliation, then the
 probe result.
 
-### Step 2 — Decide the adherence question before spending $200
+### Step 2 — Adherence question: closed
 
-This is the one genuine decision waiting, and it is worth resolving first
-because B1's headline metric depends on it. `used_toolkit_skill` currently
-returns true on a name mention. Either:
+Done. The extraction was tightened rather than reinterpreted: `parse_adherence`
+now requires a `Skill` tool call naming an installed skill, and the loose text
+match is reported under its own column. Validated against the 12 probe
+trajectories and the 48 prog16 trajectories already on disk, at no token cost.
 
-- **Accept it and report it as such** — rename the reported column so it reads
-  "referenced the methodology" rather than "used a skill", and treat
-  `skill_tool_calls` as the strict measure. Cheap; no re-run.
-- **Or tighten the extraction** in `scripts/report.py::adherence` — require a
-  `Skill` tool call, or a skill name inside a tool-use step rather than anywhere
-  in the trajectory text. The probe trajectories in `jobs/probe3-*/agent/` are
-  already on disk, so a tightened extractor can be validated against them for
-  free, with no new trials.
-
-The second option is the better spend: 12 trajectories are enough to see whether
-the metric distinguishes anything, and B1 is 96 trials with the same
-instrumentation.
+The same fix, plus the trial-level analysis it enabled, is on
+`chore/portable-setup` (PR #3) as part of the packaged reporter.
 
 ### Step 3 — Run B1, the Claude measurement
 

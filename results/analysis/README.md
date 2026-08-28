@@ -67,17 +67,24 @@ python3 results/analysis/src/prog16_extract.py
    trial; a toolkit skill was actually invoked in 8 of 32 trials, mostly as a post-hoc
    review pass rather than as a method for doing the work.
 
-## Two bugs found in `scripts/report.py`
+## Two bugs found in `scripts/report.py` — since fixed
 
-Both are in `parse_adherence`, and both are corrected in `src/prog16_extract.py`:
+Both were in `parse_adherence`. They were first corrected here in
+`src/prog16_extract.py`, and on 2026-08-28 the fix landed in `scripts/report.py`
+itself; `results/prog16_report.md` and `results/probe3_report.md` were
+regenerated from the same job output, and only the adherence columns moved:
 
-- **`skill_tool_calls` is always 0.** It counts the substring `"name": "Skill"`, but the
+- **`skill_tool_calls` was always 0.** It counted the substring `"name": "Skill"`, but the
   ATIF trajectory names the field `function_name`. The run actually contains 15 `Skill`
-  tool calls, 15 of which name a skill the variant installed.
-- **`skills_invoked` is too permissive.** It substring-matches skill names anywhere in
-  agent-authored trajectory text, so an agent that lists its skills directory scores as
+  tool calls, all 15 naming a skill the variant installed.
+- **`skills_invoked` was too permissive.** It substring-matched skill names anywhere in
+  agent-authored trajectory text, so an agent that lists its skills directory scored as
   having used every skill. The strict measure is a `Skill` tool call whose skill name is
-  one the variant installed.
+  one the variant installed; it is now reported alongside the loose match rather than
+  instead of it.
+
+Corrected headline adherence, out of 16 trials each: `sdd` 2 named / 1 invoked,
+`codezen-viable` 8 named / 7 invoked.
 
 [`prog16_discussion.md`](prog16_discussion.md) discusses each notebook section in prose with
 the figures embedded, and closes with the open questions about the experiment's intent that

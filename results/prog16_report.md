@@ -1,15 +1,15 @@
 # Harbor Methodology Bench — Results Report
 
 **Total Trials Collected**: 48
-**Generated At**: 2026-08-28 01:23:26 UTC
+**Generated At**: 2026-08-28 19:04:03 UTC
 
 ## 1. Matrix Summary (By Agent & Methodology Condition)
 
-| Agent | Model | Condition | Trials | Successes | Success Rate | Mean Reward | Avg Time (s) | Total Cost ($) | Skills Available | Skills Used | Config Referenced |
-|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `claude-code` | `claude-sonnet-5` | **BASELINE** | 16 | 13 | 81.2% | 0.81 | 970.9s | $19.9296 | 0/16 | 0/16 | 1/16 |
-| `claude-code` | `claude-sonnet-5` | **CODEZEN-VIABLE** | 16 | 13 | 81.2% | 0.81 | 1219.3s | $30.6147 | 16/16 | 8/16 | 12/16 |
-| `claude-code` | `claude-sonnet-5` | **SDD** | 16 | 12 | 75.0% | 0.75 | 1036.8s | $24.9426 | 16/16 | 2/16 | 11/16 |
+| Agent | Model | Condition | Trials | Successes | Success Rate | Mean Reward | Avg Time (s) | Total Cost ($) | Skills Available | Skills Named | Skills Invoked | Config Referenced |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `claude-code` | `claude-sonnet-5` | **BASELINE** | 16 | 13 | 81.2% | 0.81 | 970.9s | $19.9296 | 0/16 | 0/16 | 0/16 | 1/16 |
+| `claude-code` | `claude-sonnet-5` | **CODEZEN-VIABLE** | 16 | 13 | 81.2% | 0.81 | 1219.3s | $30.6147 | 16/16 | 8/16 | 7/16 | 12/16 |
+| `claude-code` | `claude-sonnet-5` | **SDD** | 16 | 12 | 75.0% | 0.75 | 1036.8s | $24.9426 | 16/16 | 2/16 | 1/16 | 11/16 |
 
 ## 2. Per-Task Breakdown
 
@@ -66,40 +66,40 @@
 
 ## 3. Methodology Adherence (toolkit conditions only)
 
-| Task | Condition | Agent | Skills Available | Skills Invoked | Skill Tool Calls | Config Referenced |
-|---|---|---|---:|---|---:|---|
-| `build-cython-ext` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | 0 | CLAUDE.md, AGENTS.md |
-| `build-cython-ext` | **sdd** | `claude-code` | 7 | - | 0 | CLAUDE.md, AGENTS.md |
-| `build-pmars` | **codezen-viable** | `claude-code` | 4 | - | 0 | CLAUDE.md, AGENTS.md |
-| `build-pmars` | **sdd** | `claude-code` | 7 | - | 0 | CLAUDE.md, AGENTS.md |
-| `cancel-async-tasks` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | 0 | CLAUDE.md, AGENTS.md |
-| `cancel-async-tasks` | **sdd** | `claude-code` | 7 | - | 0 | - |
-| `circuit-fibsqrt` | **codezen-viable** | `claude-code` | 4 | - | 0 | - |
-| `circuit-fibsqrt` | **sdd** | `claude-code` | 7 | - | 0 | CLAUDE.md, AGENTS.md |
-| `custom-memory-heap-crash` | **codezen-viable** | `claude-code` | 4 | - | 0 | CLAUDE.md, AGENTS.md |
-| `custom-memory-heap-crash` | **sdd** | `claude-code` | 7 | - | 0 | CLAUDE.md, AGENTS.md |
-| `fix-ocaml-gc` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | 0 | CLAUDE.md, AGENTS.md |
-| `fix-ocaml-gc` | **sdd** | `claude-code` | 7 | - | 0 | CLAUDE.md, AGENTS.md |
-| `kv-store-grpc` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | 0 | CLAUDE.md, AGENTS.md |
-| `kv-store-grpc` | **sdd** | `claude-code` | 7 | - | 0 | - |
-| `make-mips-interpreter` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | 0 | CLAUDE.md, AGENTS.md |
-| `make-mips-interpreter` | **sdd** | `claude-code` | 7 | - | 0 | CLAUDE.md, AGENTS.md |
-| `path-tracing` | **codezen-viable** | `claude-code` | 4 | - | 0 | - |
-| `path-tracing` | **sdd** | `claude-code` | 7 | - | 0 | - |
-| `path-tracing-reverse` | **codezen-viable** | `claude-code` | 4 | - | 0 | CLAUDE.md, AGENTS.md |
-| `path-tracing-reverse` | **sdd** | `claude-code` | 7 | - | 0 | CLAUDE.md, AGENTS.md |
-| `polyglot-rust-c` | **codezen-viable** | `claude-code` | 4 | - | 0 | - |
-| `polyglot-rust-c` | **sdd** | `claude-code` | 7 | - | 0 | - |
-| `regex-chess` | **codezen-viable** | `claude-code` | 4 | - | 0 | CLAUDE.md, AGENTS.md |
-| `regex-chess` | **sdd** | `claude-code` | 7 | - | 0 | CLAUDE.md, AGENTS.md |
-| `schemelike-metacircular-eval` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | 0 | CLAUDE.md, AGENTS.md |
-| `schemelike-metacircular-eval` | **sdd** | `claude-code` | 7 | sdd-analyze, sdd-clarify, sdd-implement, sdd-plan, sdd-specify, sdd-tasks, sdd-verify | 0 | CLAUDE.md, AGENTS.md |
-| `sqlite-db-truncate` | **codezen-viable** | `claude-code` | 4 | - | 0 | - |
-| `sqlite-db-truncate` | **sdd** | `claude-code` | 7 | - | 0 | - |
-| `torch-pipeline-parallelism` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | 0 | CLAUDE.md, AGENTS.md |
-| `torch-pipeline-parallelism` | **sdd** | `claude-code` | 7 | sdd-analyze, sdd-clarify, sdd-implement, sdd-plan, sdd-specify, sdd-tasks, sdd-verify | 0 | CLAUDE.md, AGENTS.md |
-| `torch-tensor-parallelism` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | 0 | CLAUDE.md, AGENTS.md |
-| `torch-tensor-parallelism` | **sdd** | `claude-code` | 7 | - | 0 | CLAUDE.md, AGENTS.md |
+| Task | Condition | Agent | Skills Available | Skills Named (text match) | Skills Invoked (Skill calls) | Skill Calls | Config Referenced |
+|---|---|---|---:|---|---|---:|---|
+| `build-cython-ext` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | code-review | 1 | CLAUDE.md, AGENTS.md |
+| `build-cython-ext` | **sdd** | `claude-code` | 7 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `build-pmars` | **codezen-viable** | `claude-code` | 4 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `build-pmars` | **sdd** | `claude-code` | 7 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `cancel-async-tasks` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | code-review, noc-tdd | 2 | CLAUDE.md, AGENTS.md |
+| `cancel-async-tasks` | **sdd** | `claude-code` | 7 | - | - | 0 | - |
+| `circuit-fibsqrt` | **codezen-viable** | `claude-code` | 4 | - | - | 0 | - |
+| `circuit-fibsqrt` | **sdd** | `claude-code` | 7 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `custom-memory-heap-crash` | **codezen-viable** | `claude-code` | 4 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `custom-memory-heap-crash` | **sdd** | `claude-code` | 7 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `fix-ocaml-gc` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | - | 0 | CLAUDE.md, AGENTS.md |
+| `fix-ocaml-gc` | **sdd** | `claude-code` | 7 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `kv-store-grpc` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | noc-tdd | 1 | CLAUDE.md, AGENTS.md |
+| `kv-store-grpc` | **sdd** | `claude-code` | 7 | - | - | 0 | - |
+| `make-mips-interpreter` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | code-review | 1 | CLAUDE.md, AGENTS.md |
+| `make-mips-interpreter` | **sdd** | `claude-code` | 7 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `path-tracing` | **codezen-viable** | `claude-code` | 4 | - | - | 0 | - |
+| `path-tracing` | **sdd** | `claude-code` | 7 | - | - | 0 | - |
+| `path-tracing-reverse` | **codezen-viable** | `claude-code` | 4 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `path-tracing-reverse` | **sdd** | `claude-code` | 7 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `polyglot-rust-c` | **codezen-viable** | `claude-code` | 4 | - | - | 0 | - |
+| `polyglot-rust-c` | **sdd** | `claude-code` | 7 | - | - | 0 | - |
+| `regex-chess` | **codezen-viable** | `claude-code` | 4 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `regex-chess` | **sdd** | `claude-code` | 7 | - | - | 0 | CLAUDE.md, AGENTS.md |
+| `schemelike-metacircular-eval` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | code-review, security-review | 2 | CLAUDE.md, AGENTS.md |
+| `schemelike-metacircular-eval` | **sdd** | `claude-code` | 7 | sdd-analyze, sdd-clarify, sdd-implement, sdd-plan, sdd-specify, sdd-tasks, sdd-verify | sdd-analyze, sdd-clarify, sdd-implement, sdd-plan, sdd-specify, sdd-tasks | 6 | CLAUDE.md, AGENTS.md |
+| `sqlite-db-truncate` | **codezen-viable** | `claude-code` | 4 | - | - | 0 | - |
+| `sqlite-db-truncate` | **sdd** | `claude-code` | 7 | - | - | 0 | - |
+| `torch-pipeline-parallelism` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | code-review | 1 | CLAUDE.md, AGENTS.md |
+| `torch-pipeline-parallelism` | **sdd** | `claude-code` | 7 | sdd-analyze, sdd-clarify, sdd-implement, sdd-plan, sdd-specify, sdd-tasks, sdd-verify | - | 0 | CLAUDE.md, AGENTS.md |
+| `torch-tensor-parallelism` | **codezen-viable** | `claude-code` | 4 | code-review, noc-fix, noc-tdd, security-review | noc-tdd | 1 | CLAUDE.md, AGENTS.md |
+| `torch-tensor-parallelism` | **sdd** | `claude-code` | 7 | - | - | 0 | CLAUDE.md, AGENTS.md |
 
 ## 4. Exceptions & Failures
 

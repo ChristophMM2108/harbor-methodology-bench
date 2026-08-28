@@ -330,9 +330,14 @@ does not show is that any of it converts into outcome on this task population.
 
 ## 6. Adherence, corrected
 
+> **Status.** The correction described here has since been applied to
+> `scripts/report.py` on this branch, and `results/prog16_report.md` and
+> `results/probe3_report.md` were regenerated from the same job output. The
+> numbers below are the corrected ones; only the adherence columns changed.
+
 ![Adherence funnel](figures/09-adherence.png)
 
-`scripts/report.py` reports `Skill Tool Calls = 0` for all 48 trials. That is a bug, not a
+`scripts/report.py` reported `Skill Tool Calls = 0` for all 48 trials. That was a bug, not a
 finding: the counter looks for the substring `"name": "Skill"` while the ATIF trajectory
 names the field `function_name`, so it can never fire. Reading `function_name` off the tool
 calls finds **15 real `Skill` invocations** — 9 CodeZen, 6 SDD.
@@ -476,7 +481,7 @@ Cheapest first; the first four cost nothing and one of them *reduces* spend.
 | Change | Why |
 |---|---|
 | Report partial credit and test-level pass rate as headline metrics | ~4× the graded outcomes from the same trials, and they already agree with the binary reward, so the upgrade is free |
-| Fix `parse_adherence` in `scripts/report.py` | `skill_tool_calls` reads the wrong field name; `skills_invoked` matches too loosely. The current columns are wrong in both directions |
+| ~~Fix `parse_adherence` in `scripts/report.py`~~ — **done 2026-08-28** | `skill_tool_calls` read the wrong field name and `skills_invoked` matched too loosely, so both columns were wrong in opposite directions. The reporter now requires a `Skill` tool call naming an installed skill and reports the loose match separately; both reports were regenerated and no other number moved |
 | Report timeouts as censored rather than failed | Two of five informative outcomes here were clock, not capability |
 | Drop or replace the 10 all-pass tasks | They consumed 60 % of the spend and carried no information. Keep two as a floor check |
 | Re-run the verifier on the final state of `torch-tensor-parallelism` and `torch-pipeline-parallelism` | Separates a flaky or over-strict verifier from a real failure; costs no model tokens |
@@ -484,7 +489,7 @@ Cheapest first; the first four cost nothing and one of them *reduces* spend.
 | Raise `--attempts` to 3 on a smaller, discriminating set | Buys replicates and variance estimates for roughly the same total spend |
 | Add instruction-compliance and time-to-first-passing-test | Measures whether the method was *followed*, and gives a speed metric that survives a ceiling |
 
-The full metric catalogue — what `report.py` reports today, the 19 metrics derived in the
+The full metric catalogue — what `report.py` reports, the 19 metrics derived in the
 notebook from data already on disk, and 11 candidates worth instrumenting — is section 9 of
 [`prog16_analysis.ipynb`](prog16_analysis.ipynb).
 
