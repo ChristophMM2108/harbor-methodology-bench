@@ -1,0 +1,55 @@
+# Worked example: three conditions over one toolkit, isolating *what* about a
+# repository configuration moves the benchmark result.
+#
+# Read with docs/experiments.md § Declaring a condition. Run with:
+#   hmb generate  --config config/experiments.scenarios.yaml --limit 1 --force
+#   hmb validate  --config config/experiments.scenarios.yaml --limit 1
+#   hmb preflight --config config/experiments.scenarios.yaml --limit 1
+#
+# It uses the vendored `demo-kit`, so it runs with no external access. Point the
+# same three conditions at your own toolkit by swapping the `snapshot:` paths and
+# the names in `exclude:` / `include:`.
+
+source_root: source-tasks/terminal-bench
+generated_root: generated
+repetitions: 1
+
+models:
+  claude-code: claude-sonnet-5
+
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+toolkits:
+  # Condition B — the repository's content, with the methodology surface removed.
+  # The agent works in the toolkit's files without ever being told the method.
+  # Preflight asserts the absence, so this cannot silently drift into a full run.
+  #
+  # This `exclude` list *is* the operational definition of "methodology surface"
+  # for the experiment. Decide it deliberately: a kit directory left in hands the
+  # agent the method by another route.
+  - id: demo-kit-content-only
+    snapshot: toolkits/demo-kit/snapshot
+    exclude: [".git", ".venv", "venv", "node_modules", "__pycache__",
+              ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store",
+              "CLAUDE.md", "AGENTS.md", ".claude", ".agents", "skills"]
+    expect_instructions: false
+    expect_skills: false
+
+  # Condition C — the methodology surface only, without the repository bulk.
+  # `include` is an allowlist over the snapshot's top-level entries.
+  - id: demo-kit-instructions-only
+    snapshot: toolkits/demo-kit/snapshot
+    include: ["CLAUDE.md", "AGENTS.md", ".claude", ".agents"]
+
+  # Condition D — the toolkit as its authors ship it.
+  - id: demo-kit-full
+    snapshot: toolkits/demo-kit/snapshot
+
+matrix:
+  - {id: claude-baseline, agent: claude-code, toolkit: baseline}
+  - {id: claude-content-only, agent: claude-code, toolkit: demo-kit-content-only}
+  - {id: claude-instructions-only, agent: claude-code, toolkit: demo-kit-instructions-only}
+  - {id: claude-full, agent: claude-code, toolkit: demo-kit-full}

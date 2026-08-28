@@ -5,98 +5,362 @@ from pathlib import Path
 
 import typer
 
+from .analysis import extract_all, write_csvs
+from .catalogue import build_catalogue, render_json, render_markdown, suite_names
 from .config import ExperimentConfig, load_config
-from .inject import copy_task, inject_snapshot
+from .doctor import in_container, run_checks, worst
+from .environment import build_environment
+from .inject import copy_task
 from .manifest import tree_manifest, write_manifest
-from .source import discover_tasks
-from .validate import validate_task
+from .preflight import DEFAULT_MAX_PROBE_FILES, PreflightError, preflight_task
+from .report import write_report
+from .repo import RootNotFound, find_root
+from .scaffold import ScaffoldError, credentials_template, new_analysis, new_experiment
+from .source import TaskSelection, discover_tasks, read_task_ids, select_tasks
+from .sources import SourceError, fetch_source, load_sources
+from .validate import source_dockerfile_digest, validate_task
 
-app = typer.Typer(no_args_is_help=True, help="Generate and validate controlled Harbor methodology variants.")
+app = typer.Typer(
+    no_args_is_help=True,
+    help=(
+        "Measure what a repository's agent configuration does to a coding agent. "
+        "Run `hmb doctor` first, then `hmb setup`."
+    ),
+)
+experiment_app = typer.Typer(no_args_is_help=True, help="Create and inspect experiment scenarios.")
+analysis_app = typer.Typer(no_args_is_help=True, help="Trial-level analysis of a finished run.")
+app.add_typer(experiment_app, name="experiment")
+app.add_typer(analysis_app, name="analysis")
+
+CONFIG_OPTION = typer.Option(Path("config/experiments.yaml"), help="Experiment configuration file.")
+SOURCES_OPTION = typer.Option(Path("config/sources.yaml"), help="Pinned external sources.")
+
+
+def _root() -> Path:
+    """The repository root, so every command means the same from any directory."""
+    try:
+        return find_root()
+    except RootNotFound as error:
+        raise typer.BadParameter(str(error)) from error
+
+
+def _at_root(path: Path) -> Path:
+    return path if path.is_absolute() else (_root() / path)
+TASK_OPTION = typer.Option(None, "--task", help="Task id; repeat to select several.")
+SUITE_OPTION = typer.Option(None, "--suite", help=f"Named task set: {', '.join(suite_names())}.")
+TASKS_FILE_OPTION = typer.Option(None, "--tasks-file", help="File of task ids, one per line.")
+CATEGORY_OPTION = typer.Option(None, "--category", help="Keep only this benchmark category.")
+DIFFICULTY_OPTION = typer.Option(None, "--difficulty", help="Keep only this difficulty.")
+LIMIT_OPTION = typer.Option(None, "--limit", min=1, help="Truncate the selection, applied last.")
 
 
 def _config(path: Path) -> ExperimentConfig:
+    path = _at_root(path)
     try:
         return load_config(path)
     except (OSError, KeyError, TypeError, ValueError) as error:
         raise typer.BadParameter(str(error), param_hint="--config") from error
 
 
+def _selection(
+    task: list[str] | None,
+    suite: list[str] | None,
+    tasks_file: Path | None,
+    category: list[str] | None,
+    difficulty: list[str] | None,
+    limit: int | None,
+) -> TaskSelection:
+    ids = tuple(task or ())
+    if tasks_file:
+        try:
+            ids += read_task_ids(tasks_file)
+        except OSError as error:
+            raise typer.BadParameter(str(error), param_hint="--tasks-file") from error
+    return TaskSelection(
+        ids=ids,
+        suites=tuple(suite or ()),
+        categories=tuple(category or ()),
+        difficulties=tuple(difficulty or ()),
+        limit=limit,
+    )
+
+
+def _selected_tasks(settings: ExperimentConfig, selection: TaskSelection) -> list[Path]:
+    try:
+        return select_tasks(settings.source_root, selection)
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+
+
 @app.command("freeze-verify")
-def freeze_verify(config: Path = typer.Option(Path("config/experiments.yaml"))) -> None:
-    """Verify committed snapshots and their immutable metadata files."""
+def freeze_verify(
+    config: Path = CONFIG_OPTION,
+    sources: Path = SOURCES_OPTION,
+) -> None:
+    """Verify each condition's snapshot and its immutable provenance files.
+
+    A toolkit declared `vendored: true` in the sources file is committed here and
+    has no upstream commit, so it is checked for content only. Everything else
+    must carry a full 40-character `GIT_SHA`: without it the snapshot is
+    provenance nobody can re-derive.
+    """
     settings = _config(config)
+    sources_path = _at_root(sources)
+    vendored: set[str] = set()
+    if sources_path.is_file():
+        try:
+            vendored = {source.id for source in load_sources(sources_path) if source.vendored}
+        except SourceError as error:
+            raise typer.BadParameter(str(error), param_hint="--sources") from error
+
     for toolkit in settings.toolkits.values():
         root = toolkit.snapshot.parent
-        missing = [name for name in ("SOURCE", "GIT_SHA", "BRANCH", "VERSION", "snapshot") if not (root / name).exists()]
+        if not toolkit.snapshot.is_dir() or not any(toolkit.snapshot.iterdir()):
+            raise typer.BadParameter(
+                f"{toolkit.id}: {_show(toolkit.snapshot)} is missing or empty — run `hmb setup`"
+            )
+        # A toolkit id may differ from the directory that holds it; match on both.
+        is_vendored = toolkit.id in vendored or root.name in vendored
+        required = ("SOURCE", "BRANCH", "VERSION") if is_vendored else ("SOURCE", "GIT_SHA", "BRANCH", "VERSION")
+        missing = [name for name in required if not (root / name).exists()]
         if missing:
             raise typer.BadParameter(f"{toolkit.id} missing: {', '.join(missing)}")
+        if is_vendored:
+            typer.echo(f"ok  {toolkit.id}  vendored")
+            continue
         sha = (root / "GIT_SHA").read_text().strip()
         if len(sha) != 40 or any(char not in "0123456789abcdef" for char in sha.lower()):
             raise typer.BadParameter(f"{toolkit.id} has invalid GIT_SHA")
         typer.echo(f"ok  {toolkit.id}  {sha}")
 
 
+def _show(path: Path) -> str:
+    """A path as the user would type it: relative to the repository root."""
+    try:
+        return str(path.relative_to(_root()))
+    except (ValueError, typer.BadParameter):
+        return str(path)
+
+
 @app.command()
 def generate(
-    config: Path = typer.Option(Path("config/experiments.yaml")),
-    limit: int | None = typer.Option(None, min=1),
+    config: Path = CONFIG_OPTION,
+    task: list[str] = TASK_OPTION,
+    suite: list[str] = SUITE_OPTION,
+    tasks_file: Path | None = TASKS_FILE_OPTION,
+    category: list[str] = CATEGORY_OPTION,
+    difficulty: list[str] = DIFFICULTY_OPTION,
+    limit: int | None = LIMIT_OPTION,
     force: bool = typer.Option(False, help="Replace only generated variant directories."),
 ) -> None:
-    """Generate baseline and one complete native snapshot variant per toolkit."""
+    """Generate baseline and toolkit variants that carry the toolkit into the container.
+
+    Each variant keeps the standard Harbor task layout. The frozen toolkit
+    snapshot is staged inside `environment/` and deployed into the agent's
+    working directory by a generated Dockerfile layer, so the agent CLI
+    discovers the toolkit's `CLAUDE.md` / `AGENTS.md` and skills natively.
+    """
     settings = _config(config)
-    tasks = discover_tasks(settings.source_root)
-    if limit:
-        tasks = tasks[:limit]
-    variants: dict[str, Path | None] = {"baseline": None}
-    variants.update({toolkit.id: toolkit.snapshot for toolkit in settings.toolkits.values()})
-    for task in tasks:
-        for variant, snapshot in variants.items():
-            destination = settings.generated_root / variant / task.name
+    tasks = _selected_tasks(
+        settings, _selection(task, suite, tasks_file, category, difficulty, limit)
+    )
+    for task_dir in tasks:
+        for variant, spec in settings.specs().items():
+            destination = settings.generated_root / variant / task_dir.name
             if destination.exists() and force:
                 shutil.rmtree(destination)
-            copy_task(task, destination)
-            deployment = inject_snapshot(snapshot, destination, task) if snapshot else {}
+            copy_task(task_dir, destination)
+            plan = build_environment(task_dir, destination, variant, spec)
             write_manifest(destination / ".methodology-bench-manifest.json", {
-                "task_id": task.name,
+                "task_id": task_dir.name,
                 "variant": variant,
-                "source_files": tree_manifest(task),
-                "toolkit_files": tree_manifest(snapshot) if snapshot else {},
-                "toolkit_deployment": deployment,
+                "source_files": tree_manifest(task_dir),
+                "source_dockerfile_sha256": source_dockerfile_digest(task_dir),
+                "toolkit_files": tree_manifest(spec.snapshot) if spec.snapshot else {},
+                "environment": plan.as_manifest(),
             })
-            typer.echo(f"generated {variant}/{task.name}")
+            markers = ",".join(plan.config_markers) or "-"
+            typer.echo(
+                f"generated {variant}/{task_dir.name}  markers={markers} "
+                f"skills={len(plan.skills_registered)}"
+            )
 
 
 @app.command()
 def validate(
-    config: Path = typer.Option(Path("config/experiments.yaml")),
-    limit: int | None = typer.Option(None, min=1),
+    config: Path = CONFIG_OPTION,
+    task: list[str] = TASK_OPTION,
+    suite: list[str] = SUITE_OPTION,
+    tasks_file: Path | None = TASKS_FILE_OPTION,
+    category: list[str] = CATEGORY_OPTION,
+    difficulty: list[str] = DIFFICULTY_OPTION,
+    limit: int | None = LIMIT_OPTION,
 ) -> None:
     """Fail closed when generated variants are missing, modified, or contaminated."""
     settings = _config(config)
-    tasks = discover_tasks(settings.source_root)
-    if limit:
-        tasks = tasks[:limit]
+    tasks = _selected_tasks(
+        settings, _selection(task, suite, tasks_file, category, difficulty, limit)
+    )
     failures: list[str] = []
-    variants: dict[str, Path | None] = {"baseline": None}
-    variants.update({toolkit.id: toolkit.snapshot for toolkit in settings.toolkits.values()})
-    for task in tasks:
-        for variant, snapshot in variants.items():
-            errors = validate_task(task, settings.generated_root / variant / task.name, snapshot)
-            failures.extend(f"{variant}/{task.name}: {error}" for error in errors)
+    variants = settings.specs()
+    for task_dir in tasks:
+        for variant, spec in variants.items():
+            errors = validate_task(
+                task_dir,
+                settings.generated_root / variant / task_dir.name,
+                variant,
+                spec,
+            )
+            failures.extend(f"{variant}/{task_dir.name}: {error}" for error in errors)
     if failures:
         raise typer.Exit(typer.echo("\n".join(failures), err=True) or 1)
     typer.echo(f"validated {len(tasks)} tasks across {len(variants)} variants")
 
 
-@app.command("smoke-plan")
-def smoke_plan(config: Path = typer.Option(Path("config/experiments.yaml")), task_id: str = typer.Option(...)) -> None:
-    """Print the six controlled Harbor invocations; it never executes them."""
+@app.command()
+def preflight(
+    config: Path = CONFIG_OPTION,
+    task: list[str] = TASK_OPTION,
+    suite: list[str] = SUITE_OPTION,
+    tasks_file: Path | None = TASKS_FILE_OPTION,
+    category: list[str] = CATEGORY_OPTION,
+    difficulty: list[str] = DIFFICULTY_OPTION,
+    limit: int | None = LIMIT_OPTION,
+    max_probe_files: int = typer.Option(DEFAULT_MAX_PROBE_FILES, min=100),
+    build_timeout_sec: int = typer.Option(1800, min=60),
+    run_timeout_sec: int = typer.Option(300, min=10),
+) -> None:
+    """Build every variant image and assert the toolkit reached the container.
+
+    This is the check that the host-side validator cannot make: it builds the
+    generated environment, probes the resulting container from the inside, and
+    fails when a toolkit variant lacks project instructions or skills, or when
+    any variant altered the benchmark's own files.
+    """
+    settings = _config(config)
+    tasks = _selected_tasks(
+        settings, _selection(task, suite, tasks_file, category, difficulty, limit)
+    )
+    toolkits = {toolkit.id: toolkit.spec for toolkit in settings.toolkits.values()}
+    failures: list[str] = []
+    for task_dir in tasks:
+        typer.echo(f"preflight {task_dir.name} ...")
+        try:
+            checks = preflight_task(
+                task_dir,
+                settings.generated_root,
+                toolkits,
+                max_probe_files,
+                build_timeout_sec,
+                run_timeout_sec,
+            )
+        except PreflightError as error:
+            failures.append(f"{task_dir.name}: {error}")
+            continue
+        for check in checks:
+            for warning in check.warnings:
+                typer.echo(f"  warn  {check.variant}: {warning}")
+            if check.errors:
+                failures.extend(
+                    f"{check.variant}/{task_dir.name}: {error}" for error in check.errors
+                )
+                continue
+            expectations = settings.specs().get(check.variant)
+            declared = (
+                ""
+                if expectations is None
+                else f" expects(instructions={expectations.expect_instructions},"
+                f"skills={expectations.expect_skills})"
+            )
+            typer.echo(
+                f"  ok    {check.variant}: workdir={check.workdir} "
+                f"markers={','.join(check.config_markers_present) or '-'} "
+                f"skills={len(check.skills_present)} "
+                f"payload_files={check.payload_file_count}{declared}"
+            )
+    if failures:
+        raise typer.Exit(typer.echo("\n".join(failures), err=True) or 1)
+    typer.echo(f"preflight passed for {len(tasks)} tasks")
+
+
+@app.command()
+def catalogue(
+    config: Path = CONFIG_OPTION,
+    task: list[str] = TASK_OPTION,
+    suite: list[str] = SUITE_OPTION,
+    tasks_file: Path | None = TASKS_FILE_OPTION,
+    category: list[str] = CATEGORY_OPTION,
+    difficulty: list[str] = DIFFICULTY_OPTION,
+    limit: int | None = LIMIT_OPTION,
+    md_out: Path | None = typer.Option(None, help="Write the full catalogue as markdown."),
+    json_out: Path | None = typer.Option(None, help="Write the catalogue as JSON."),
+    ids_only: bool = typer.Option(False, help="Print only the selected task ids, one per line."),
+) -> None:
+    """Classify the benchmark tasks so a task set can be chosen deliberately.
+
+    Reads every task's manifest and prompt, derives the work-type axes, and
+    reports them. With the same selection flags as `generate`, this doubles as a
+    dry run of a selection: `catalogue --suite diagnose-first --ids-only` prints
+    exactly the tasks that suite would generate.
+    """
+    settings = _config(config)
+    tasks = _selected_tasks(
+        settings, _selection(task, suite, tasks_file, category, difficulty, limit)
+    )
+    facts = build_catalogue(tasks)
+
+    if ids_only:
+        for entry in sorted(facts, key=lambda item: item.task_id):
+            typer.echo(entry.task_id)
+        return
+
+    if md_out:
+        md_out.parent.mkdir(parents=True, exist_ok=True)
+        md_out.write_text(render_markdown(facts, settings.source_root, settings.root))
+        typer.echo(f"wrote {md_out}")
+    if json_out:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(render_json(facts, settings.source_root, settings.root))
+        typer.echo(f"wrote {json_out}")
+    if md_out or json_out:
+        return
+
+    typer.echo(f"{len(facts)} tasks in {settings.source_root}")
+    counts: dict[str, int] = {}
+    for entry in facts:
+        for axis in entry.axes:
+            counts[axis] = counts.get(axis, 0) + 1
+    for axis, count in sorted(counts.items()):
+        typer.echo(f"  {axis:26s} {count:>3}")
+    typer.echo("\nPass --md-out / --json-out to write the full catalogue.")
+
+
+@app.command("matrix-plan")
+def matrix_plan(config: Path = CONFIG_OPTION) -> None:
+    """Print the configured matrix cells as `id<TAB>variant<TAB>agent<TAB>model`.
+
+    The experiment runners read their cells from here instead of hard-coding
+    them, so a matrix change in `config/experiments.yaml` takes effect without
+    editing any shell script.
+    """
     settings = _config(config)
     valid_variants = {"baseline", *settings.toolkits}
-    cells = settings.matrix
-    if len(cells) != 6:
-        raise typer.BadParameter("the smoke matrix must contain exactly six cells")
-    for cell in cells:
+    for cell in settings.matrix:
+        variant = cell["toolkit"]
+        if variant not in valid_variants:
+            raise typer.BadParameter(f"unknown toolkit variant: {variant}")
+        model = settings.models.get(cell["agent"])
+        if not model:
+            raise typer.BadParameter(f"no model configured for agent: {cell['agent']}")
+        typer.echo(f"{cell['id']}\t{variant}\t{cell['agent']}\t{model}")
+
+
+@app.command("smoke-plan")
+def smoke_plan(config: Path = CONFIG_OPTION, task_id: str = typer.Option(...)) -> None:
+    """Print the configured Harbor invocations; it never executes them."""
+    settings = _config(config)
+    valid_variants = {"baseline", *settings.toolkits}
+    for cell in settings.matrix:
         variant = cell["toolkit"]
         if variant not in valid_variants:
             raise typer.BadParameter(f"unknown toolkit variant: {variant}")
@@ -107,3 +371,259 @@ def smoke_plan(config: Path = typer.Option(Path("config/experiments.yaml")), tas
         if not model:
             raise typer.BadParameter(f"no model configured for agent: {cell['agent']}")
         typer.echo(f"{cell['id']}: harbor run -p {task_path} -a {cell['agent']} -m {model}")
+
+
+# ---------------------------------------------------------------------------
+# Environment and setup
+# ---------------------------------------------------------------------------
+STATUS_MARK = {"ok": "ok  ", "warn": "warn", "fail": "FAIL"}
+
+
+@app.command()
+def doctor(
+    sources: Path = SOURCES_OPTION,
+    strict: bool = typer.Option(False, help="Exit non-zero on a warning as well as a failure."),
+) -> None:
+    """Check whether this machine can run an experiment. Changes nothing.
+
+    Every check names the command that fixes it, so the output is a to-do list
+    rather than a verdict.
+    """
+    root = _root()
+    checks = run_checks(root, _at_root(sources))
+    for check in checks:
+        line = f"{STATUS_MARK[check.status]}  {check.name:26s} {check.detail}"
+        typer.echo(line)
+        if check.fix and check.status != "ok":
+            typer.echo(f"      fix: {check.fix}")
+    if in_container():
+        typer.echo("note  running inside a container; docker-in-docker is not supported")
+
+    severity = worst(checks)
+    counts = {level: sum(1 for check in checks if check.status == level) for level in ("ok", "warn", "fail")}
+    typer.echo(f"\n{counts['ok']} ok, {counts['warn']} warning(s), {counts['fail']} failure(s)")
+    if severity == "fail" or (strict and severity == "warn"):
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def setup(
+    sources: Path = SOURCES_OPTION,
+    only: list[str] = typer.Option(None, "--only", help="Source id; repeat to limit the fetch."),
+    force: bool = typer.Option(False, help="Re-fetch even when a source is already at its pin."),
+    skip_credentials: bool = typer.Option(False, help="Do not write the config/local.env template."),
+) -> None:
+    """Materialise every pinned source, then write the credentials template.
+
+    Idempotent: a source already at its pin is left alone. An `optional` source
+    that cannot be fetched is reported and skipped, so a colleague without access
+    to a private toolkit can still set the framework up.
+    """
+    root = _root()
+    sources_path = _at_root(sources)
+    try:
+        declared = load_sources(sources_path)
+    except SourceError as error:
+        raise typer.BadParameter(str(error), param_hint="--sources") from error
+
+    wanted = set(only or ())
+    unknown = wanted - {source.id for source in declared}
+    if unknown:
+        raise typer.BadParameter(f"unknown source id(s): {', '.join(sorted(unknown))}", param_hint="--only")
+    selected = [source for source in declared if not wanted or source.id in wanted]
+
+    failures: list[str] = []
+    for source in selected:
+        typer.echo(f"{source.kind:11s} {source.id} ...")
+        try:
+            result = fetch_source(source, force=force)
+        except SourceError as error:
+            failures.append(f"{source.id}: {error}")
+            typer.echo(f"  FAIL  {error}")
+            continue
+        typer.echo(f"  {result.status:11s} {result.detail}")
+
+    if not skip_credentials:
+        path, written = credentials_template(root)
+        state = "written" if written else "present"
+        typer.echo(f"credentials  {state}: {_show(path)}")
+        if written:
+            typer.echo("  fill it with `claude setup-token`; it is git-ignored and mode 600")
+
+    if failures:
+        typer.echo("\nrequired sources failed:")
+        for failure in failures:
+            typer.echo(f"  {failure}")
+        raise typer.Exit(code=1)
+    typer.echo("\nsetup complete — run `hmb doctor` to confirm, then `hmb catalogue --suite balanced`")
+
+
+@app.command("sources")
+def sources_status(sources: Path = SOURCES_OPTION) -> None:
+    """List every pinned source and whether it is present at its pin."""
+    try:
+        declared = load_sources(_at_root(sources))
+    except SourceError as error:
+        raise typer.BadParameter(str(error), param_hint="--sources") from error
+    for source in declared:
+        pin = (source.ref or "-")[:12]
+        flags = ",".join(filter(None, ["optional" if source.optional else "", "vendored" if source.vendored else ""]))
+        typer.echo(
+            f"{source.state():9s} {source.kind:11s} {source.id:16s} {pin:13s} "
+            f"{_show(source.dest)}{'  [' + flags + ']' if flags else ''}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Results
+# ---------------------------------------------------------------------------
+@app.command("report")
+def report_command(
+    jobs_dir: Path = typer.Option(Path("jobs"), help="Where Harbor wrote its job output."),
+    pattern: str = typer.Option("*", help="Glob over job names, e.g. 'prog16-*'."),
+    md_out: Path | None = typer.Option(None, help="Write the markdown comparison here."),
+    json_out: Path | None = typer.Option(None, help="Write the machine-readable summary here."),
+) -> None:
+    """Aggregate trial results into a comparison table and a JSON summary."""
+    try:
+        markdown, trials = write_report(
+            _at_root(jobs_dir),
+            pattern,
+            _at_root(md_out) if md_out else None,
+            _at_root(json_out) if json_out else None,
+        )
+    except FileNotFoundError as error:
+        raise typer.BadParameter(str(error), param_hint="--jobs-dir") from error
+
+    if md_out:
+        typer.echo(f"{len(trials)} trial(s) matching {pattern!r} -> {_show(_at_root(md_out))}")
+    else:
+        typer.echo(markdown)
+    if json_out:
+        typer.echo(f"summary -> {_show(_at_root(json_out))}")
+
+
+# ---------------------------------------------------------------------------
+# Scenarios
+# ---------------------------------------------------------------------------
+@experiment_app.command("new")
+def experiment_new(
+    name: str = typer.Argument(..., help="Experiment name; becomes the config, task file and job prefix."),
+    toolkit: list[str] = typer.Option(None, "--toolkit", help="Condition id; repeat for several."),
+    agent: list[str] = typer.Option(None, "--agent", help="Agent id; repeat for several."),
+    suite: list[str] = SUITE_OPTION,
+    task: list[str] = TASK_OPTION,
+    category: list[str] = CATEGORY_OPTION,
+    difficulty: list[str] = DIFFICULTY_OPTION,
+    limit: int | None = LIMIT_OPTION,
+    config: Path = CONFIG_OPTION,
+    force: bool = typer.Option(False, help="Overwrite an existing scenario of this name."),
+) -> None:
+    """Scaffold `config/experiments.<name>.yaml` and `config/tasks-<name>.txt`.
+
+    Any task-selection flag resolves now and is written out as explicit ids, so
+    the experiment records the task set it measured rather than a query that can
+    drift when the task-suite pin moves.
+    """
+    root = _root()
+    toolkits = list(toolkit or ["demo-kit"])
+    agents = list(agent or ["claude-code"])
+
+    tasks: list[str] = []
+    if suite or task or category or difficulty or limit:
+        settings = _config(config)
+        selection = _selection(task, suite, None, category, difficulty, limit)
+        tasks = [path.name for path in _selected_tasks(settings, selection)]
+
+    try:
+        scaffold = new_experiment(root, name, toolkits, agents, tasks, force=force)
+    except ScaffoldError as error:
+        raise typer.BadParameter(str(error)) from error
+
+    typer.echo(f"config      {_show(scaffold.config)}")
+    typer.echo(f"task set    {_show(scaffold.tasks_file)}  ({len(tasks) or 'no'} task ids)")
+    typer.echo("")
+    typer.echo("next:")
+    typer.echo(f"  hmb catalogue --config {_show(scaffold.config)} --tasks-file {_show(scaffold.tasks_file)}")
+    typer.echo(f"  hmb generate  --config {_show(scaffold.config)} --tasks-file {_show(scaffold.tasks_file)} --force")
+    typer.echo(f"  hmb validate  --config {_show(scaffold.config)} --tasks-file {_show(scaffold.tasks_file)}")
+    typer.echo(f"  hmb preflight --config {_show(scaffold.config)} --tasks-file {_show(scaffold.tasks_file)}")
+    typer.echo(f"  ./scripts/run-pilot-experiment.sh --config {_show(scaffold.config)} \\")
+    typer.echo(f"      --tasks-file {_show(scaffold.tasks_file)} --job-prefix {name} --attempts 1 --dry-run")
+
+
+@experiment_app.command("list")
+def experiment_list() -> None:
+    """List the experiment configurations in this checkout."""
+    root = _root()
+    configs = sorted((root / "config").glob("experiments*.yaml"))
+    if not configs:
+        typer.echo("no experiment configurations found under config/")
+        return
+    for path in configs:
+        try:
+            settings = load_config(path)
+        except (OSError, KeyError, TypeError, ValueError) as error:
+            typer.echo(f"{path.name:44s} unreadable: {error}")
+            continue
+        conditions = ",".join(sorted(settings.toolkits)) or "-"
+        typer.echo(
+            f"{path.name:44s} {len(settings.matrix)} cell(s)  "
+            f"repetitions={settings.repetitions}  conditions={conditions}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Analysis
+# ---------------------------------------------------------------------------
+@analysis_app.command("extract")
+def analysis_extract(
+    pattern: str = typer.Option(..., help="Glob over job names, e.g. 'prog16-*'."),
+    jobs_dir: Path = typer.Option(Path("jobs"), help="Where Harbor wrote its job output."),
+    out_dir: Path = typer.Option(Path("results/analysis/data"), help="Where the CSV tables are written."),
+    catalogue_json: Path = typer.Option(
+        Path("results/task_catalogue.json"),
+        help="Task metadata to join; write it with `hmb catalogue --json-out`.",
+    ),
+) -> None:
+    """Derive the tidy per-trial, per-test, per-step and per-tool-call tables."""
+    root = _root()
+    try:
+        tables = extract_all(_at_root(jobs_dir), pattern, _at_root(catalogue_json), root=root)
+    except FileNotFoundError as error:
+        raise typer.BadParameter(str(error), param_hint="--pattern") from error
+    written = write_csvs(_at_root(out_dir), tables)
+    for name, path in written.items():
+        typer.echo(f"{name:11s} {len(tables[name]):6d} rows -> {_show(path)}")
+
+
+@analysis_app.command("init")
+def analysis_init(
+    name: str = typer.Argument(..., help="Analysis name; becomes results/analysis-<name>/."),
+    pattern: str = typer.Option(..., help="Glob over job names this analysis covers."),
+    extract: bool = typer.Option(True, help="Also derive the tables now."),
+    force: bool = typer.Option(False, help="Overwrite an existing notebook of this name."),
+) -> None:
+    """Scaffold an analysis notebook for a finished run, and fill its tables."""
+    root = _root()
+    try:
+        scaffold = new_analysis(root, name, pattern, force=force)
+    except ScaffoldError as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(f"notebook  {_show(scaffold.notebook)}")
+
+    if extract:
+        try:
+            tables = extract_all(
+                root / "jobs", pattern, root / "results" / "task_catalogue.json", root=root
+            )
+        except FileNotFoundError as error:
+            typer.echo(f"warn  no tables written: {error}")
+        else:
+            write_csvs(scaffold.directory / "data", tables)
+            typer.echo(f"tables    {len(tables['trials'])} trials -> {_show(scaffold.directory / 'data')}")
+
+    typer.echo("")
+    typer.echo("next:")
+    typer.echo("  uv sync --group analysis")
+    typer.echo(f"  uv run --group analysis jupyter lab {_show(scaffold.notebook)}")

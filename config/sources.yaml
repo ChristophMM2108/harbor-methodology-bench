@@ -1,0 +1,72 @@
+# Every external input this repository pins, in one file.
+#
+# `hmb setup` reads this and materialises each entry at its exact commit. Nothing
+# here is fetched at run time, and nothing is vendored into git: a pin plus a
+# repository URL is enough for anyone to re-derive byte-identical content, which
+# is what makes a result reproducible.
+#
+# To move to a newer upstream commit, change `ref` and re-run
+# `hmb setup --force`. Record the change with the result — the pin is part of
+# the experiment.
+
+# ---------------------------------------------------------------------------
+# Benchmark task suites. One directory per Harbor task lands under `dest`.
+# ---------------------------------------------------------------------------
+task_suites:
+  - id: terminal-bench
+    description: >-
+      Terminal-Bench 2.0 — containerised terminal tasks from the Laude
+      Institute, Stanford and Snorkel AI. 89 tasks at this pin.
+    repo: https://github.com/harbor-framework/terminal-bench-2.git
+    ref: 2fd12b88aafdd04a52c298e3940bcb189f9766d6
+    branch: main
+    dest: source-tasks/terminal-bench
+    # The upstream repository keeps its task directories at the repository root,
+    # so a directory is a task exactly when it contains a task.toml.
+    layout: task-dirs-at-root
+
+# ---------------------------------------------------------------------------
+# Methodology toolkits. Each becomes one experimental condition.
+#
+# `vendored: true`  the snapshot is committed here; nothing is fetched.
+# `optional: true`  a fetch failure is reported and skipped, not fatal. Use it
+#                   for private repositories, so a colleague without access can
+#                   still set the framework up and run the conditions they have.
+# ---------------------------------------------------------------------------
+toolkits:
+  - id: demo-kit
+    description: >-
+      A minimal methodology shipped with this repository so the whole pipeline
+      is runnable immediately after cloning, with no external access. Not a
+      serious methodology — a fixture.
+    vendored: true
+    dest: toolkits/demo-kit
+
+  # The three toolkits the original experiments used. Private repositories: fill
+  # in your own, or delete these entries.
+  - id: sdd
+    description: Spec-driven development kit; 7 skills.
+    repo: git@github.com:ChristophMM2108/sdd-agent-kit.git
+    ref: dc4b09e730f6e38a43ba85b44991bb6de890b6d9
+    branch: main
+    dest: toolkits/sdd
+    optional: true
+
+  - id: codezen
+    description: CodeZen agent kit, reprojected from a Claude Code plugin.
+    repo: git@github.com:ChristophMM2108/codezen-agent-kit.git
+    ref: cc50eba852ca516fa5e3a2334aff6873acc30226
+    branch: main
+    dest: toolkits/codezen
+    optional: true
+
+  - id: dfg
+    description: >-
+      Harness/DFG kit. Note the known confound documented in
+      docs/troubleshooting.md — its settings.json registers hooks under an
+      absolute home directory that does not exist inside a container.
+    repo: git@github.com:ChristophMM2108/harness-perf.git
+    ref: d5c0f1a720b009dd1712bec33260c5560474ca7d
+    branch: main
+    dest: toolkits/dfg
+    optional: true

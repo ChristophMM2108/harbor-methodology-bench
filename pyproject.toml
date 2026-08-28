@@ -1,7 +1,7 @@
 [project]
 name = "harbor-methodology-bench"
 version = "0.1.0"
-description = "Add your description here"
+description = "Measure what a repository's agent configuration does to a coding agent's performance"
 readme = "README.md"
 authors = [
     { name = "Christoph Mitschka", email = "christoph.mitschka@korza.ai" }
@@ -13,6 +13,8 @@ dependencies = [
 ]
 
 [project.scripts]
+# `hmb` is the short form; both names point at the same CLI.
+hmb = "harbor_methodology_bench.cli:app"
 harbor-methodology-bench = "harbor_methodology_bench.cli:app"
 
 [build-system]
@@ -23,6 +25,21 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
 ]
+# Result analysis: the notebooks `hmb analysis init` scaffolds. Not needed to
+# build, validate, preflight or run an experiment.
+analysis = [
+    "pandas>=2.2",
+    "matplotlib>=3.9",
+    "scipy>=1.14",
+    "jupyterlab>=4.2",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.uv.build-backend]
+# The scaffolding templates are package data: they must ship with the installed
+# tool, not be read out of a checkout.
+source-include = ["src/harbor_methodology_bench/templates/*"]

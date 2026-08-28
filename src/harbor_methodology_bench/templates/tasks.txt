@@ -1,0 +1,17 @@
+# Task set: {{NAME}}
+#
+# One task id per line; `#` starts a comment. Preview a selection before pinning
+# it here:
+#
+#   hmb catalogue --suite spec-dense --difficulty medium --ids-only
+#
+# Pin the ids rather than re-deriving them from a suite at run time: suite
+# membership is computed from task metadata and can change with the task-suite
+# pin, which would silently change what your experiment measured.
+#
+# Choose tasks the bare agent does *not* already pass. A task every condition
+# passes carries no information about the comparison and still costs a full
+# trial — screen candidates with `-a nop` and `-a oracle`, and with one baseline
+# trial, before committing to a set.
+
+{{TASKS}}
