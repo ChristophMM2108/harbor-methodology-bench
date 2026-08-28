@@ -1,298 +1,181 @@
 # Harbor Methodology Bench
 
-A reproducible benchmarking framework for measuring coding and terminal agents (such as **Claude Code** and **OpenAI Codex CLI**) with and without project-level methodology toolkits (such as **SDD Agent Kit** and **DFG Harness**) inside isolated Harbor Docker containers.
+Measure what a repository's **agent configuration** actually does to a coding
+agent — not what its documentation claims.
 
-The framework is **toolkit-agnostic**: it injects native frozen toolkit snapshots into standard benchmark tasks (from Terminal-Bench) while preserving native `AGENTS.md`, `CLAUDE.md`, skills, commands, and directory layouts without contaminating the source tasks or benchmark prompts.
+You give it a benchmark suite (Terminal-Bench 2.0) and one or more repositories
+that carry an agent methodology: a `CLAUDE.md` or `AGENTS.md`, skills, slash
+commands, kit directories. It builds one Docker image per (task × condition),
+proves from inside each container that the condition is what you declared, runs
+coding agents against them in isolated [Harbor](https://github.com/harbor-framework/terminal-bench)
+containers, and aggregates rewards, cost, telemetry and methodology adherence.
+
+The framework is toolkit-agnostic and pins everything external by commit, so a
+result is reproducible from a clone.
+
+```bash
+git clone git@github.com:ChristophMM2108/harbor-methodology-bench.git
+cd harbor-methodology-bench
+./bootstrap.sh                       # installs uv, the Harbor CLI, `hmb`, and every pinned source
+hmb doctor                           # what is still missing, and the command that fixes it
+```
 
 ---
 
-## 1. Experiment Matrix & Model
+## Documentation
 
-The core experiment matrix evaluates agents across three methodology conditions:
+| Read this | For |
+|---|---|
+| [docs/setup.md](docs/setup.md) | Installing, credentials, pinned sources, adding your own toolkit, updating a pin |
+| [docs/architecture.md](docs/architecture.md) | How the methodology reaches the container, the payload layer, and the invariants that make a comparison valid |
+| [docs/experiments.md](docs/experiments.md) | Declaring conditions, worked scenarios, running a matrix, attempts and budget |
+| [docs/tasks.md](docs/tasks.md) | Choosing a task set that can actually discriminate, the axis catalogue, authoring your own task |
+| [docs/analysis.md](docs/analysis.md) | Reading the report, what adherence does and does not prove, the analysis notebook and its derived metrics |
+| [docs/reference.md](docs/reference.md) | Every command, every flag, and the repository layout |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | Symptoms, causes, and the current limitations |
+| [docs/evaluation-pipeline.md](docs/evaluation-pipeline.md) | The evaluation process end to end: how a trial becomes a reward, a duration and a cost, and the measurement hazards in each |
 
-| Agent | Baseline | Toolkit A (SDD) | Toolkit B (DFG) |
+External: [Harbor framework](https://github.com/harbor-framework/terminal-bench) ·
+[Terminal-Bench 2.0 tasks](https://github.com/harbor-framework/terminal-bench-2) ·
+[what Terminal-Bench 2.0 measures](https://snorkel.ai/blog/terminal-bench-2-0-raising-the-bar-for-ai-agent-evaluation/) ·
+[Claude Code](https://claude.com/claude-code)
+
+---
+
+## The core idea
+
+Two questions have to be kept apart, and the framework measures them separately:
+
+| Question | Answered by |
+|---|---|
+| Was the methodology **available** to the agent? | `hmb preflight` — an assertion made inside the container |
+| Did the agent **use** it? | `hmb report` — adherence read from the agent's own trajectory |
+
+A condition with a passing preflight and zero adherence is a finding about the
+toolkit. A condition with a failing preflight is a broken experiment, and the
+runners refuse to execute it.
+
+An experiment is a matrix of **agents × conditions** run over a task set:
+
+| Agent | `baseline` | `your-kit` | `their-kit` |
 |---|:---:|:---:|:---:|
-| **Claude Code** (`claude-sonnet-5`) | Cell 1 | Cell 2 | Cell 3 |
-| **OpenAI Codex** (`gpt-5.6-terra`) | Cell 4 | Cell 5 | Cell 6 |
+| **Claude Code** | Cell 1 | Cell 2 | Cell 3 |
+| **OpenAI Codex** | Cell 4 | Cell 5 | Cell 6 |
 
-### Core Invariants
-
-1. **Benchmark Integrity**: Original benchmark tasks from Terminal-Bench remain unmodified.
-2. **Clean Baseline**: Baseline variants contain only the benchmark task (no methodology files or instructions).
-3. **Frozen Snapshots**: Toolkits are pinned via immutable Git commit SHAs in `toolkits/<id>/` and copied directly from frozen snapshots.
-4. **Collision Avoidance**: If a toolkit defines a top-level path already present in the benchmark task, that toolkit path is preserved under `.methodology-bench/toolkit-collisions/` rather than overwriting task code.
-5. **Harbor Isolation**: Agents execute inside isolated Docker containers where credentials and environment variables are explicitly forwarded.
+`baseline` is always generated and means *the benchmark task and nothing else* —
+the pure agent, with a working directory proven byte-identical to the task's own
+base image. Every other condition you declare yourself.
 
 ```text
-                    ┌────────────────────────┐
-                    │ Terminal-Bench Sources │
-                    │ source-tasks/          │
-                    └───────────┬────────────┘
-                                │
-                   ┌────────────┼────────────┐
-                   ▼            ▼            ▼
-               baseline        sdd          dfg
-                   │      (frozen SDD) (frozen DFG)
-                   │            │            │
-                   └────────────┼────────────┘
-                                │
-                    generated Harbor Tasks
-                    generated/<variant>/<task>/
-                                │
-                       ┌────────┴────────┐
-                       ▼                 ▼
-                  Claude Code        Codex CLI
-                       │                 │
-                       ▼                 ▼
-                    results           results
-                    jobs/             jobs/
+        Terminal-Bench tasks            your methodology repositories
+        source-tasks/<suite>/                  toolkits/<id>/snapshot/
+                  │                                     │
+                  └──────────────┬──────────────────────┘
+                                 │  hmb generate  (one Docker layer per condition)
+                    generated/<condition>/<task>/
+                                 │
+                     hmb validate  →  hmb preflight
+                    (host hashes)     (in-container proof)
+                                 │
+                   ┌─────────────┴─────────────┐
+              Claude Code                  Codex CLI
+                   └─────────────┬─────────────┘
+                                 ▼
+                          jobs/  →  hmb report  →  hmb analysis
 ```
+
+Read [docs/architecture.md](docs/architecture.md) for why the payload layer is
+necessary: Harbor copies only `instruction.md`, `tests/` and `solution/` into a
+container, so a `CLAUDE.md` placed next to `task.toml` never reaches the agent.
 
 ---
 
-## 2. Repository Architecture
+## Your first experiment
+
+The default configuration uses `demo-kit`, a tiny methodology vendored in this
+repository, so everything below runs immediately after `./bootstrap.sh` with no
+access to any private toolkit.
+
+```bash
+# 0. Work on a branch: an experiment's results belong with the run that made them
+git switch -c experiment/my-first-run
+
+# 1. What could run, and which tasks can discriminate
+hmb catalogue --suite quick --ids-only
+
+# 2. Scaffold a scenario: a config and a pinned task set, both named after it
+hmb experiment new my-run --toolkit demo-kit --agent claude-code --suite quick --limit 3
+
+# 3. Build the variants, check them on the host, prove them in the container
+hmb generate  --config config/experiments.my-run.yaml --tasks-file config/tasks-my-run.txt --force
+hmb validate  --config config/experiments.my-run.yaml --tasks-file config/tasks-my-run.txt
+hmb preflight --config config/experiments.my-run.yaml --tasks-file config/tasks-my-run.txt
+
+# 4. Run the matrix (re-runs the gate; --dry-run prints the plan and spends nothing)
+./scripts/run-pilot-experiment.sh --config config/experiments.my-run.yaml \
+    --tasks-file config/tasks-my-run.txt --job-prefix my-run --attempts 1 --dry-run
+
+# 5. Read the results, then analyse them properly
+hmb report --pattern "my-run-*" --md-out results/my-run_report.md --json-out results/my-run_summary.json
+hmb analysis init my-run --pattern "my-run-*"
+```
+
+Step 3 is the one that matters. It builds every image, probes each container
+from the inside, and fails closed:
 
 ```text
-harbor-methodology-bench/
-├── pyproject.toml              # Project dependencies & CLI entrypoints
-├── TODO.md                     # Roadmap and milestone tracking
-├── config/
-│   ├── experiments.yaml        # Matrix definition (models, toolkits, repetitions)
-│   ├── benchmark.env.example   # Environment template
-│   └── local.env               # Host credentials forwarded to containers (git-ignored)
-├── source-tasks/
-│   └── terminal-bench/         # Source benchmark tasks with pinned metadata
-├── toolkits/
-│   ├── sdd/                    # SDD toolkit: SOURCE, GIT_SHA, BRANCH, snapshot/
-│   └── dfg/                    # DFG toolkit: SOURCE, GIT_SHA, BRANCH, snapshot/
-├── generated/
-│   ├── baseline/               # Clean benchmark tasks
-│   ├── sdd/                    # Benchmark tasks + SDD toolkit snapshot
-│   └── dfg/                    # Benchmark tasks + DFG toolkit snapshot
-├── jobs/                       # Raw Harbor execution outputs and result.json files
-├── results/                    # Aggregated reports, summaries, and telemetry
-├── scripts/
-│   ├── freeze-kits.sh          # Verify frozen snapshots and immutable SHA metadata
-│   ├── generate-variants.sh    # Generate baseline, SDD, and DFG task variants
-│   ├── validate-variants.sh    # Strict isolation and collision validation
-│   ├── run-smoke-plan.sh       # Print dry-run Harbor execution commands
-│   ├── run-smoke-experiment.sh # Execute the 6-cell smoke matrix
-│   ├── run-pilot-experiment.sh # Execute the 30-trial pilot matrix
-│   └── report.py               # Results aggregator & report generator
-├── src/
-│   └── harbor_methodology_bench/
-│       ├── cli.py              # CLI entry point (harbor-methodology-bench)
-│       ├── config.py           # Experiment configuration parser
-│       ├── inject.py           # Toolkit snapshot injector & collision handler
-│       ├── manifest.py         # Per-task variant manifest generator
-│       ├── source.py           # Task source discovery
-│       └── validate.py         # Variant validator and isolation verifier
-└── tests/
-    └── test_variants.py        # Automated test suite
+preflight sqlite-db-truncate ...
+  ok    baseline: workdir=/app markers=- skills=0 payload_files=0
+  ok    demo-kit: workdir=/app markers=CLAUDE.md,AGENTS.md skills=1 payload_files=4
+preflight passed for 1 tasks
 ```
+
+To measure your own methodology instead, add it to
+[`config/sources.yaml`](config/sources.yaml) with its repository URL and a commit
+SHA, run `hmb setup`, and name it with `--toolkit`. See
+[docs/setup.md](docs/setup.md#6-adding-your-own-toolkit).
 
 ---
 
-## 3. Prerequisites & Credentials
+## What it costs, and what to expect
 
-### Host Requirements
+A trial is one (task × condition × attempt). Multiply: `tasks × cells ×
+attempts`. A measured example — 16 hard programming tasks × 3 conditions × 1
+attempt with Claude Code — was 48 trials, $75 and about 12 hours of serial
+wall-clock.
 
-- **Linux / macOS**
-- **Docker** (active daemon, healthy network bridge)
-- **Python 3.12+** & **uv** (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
-- **Harbor** CLI (`uv tool install harbor` or equivalent)
-- **Claude Code** (`claude` CLI)
-- **OpenAI Codex** (`codex` CLI)
+Two lessons from that run, both in [docs/tasks.md](docs/tasks.md#1-choosing-tasks-that-can-discriminate)
+and worth knowing before you spend anything:
 
-Verify tools on host:
-```bash
-docker run --rm hello-world
-uv run pytest
-claude --version
-codex --version
-```
-
-### Credentials Setup (`config/local.env`)
-
-Harbor executes agents in isolated Docker containers. To enable CLI authentication inside containers without exposing API keys:
-
-1. Generate your Claude setup token:
-   ```bash
-   claude setup-token
-   ```
-2. Create `config/local.env` (kept strictly git-ignored):
-   ```bash
-   CLAUDE_FORCE_OAUTH=1
-   CLAUDE_CODE_OAUTH_TOKEN="<your-single-line-token-here>"
-   CODEX_FORCE_AUTH_JSON=1
-   ```
-3. Set secure file permissions:
-   ```bash
-   chmod 700 config
-   chmod 600 config/local.env
-   ```
+- **A task every condition passes carries no information** about the comparison
+  and still costs a full trial. In that run 11 of 16 tasks were like that, which
+  consumed 60 % of the budget and left an effective sample size of 2–5.
+- **Cost separates conditions long before outcome does.** Methodology overhead is
+  a continuous per-trial quantity, so it is measurable at sample sizes where a
+  rare binary outcome is not.
 
 ---
 
-## 4. Smoke Experiment (1 Task × 6 Cells)
+## Prerequisites
 
-The smoke experiment validates that all 6 cells run end-to-end, credentials forward properly, containers start up, and verifiers output rewards.
+`./bootstrap.sh` installs what it can and `hmb doctor` reports the rest:
 
-```bash
-# 1. Generate 1 task variant
-./scripts/generate-variants.sh --limit 1 --force
-
-# 2. Validate isolation
-./scripts/validate-variants.sh --limit 1
-
-# 3. Execute smoke matrix
-./scripts/run-smoke-experiment.sh
-
-# 4. View results
-python3 scripts/report.py --pattern "smoke-*"
-```
+- Linux or macOS, `git` and `curl`
+- **Docker** with a running daemon
+- **uv** (installed by the bootstrap if missing) and Python 3.12+
+- The agent CLIs you intend to benchmark — `claude`, `codex`
+- Roughly 20 GB of free disk for task images
 
 ---
 
-## 5. Pilot Experiment (5 Tasks × 6 Cells = 30 Trials)
-
-The pilot experiment tests multi-task stability, variance, and pipeline robustness across 5 representative benchmark tasks:
-
-### Step 1: Generate & Validate 5 Task Variants
-```bash
-./scripts/generate-variants.sh --limit 5 --force
-./scripts/validate-variants.sh --limit 5
-```
-
-### Step 2: Run Pilot Matrix
-Use the dedicated pilot execution runner:
-```bash
-# Optional: test in dry-run mode first
-./scripts/run-pilot-experiment.sh --dry-run
-
-# Run all 30 trials (supports --limit N, --force to re-run completed jobs)
-./scripts/run-pilot-experiment.sh
-```
-
-### Step 3: Generate Summary & Detailed Telemetry Report
-```bash
-python3 scripts/report.py \
-  --pattern "pilot-*" \
-  --md-out results/pilot_report.md \
-  --json-out results/pilot_summary.json
-```
-
----
-
-## 6. Configuring a Full Experiment
-
-A full experiment scales the benchmark across more tasks and multiple repetitions to establish statistically significant comparisons.
-
-### Step 1: Configure `config/experiments.yaml`
-Edit `config/experiments.yaml` to specify experiment parameters:
-
-```yaml
-source_root: source-tasks/terminal-bench
-generated_root: generated
-repetitions: 3                     # Number of repetitions per cell
-
-models:
-  claude-code: claude-sonnet-5
-  codex: gpt-5.6-terra
-
-toolkits:
-  - id: sdd
-    snapshot: toolkits/sdd/snapshot
-  - id: dfg
-    snapshot: toolkits/dfg/snapshot
-
-matrix:
-  - {id: claude-baseline, agent: claude-code, toolkit: baseline}
-  - {id: claude-sdd, agent: claude-code, toolkit: sdd}
-  - {id: claude-dfg, agent: claude-code, toolkit: dfg}
-  - {id: codex-baseline, agent: codex, toolkit: baseline}
-  - {id: codex-sdd, agent: codex, toolkit: sdd}
-  - {id: codex-dfg, agent: codex, toolkit: dfg}
-```
-
-### Step 2: Task Selection Strategies
-You can select tasks from `source-tasks/terminal-bench/` using several strategies:
-
-1. **All Available Tasks**:
-   ```bash
-   ./scripts/generate-variants.sh --force
-   ./scripts/validate-variants.sh
-   ```
-2. **Fixed Task Limit** (e.g., 20 tasks):
-   ```bash
-   ./scripts/generate-variants.sh --limit 20 --force
-   ./scripts/validate-variants.sh --limit 20
-   ```
-3. **Domain-Specific Subset**:
-   Select tasks based on languages (Python, R, C/C++, Shell) or task categories by generating targeted tasks.
-
----
-
-## 7. Handling Repetitions & Statistical Reliability
-
-Because LLM agents have stochastic reasoning paths and tool choices, a single run per task cannot establish conclusive performance differences.
-
-### Why Repetitions Matter
-- **Confidence Intervals**: Measuring mean success rate $\pm$ standard error across $N \ge 3$ repetitions.
-- **Flakiness Detection**: Separating deterministic tool failures from transient token/rate limits.
-- **Cost & Latency Distribution**: Capturing median, p90, and outlier token expenditures.
-
-### Execution with Multiple Repetitions
-Harbor natively supports multiple attempts per trial via `-n <repetitions>` or `--n-attempts <repetitions>`:
+## Development
 
 ```bash
-harbor run \
-  -p generated/sdd/adaptive-rejection-sampler \
-  -a claude-code \
-  -m claude-sonnet-5 \
-  -n 3 \
-  --env-file config/local.env \
-  --job-name full-claude-sdd-adaptive-rejection-sampler
+uv sync                  # runtime + dev dependencies
+uv run pytest            # the test suite
+uv sync --group analysis  # pandas, matplotlib, scipy, jupyterlab, for notebooks
 ```
 
-Harbor runs all 3 repetitions inside the designated job directory and records per-trial metrics (`trial_1`, `trial_2`, `trial_3`).
-
----
-
-## 8. Results Reporting & Telemetry Aggregation
-
-The aggregator script `scripts/report.py` handles multi-task, multi-repetition, and multi-job collections automatically:
-
-### Aggregator Capabilities
-- **Multi-Job Matching**: Matches jobs by glob pattern (`--pattern "full-*"` or `--pattern "*"`).
-- **Per-Cell Metrics**:
-  - Success Rate (%) and Mean Verifier Reward
-  - Average Trial Duration (seconds)
-  - Total and Average Token Consumption (input, output, cache read/write)
-  - Cost in USD
-- **Per-Task Breakdowns**: Inspect which specific tasks passed or failed under each methodology condition.
-- **Exception Telemetry**: Highlights exact error causes (such as rate limits, non-zero exits, timeouts).
-
-### Generating & Archiving Reports
-```bash
-# Generate full markdown comparison
-python3 scripts/report.py --jobs-dir jobs/ --pattern "full-*" --md-out results/full_report.md
-
-# Generate machine-readable JSON for downstream data analysis / plotting
-python3 scripts/report.py --jobs-dir jobs/ --pattern "full-*" --json-out results/full_summary.json
-```
-
----
-
-## 9. Experiment Phases & Roadmap
-
-| Phase | Description | Status |
-|---|---|:---:|
-| **Phase 1: Infrastructure** | Docker, uv, Harbor, Claude & Codex CLI validation | **Complete** |
-| **Phase 2: Toolkit Freezing** | Pinned SDD and DFG snapshots with Git SHA verification | **Complete** |
-| **Phase 3: Task Generation** | Task copier, snapshot injector, collision tracker | **Complete** |
-| **Phase 4: Validation** | Strict isolation validator & automated tests | **Complete** |
-| **Phase 5: Smoke Test** | 1 task (`adaptive-rejection-sampler`) × 6 cells × 1 rep | **Complete** |
-| **Phase 6: Pilot Experiment** | 5 tasks × 6 cells × 1 rep (30 runs total) | **Ready** |
-| **Phase 7: Full Experiment** | Pinned tasks × 6 cells × 3+ repetitions | **Documented** |
-| **Phase 8: Deep Analysis** | Methodology adherence telemetry, token overhead vs gain | Planned |
+`CHANGELOG.md` records notable changes. Contributions should keep the invariants
+in [docs/architecture.md](docs/architecture.md#6-invariants) intact — they are what
+makes a result trustworthy, and each one has a test.
