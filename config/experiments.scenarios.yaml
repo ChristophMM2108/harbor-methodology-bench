@@ -1,12 +1,14 @@
-# Worked example: four conditions over one toolkit, isolating *what* about a
-# repository configuration actually moves the benchmark result.
+# Worked example: three conditions over one toolkit, isolating *what* about a
+# repository configuration moves the benchmark result.
 #
-# Run with:
-#   ./scripts/generate-variants.sh --config config/experiments.scenarios.yaml --limit 1 --force
-#   ./scripts/validate-variants.sh --config config/experiments.scenarios.yaml --limit 1
-#   ./scripts/preflight-variants.sh --config config/experiments.scenarios.yaml --limit 1
+# Read with docs/experiments.md § Declaring a condition. Run with:
+#   hmb generate  --config config/experiments.scenarios.yaml --limit 1 --force
+#   hmb validate  --config config/experiments.scenarios.yaml --limit 1
+#   hmb preflight --config config/experiments.scenarios.yaml --limit 1
 #
-# `baseline` is always generated and never declared here.
+# It uses the vendored `demo-kit`, so it runs with no external access. Point the
+# same three conditions at your own toolkit by swapping the `snapshot:` paths and
+# the names in `exclude:` / `include:`.
 
 source_root: source-tasks/terminal-bench
 generated_root: generated
@@ -21,35 +23,33 @@ snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
 skill_sources: [".claude/skills", ".agents/skills", "skills"]
 
 toolkits:
-  # Condition B — full repository, no methodology surface.
-  # Same files as the full condition minus the instruction files, skills and kit
-  # directory, so the agent works in the toolkit's repository without ever being
-  # told about the methodology. Preflight asserts the absence.
+  # Condition B — the repository's content, with the methodology surface removed.
+  # The agent works in the toolkit's files without ever being told the method.
+  # Preflight asserts the absence, so this cannot silently drift into a full run.
   #
   # This `exclude` list *is* the operational definition of "methodology surface"
-  # for the experiment. Decide it deliberately: `.sdd-kit/` holds the kit's
-  # templates and manifest, so leaving it in would hand the agent the method by
-  # another route.
-  - id: sdd-content-only
-    snapshot: toolkits/sdd/snapshot
+  # for the experiment. Decide it deliberately: a kit directory left in hands the
+  # agent the method by another route.
+  - id: demo-kit-content-only
+    snapshot: toolkits/demo-kit/snapshot
     exclude: [".git", ".venv", "venv", "node_modules", "__pycache__",
               ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store",
-              "CLAUDE.md", "AGENTS.md", ".claude", ".agents", "skills", ".sdd-kit"]
+              "CLAUDE.md", "AGENTS.md", ".claude", ".agents", "skills"]
     expect_instructions: false
     expect_skills: false
 
-  # Condition C — methodology surface only, no repository bulk.
+  # Condition C — the methodology surface only, without the repository bulk.
   # `include` is an allowlist over the snapshot's top-level entries.
-  - id: sdd-instructions-only
-    snapshot: toolkits/sdd/snapshot
-    include: ["CLAUDE.md", "AGENTS.md", ".claude", ".agents", ".sdd-kit"]
+  - id: demo-kit-instructions-only
+    snapshot: toolkits/demo-kit/snapshot
+    include: ["CLAUDE.md", "AGENTS.md", ".claude", ".agents"]
 
   # Condition D — the toolkit as its authors ship it.
-  - id: sdd-full
-    snapshot: toolkits/sdd/snapshot
+  - id: demo-kit-full
+    snapshot: toolkits/demo-kit/snapshot
 
 matrix:
   - {id: claude-baseline, agent: claude-code, toolkit: baseline}
-  - {id: claude-sdd-content-only, agent: claude-code, toolkit: sdd-content-only}
-  - {id: claude-sdd-instructions-only, agent: claude-code, toolkit: sdd-instructions-only}
-  - {id: claude-sdd-full, agent: claude-code, toolkit: sdd-full}
+  - {id: claude-content-only, agent: claude-code, toolkit: demo-kit-content-only}
+  - {id: claude-instructions-only, agent: claude-code, toolkit: demo-kit-instructions-only}
+  - {id: claude-full, agent: claude-code, toolkit: demo-kit-full}

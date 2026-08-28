@@ -7,6 +7,10 @@ set -euo pipefail
 # group of tasks. Both the task list and the matrix cells come from the CLI, so
 # this script never needs editing to change either.
 
+# Every path below is relative to the repository root, so run from anywhere.
+REPO_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+cd "$REPO_ROOT"
+
 USAGE=$(cat <<'EOF'
 Usage: $0 [SELECTION] [OPTIONS]
 
@@ -22,6 +26,11 @@ Options:
   --config PATH       Experiment configuration (default config/experiments.yaml)
   --job-prefix NAME   Job name prefix (default 'pilot')
   --attempts N        Repetitions per cell, passed to harbor -n (default 1)
+  --timeout-multiplier F
+                      Scale every task timeout by F (harbor --timeout-multiplier).
+                      Applied to every cell, so a comparison stays fair; record
+                      the value with the result, since it changes the budget the
+                      benchmark declares.
   --force             Re-run cells that already have results
   --dry-run           Print the harbor invocations without executing them
   --skip-preflight    Skip the validate/preflight gate (debugging only)
@@ -33,6 +42,7 @@ EOF
 CONFIG="config/experiments.yaml"
 JOB_PREFIX="pilot"
 ATTEMPTS=1
+TIMEOUT_MULTIPLIER=""
 FORCE=false
 DRY_RUN=false
 SKIP_PREFLIGHT=false
@@ -54,6 +64,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --attempts)
             ATTEMPTS="$2"
+            shift 2
+            ;;
+        --timeout-multiplier)
+            TIMEOUT_MULTIPLIER="$2"
             shift 2
             ;;
         --force)
@@ -106,7 +120,15 @@ fi
 
 # Resolve the task group through the same selection code the generator uses, so
 # stale directories under generated/ can never join the run by accident.
-mapfile -t TASKS < <(./scripts/catalogue.sh --config "$CONFIG" "${SELECTION[@]}" --ids-only)
+# The CLI, however this checkout was set up: the globally installed `hmb` when
+# it is on PATH, otherwise the project environment's copy. Never a bare path.
+if command -v hmb >/dev/null 2>&1; then
+    HMB=(hmb)
+else
+    HMB=(uv run --project "$REPO_ROOT" hmb)
+fi
+
+mapfile -t TASKS < <("${HMB[@]}" catalogue --config "$CONFIG" "${SELECTION[@]}" --ids-only)
 
 if [ ${#TASKS[@]} -eq 0 ]; then
     echo "❌ Task selection matched no tasks."
@@ -114,11 +136,19 @@ if [ ${#TASKS[@]} -eq 0 ]; then
 fi
 
 # Cells come from the configured matrix: cell_id <TAB> variant <TAB> agent <TAB> model
-mapfile -t CELLS < <(uv run harbor-methodology-bench matrix-plan --config "$CONFIG")
+mapfile -t CELLS < <("${HMB[@]}" matrix-plan --config "$CONFIG")
 
 if [ ${#CELLS[@]} -eq 0 ]; then
     echo "❌ The configured matrix is empty."
     exit 1
+fi
+
+# Timeout scaling is a property of the whole run, never of a single cell: a
+# condition given more wall-clock than its comparison would be a confound.
+HARBOR_EXTRA=()
+if [ -n "$TIMEOUT_MULTIPLIER" ]; then
+    HARBOR_EXTRA+=(--timeout-multiplier "$TIMEOUT_MULTIPLIER")
+    echo "Task timeouts scaled by ${TIMEOUT_MULTIPLIER}× for every cell in this run."
 fi
 
 TOTAL_RUNS=$((${#TASKS[@]} * ${#CELLS[@]}))
@@ -138,7 +168,7 @@ done
 if [ ${#MISSING[@]} -gt 0 ]; then
     echo "⚠️  ${#MISSING[@]} selected variant(s) have not been generated, e.g. ${MISSING[0]}"
     echo "Generate them with the same selection:"
-    echo "   ./scripts/generate-variants.sh --config $CONFIG ${SELECTION[*]} --force"
+    echo "   hmb generate --config $CONFIG ${SELECTION[*]} --force"
     # A dry run is a preview, so report the gap and carry on; a real run stops.
     if [ "$DRY_RUN" = false ]; then
         exit 1
@@ -148,8 +178,8 @@ fi
 
 if [ "$DRY_RUN" = false ] && [ "$SKIP_PREFLIGHT" = false ]; then
     echo "=== 2. In-Container Preflight (methodology must reach the agent workdir) ==="
-    ./scripts/validate-variants.sh --config "$CONFIG" "${SELECTION[@]}"
-    ./scripts/preflight-variants.sh --config "$CONFIG" "${SELECTION[@]}"
+    "${HMB[@]}" validate --config "$CONFIG" "${SELECTION[@]}"
+    "${HMB[@]}" preflight --config "$CONFIG" "${SELECTION[@]}"
 fi
 
 # Fail closed per cell: a trial may only run against a variant whose container
@@ -163,10 +193,32 @@ from pathlib import Path
 
 report = Path(sys.argv[1]) / ".methodology-bench-preflight.json"
 if not report.is_file():
-    sys.exit(f"missing preflight report: {report} (run ./scripts/preflight-variants.sh)")
+    sys.exit(f"missing preflight report: {report} (run `hmb preflight`)")
 data = json.loads(report.read_text())
 if not data.get("passed"):
     sys.exit(f"preflight failed for {report}: {data.get('errors')}")
+PY
+}
+
+# A `result.json` alone does not mean a cell produced data: an interrupted run
+# leaves one behind with `finished_at: null` and its trials cancelled. Skipping
+# such a directory would silently drop the cell from the matrix.
+job_finished() {
+    local job_dir="$1"
+    [ -f "$job_dir/result.json" ] || return 1
+    python3 - "$job_dir/result.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+try:
+    data = json.loads(Path(sys.argv[1]).read_text())
+except (OSError, ValueError):
+    raise SystemExit(1)
+stats = data.get("stats") or {}
+finished = data.get("finished_at") is not None
+cancelled = int(stats.get("n_cancelled_trials") or 0)
+raise SystemExit(0 if finished and not cancelled else 1)
 PY
 }
 
@@ -189,7 +241,7 @@ for task in "${TASKS[@]}"; do
         echo "       Agent: $agent ($model)"
 
         if [ "$DRY_RUN" = true ]; then
-            echo "   [DRY RUN] harbor run -p $TASK_PATH -a $agent -m $model -n $ATTEMPTS --env-file config/local.env --job-name $JOB_NAME"
+            echo "   [DRY RUN] harbor run -p $TASK_PATH -a $agent -m $model -n $ATTEMPTS ${HARBOR_EXTRA[*]:-} --env-file config/local.env --job-name $JOB_NAME"
             continue
         fi
 
@@ -203,7 +255,7 @@ for task in "${TASKS[@]}"; do
                 rm -rf "jobs/$JOB_NAME"
             else
                 echo "--> Job directory jobs/$JOB_NAME exists. Checking result..."
-                if [ -f "jobs/$JOB_NAME/result.json" ]; then
+                if job_finished "jobs/$JOB_NAME"; then
                     echo "--> Already completed. Skipping. (Use --force to re-run)"
                     PASSED_RUNS=$((PASSED_RUNS + 1))
                     continue
@@ -216,6 +268,7 @@ for task in "${TASKS[@]}"; do
 
         # Execute trial and allow loop to continue even if individual trial errors
         if harbor run -p "$TASK_PATH" -a "$agent" -m "$model" -n "$ATTEMPTS" \
+            ${HARBOR_EXTRA[@]+"${HARBOR_EXTRA[@]}"} \
             --env-file config/local.env --job-name "$JOB_NAME"; then
             echo "✓ Job completed: $JOB_NAME"
             PASSED_RUNS=$((PASSED_RUNS + 1))
@@ -232,5 +285,5 @@ if [ "$DRY_RUN" = true ]; then
 else
     echo "Execution finished: $PASSED_RUNS completed / $FAILED_RUNS errored (out of $TOTAL_RUNS total)."
     echo "To generate the report, run:"
-    echo "   python3 scripts/report.py --pattern \"${JOB_PREFIX}-*\""
+    echo "   hmb report --pattern \"${JOB_PREFIX}-*\" --md-out results/${JOB_PREFIX}_report.md"
 fi

@@ -5,18 +5,47 @@ from pathlib import Path
 
 import typer
 
+from .analysis import extract_all, write_csvs
 from .catalogue import build_catalogue, render_json, render_markdown, suite_names
 from .config import ExperimentConfig, load_config
+from .doctor import in_container, run_checks, worst
 from .environment import build_environment
 from .inject import copy_task
 from .manifest import tree_manifest, write_manifest
 from .preflight import DEFAULT_MAX_PROBE_FILES, PreflightError, preflight_task
+from .report import write_report
+from .repo import RootNotFound, find_root
+from .scaffold import ScaffoldError, credentials_template, new_analysis, new_experiment
 from .source import TaskSelection, discover_tasks, read_task_ids, select_tasks
+from .sources import SourceError, fetch_source, load_sources
 from .validate import source_dockerfile_digest, validate_task
 
-app = typer.Typer(no_args_is_help=True, help="Generate and validate controlled Harbor methodology variants.")
+app = typer.Typer(
+    no_args_is_help=True,
+    help=(
+        "Measure what a repository's agent configuration does to a coding agent. "
+        "Run `hmb doctor` first, then `hmb setup`."
+    ),
+)
+experiment_app = typer.Typer(no_args_is_help=True, help="Create and inspect experiment scenarios.")
+analysis_app = typer.Typer(no_args_is_help=True, help="Trial-level analysis of a finished run.")
+app.add_typer(experiment_app, name="experiment")
+app.add_typer(analysis_app, name="analysis")
 
 CONFIG_OPTION = typer.Option(Path("config/experiments.yaml"), help="Experiment configuration file.")
+SOURCES_OPTION = typer.Option(Path("config/sources.yaml"), help="Pinned external sources.")
+
+
+def _root() -> Path:
+    """The repository root, so every command means the same from any directory."""
+    try:
+        return find_root()
+    except RootNotFound as error:
+        raise typer.BadParameter(str(error)) from error
+
+
+def _at_root(path: Path) -> Path:
+    return path if path.is_absolute() else (_root() / path)
 TASK_OPTION = typer.Option(None, "--task", help="Task id; repeat to select several.")
 SUITE_OPTION = typer.Option(None, "--suite", help=f"Named task set: {', '.join(suite_names())}.")
 TASKS_FILE_OPTION = typer.Option(None, "--tasks-file", help="File of task ids, one per line.")
@@ -26,6 +55,7 @@ LIMIT_OPTION = typer.Option(None, "--limit", min=1, help="Truncate the selection
 
 
 def _config(path: Path) -> ExperimentConfig:
+    path = _at_root(path)
     try:
         return load_config(path)
     except (OSError, KeyError, TypeError, ValueError) as error:
@@ -63,18 +93,53 @@ def _selected_tasks(settings: ExperimentConfig, selection: TaskSelection) -> lis
 
 
 @app.command("freeze-verify")
-def freeze_verify(config: Path = typer.Option(Path("config/experiments.yaml"))) -> None:
-    """Verify committed snapshots and their immutable metadata files."""
+def freeze_verify(
+    config: Path = CONFIG_OPTION,
+    sources: Path = SOURCES_OPTION,
+) -> None:
+    """Verify each condition's snapshot and its immutable provenance files.
+
+    A toolkit declared `vendored: true` in the sources file is committed here and
+    has no upstream commit, so it is checked for content only. Everything else
+    must carry a full 40-character `GIT_SHA`: without it the snapshot is
+    provenance nobody can re-derive.
+    """
     settings = _config(config)
+    sources_path = _at_root(sources)
+    vendored: set[str] = set()
+    if sources_path.is_file():
+        try:
+            vendored = {source.id for source in load_sources(sources_path) if source.vendored}
+        except SourceError as error:
+            raise typer.BadParameter(str(error), param_hint="--sources") from error
+
     for toolkit in settings.toolkits.values():
         root = toolkit.snapshot.parent
-        missing = [name for name in ("SOURCE", "GIT_SHA", "BRANCH", "VERSION", "snapshot") if not (root / name).exists()]
+        if not toolkit.snapshot.is_dir() or not any(toolkit.snapshot.iterdir()):
+            raise typer.BadParameter(
+                f"{toolkit.id}: {_show(toolkit.snapshot)} is missing or empty — run `hmb setup`"
+            )
+        # A toolkit id may differ from the directory that holds it; match on both.
+        is_vendored = toolkit.id in vendored or root.name in vendored
+        required = ("SOURCE", "BRANCH", "VERSION") if is_vendored else ("SOURCE", "GIT_SHA", "BRANCH", "VERSION")
+        missing = [name for name in required if not (root / name).exists()]
         if missing:
             raise typer.BadParameter(f"{toolkit.id} missing: {', '.join(missing)}")
+        if is_vendored:
+            typer.echo(f"ok  {toolkit.id}  vendored")
+            continue
         sha = (root / "GIT_SHA").read_text().strip()
         if len(sha) != 40 or any(char not in "0123456789abcdef" for char in sha.lower()):
             raise typer.BadParameter(f"{toolkit.id} has invalid GIT_SHA")
         typer.echo(f"ok  {toolkit.id}  {sha}")
+
+
+def _show(path: Path) -> str:
+    """A path as the user would type it: relative to the repository root."""
+    try:
+        return str(path.relative_to(_root()))
+    except (ValueError, typer.BadParameter):
+        return str(path)
 
 
 @app.command()
@@ -251,11 +316,11 @@ def catalogue(
 
     if md_out:
         md_out.parent.mkdir(parents=True, exist_ok=True)
-        md_out.write_text(render_markdown(facts, settings.source_root))
+        md_out.write_text(render_markdown(facts, settings.source_root, settings.root))
         typer.echo(f"wrote {md_out}")
     if json_out:
         json_out.parent.mkdir(parents=True, exist_ok=True)
-        json_out.write_text(render_json(facts, settings.source_root))
+        json_out.write_text(render_json(facts, settings.source_root, settings.root))
         typer.echo(f"wrote {json_out}")
     if md_out or json_out:
         return
@@ -306,3 +371,259 @@ def smoke_plan(config: Path = CONFIG_OPTION, task_id: str = typer.Option(...)) -
         if not model:
             raise typer.BadParameter(f"no model configured for agent: {cell['agent']}")
         typer.echo(f"{cell['id']}: harbor run -p {task_path} -a {cell['agent']} -m {model}")
+
+
+# ---------------------------------------------------------------------------
+# Environment and setup
+# ---------------------------------------------------------------------------
+STATUS_MARK = {"ok": "ok  ", "warn": "warn", "fail": "FAIL"}
+
+
+@app.command()
+def doctor(
+    sources: Path = SOURCES_OPTION,
+    strict: bool = typer.Option(False, help="Exit non-zero on a warning as well as a failure."),
+) -> None:
+    """Check whether this machine can run an experiment. Changes nothing.
+
+    Every check names the command that fixes it, so the output is a to-do list
+    rather than a verdict.
+    """
+    root = _root()
+    checks = run_checks(root, _at_root(sources))
+    for check in checks:
+        line = f"{STATUS_MARK[check.status]}  {check.name:26s} {check.detail}"
+        typer.echo(line)
+        if check.fix and check.status != "ok":
+            typer.echo(f"      fix: {check.fix}")
+    if in_container():
+        typer.echo("note  running inside a container; docker-in-docker is not supported")
+
+    severity = worst(checks)
+    counts = {level: sum(1 for check in checks if check.status == level) for level in ("ok", "warn", "fail")}
+    typer.echo(f"\n{counts['ok']} ok, {counts['warn']} warning(s), {counts['fail']} failure(s)")
+    if severity == "fail" or (strict and severity == "warn"):
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def setup(
+    sources: Path = SOURCES_OPTION,
+    only: list[str] = typer.Option(None, "--only", help="Source id; repeat to limit the fetch."),
+    force: bool = typer.Option(False, help="Re-fetch even when a source is already at its pin."),
+    skip_credentials: bool = typer.Option(False, help="Do not write the config/local.env template."),
+) -> None:
+    """Materialise every pinned source, then write the credentials template.
+
+    Idempotent: a source already at its pin is left alone. An `optional` source
+    that cannot be fetched is reported and skipped, so a colleague without access
+    to a private toolkit can still set the framework up.
+    """
+    root = _root()
+    sources_path = _at_root(sources)
+    try:
+        declared = load_sources(sources_path)
+    except SourceError as error:
+        raise typer.BadParameter(str(error), param_hint="--sources") from error
+
+    wanted = set(only or ())
+    unknown = wanted - {source.id for source in declared}
+    if unknown:
+        raise typer.BadParameter(f"unknown source id(s): {', '.join(sorted(unknown))}", param_hint="--only")
+    selected = [source for source in declared if not wanted or source.id in wanted]
+
+    failures: list[str] = []
+    for source in selected:
+        typer.echo(f"{source.kind:11s} {source.id} ...")
+        try:
+            result = fetch_source(source, force=force)
+        except SourceError as error:
+            failures.append(f"{source.id}: {error}")
+            typer.echo(f"  FAIL  {error}")
+            continue
+        typer.echo(f"  {result.status:11s} {result.detail}")
+
+    if not skip_credentials:
+        path, written = credentials_template(root)
+        state = "written" if written else "present"
+        typer.echo(f"credentials  {state}: {_show(path)}")
+        if written:
+            typer.echo("  fill it with `claude setup-token`; it is git-ignored and mode 600")
+
+    if failures:
+        typer.echo("\nrequired sources failed:")
+        for failure in failures:
+            typer.echo(f"  {failure}")
+        raise typer.Exit(code=1)
+    typer.echo("\nsetup complete — run `hmb doctor` to confirm, then `hmb catalogue --suite balanced`")
+
+
+@app.command("sources")
+def sources_status(sources: Path = SOURCES_OPTION) -> None:
+    """List every pinned source and whether it is present at its pin."""
+    try:
+        declared = load_sources(_at_root(sources))
+    except SourceError as error:
+        raise typer.BadParameter(str(error), param_hint="--sources") from error
+    for source in declared:
+        pin = (source.ref or "-")[:12]
+        flags = ",".join(filter(None, ["optional" if source.optional else "", "vendored" if source.vendored else ""]))
+        typer.echo(
+            f"{source.state():9s} {source.kind:11s} {source.id:16s} {pin:13s} "
+            f"{_show(source.dest)}{'  [' + flags + ']' if flags else ''}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Results
+# ---------------------------------------------------------------------------
+@app.command("report")
+def report_command(
+    jobs_dir: Path = typer.Option(Path("jobs"), help="Where Harbor wrote its job output."),
+    pattern: str = typer.Option("*", help="Glob over job names, e.g. 'prog16-*'."),
+    md_out: Path | None = typer.Option(None, help="Write the markdown comparison here."),
+    json_out: Path | None = typer.Option(None, help="Write the machine-readable summary here."),
+) -> None:
+    """Aggregate trial results into a comparison table and a JSON summary."""
+    try:
+        markdown, trials = write_report(
+            _at_root(jobs_dir),
+            pattern,
+            _at_root(md_out) if md_out else None,
+            _at_root(json_out) if json_out else None,
+        )
+    except FileNotFoundError as error:
+        raise typer.BadParameter(str(error), param_hint="--jobs-dir") from error
+
+    if md_out:
+        typer.echo(f"{len(trials)} trial(s) matching {pattern!r} -> {_show(_at_root(md_out))}")
+    else:
+        typer.echo(markdown)
+    if json_out:
+        typer.echo(f"summary -> {_show(_at_root(json_out))}")
+
+
+# ---------------------------------------------------------------------------
+# Scenarios
+# ---------------------------------------------------------------------------
+@experiment_app.command("new")
+def experiment_new(
+    name: str = typer.Argument(..., help="Experiment name; becomes the config, task file and job prefix."),
+    toolkit: list[str] = typer.Option(None, "--toolkit", help="Condition id; repeat for several."),
+    agent: list[str] = typer.Option(None, "--agent", help="Agent id; repeat for several."),
+    suite: list[str] = SUITE_OPTION,
+    task: list[str] = TASK_OPTION,
+    category: list[str] = CATEGORY_OPTION,
+    difficulty: list[str] = DIFFICULTY_OPTION,
+    limit: int | None = LIMIT_OPTION,
+    config: Path = CONFIG_OPTION,
+    force: bool = typer.Option(False, help="Overwrite an existing scenario of this name."),
+) -> None:
+    """Scaffold `config/experiments.<name>.yaml` and `config/tasks-<name>.txt`.
+
+    Any task-selection flag resolves now and is written out as explicit ids, so
+    the experiment records the task set it measured rather than a query that can
+    drift when the task-suite pin moves.
+    """
+    root = _root()
+    toolkits = list(toolkit or ["demo-kit"])
+    agents = list(agent or ["claude-code"])
+
+    tasks: list[str] = []
+    if suite or task or category or difficulty or limit:
+        settings = _config(config)
+        selection = _selection(task, suite, None, category, difficulty, limit)
+        tasks = [path.name for path in _selected_tasks(settings, selection)]
+
+    try:
+        scaffold = new_experiment(root, name, toolkits, agents, tasks, force=force)
+    except ScaffoldError as error:
+        raise typer.BadParameter(str(error)) from error
+
+    typer.echo(f"config      {_show(scaffold.config)}")
+    typer.echo(f"task set    {_show(scaffold.tasks_file)}  ({len(tasks) or 'no'} task ids)")
+    typer.echo("")
+    typer.echo("next:")
+    typer.echo(f"  hmb catalogue --config {_show(scaffold.config)} --tasks-file {_show(scaffold.tasks_file)}")
+    typer.echo(f"  hmb generate  --config {_show(scaffold.config)} --tasks-file {_show(scaffold.tasks_file)} --force")
+    typer.echo(f"  hmb validate  --config {_show(scaffold.config)} --tasks-file {_show(scaffold.tasks_file)}")
+    typer.echo(f"  hmb preflight --config {_show(scaffold.config)} --tasks-file {_show(scaffold.tasks_file)}")
+    typer.echo(f"  ./scripts/run-pilot-experiment.sh --config {_show(scaffold.config)} \\")
+    typer.echo(f"      --tasks-file {_show(scaffold.tasks_file)} --job-prefix {name} --attempts 1 --dry-run")
+
+
+@experiment_app.command("list")
+def experiment_list() -> None:
+    """List the experiment configurations in this checkout."""
+    root = _root()
+    configs = sorted((root / "config").glob("experiments*.yaml"))
+    if not configs:
+        typer.echo("no experiment configurations found under config/")
+        return
+    for path in configs:
+        try:
+            settings = load_config(path)
+        except (OSError, KeyError, TypeError, ValueError) as error:
+            typer.echo(f"{path.name:44s} unreadable: {error}")
+            continue
+        conditions = ",".join(sorted(settings.toolkits)) or "-"
+        typer.echo(
+            f"{path.name:44s} {len(settings.matrix)} cell(s)  "
+            f"repetitions={settings.repetitions}  conditions={conditions}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Analysis
+# ---------------------------------------------------------------------------
+@analysis_app.command("extract")
+def analysis_extract(
+    pattern: str = typer.Option(..., help="Glob over job names, e.g. 'prog16-*'."),
+    jobs_dir: Path = typer.Option(Path("jobs"), help="Where Harbor wrote its job output."),
+    out_dir: Path = typer.Option(Path("results/analysis/data"), help="Where the CSV tables are written."),
+    catalogue_json: Path = typer.Option(
+        Path("results/task_catalogue.json"),
+        help="Task metadata to join; write it with `hmb catalogue --json-out`.",
+    ),
+) -> None:
+    """Derive the tidy per-trial, per-test, per-step and per-tool-call tables."""
+    root = _root()
+    try:
+        tables = extract_all(_at_root(jobs_dir), pattern, _at_root(catalogue_json), root=root)
+    except FileNotFoundError as error:
+        raise typer.BadParameter(str(error), param_hint="--pattern") from error
+    written = write_csvs(_at_root(out_dir), tables)
+    for name, path in written.items():
+        typer.echo(f"{name:11s} {len(tables[name]):6d} rows -> {_show(path)}")
+
+
+@analysis_app.command("init")
+def analysis_init(
+    name: str = typer.Argument(..., help="Analysis name; becomes results/analysis-<name>/."),
+    pattern: str = typer.Option(..., help="Glob over job names this analysis covers."),
+    extract: bool = typer.Option(True, help="Also derive the tables now."),
+    force: bool = typer.Option(False, help="Overwrite an existing notebook of this name."),
+) -> None:
+    """Scaffold an analysis notebook for a finished run, and fill its tables."""
+    root = _root()
+    try:
+        scaffold = new_analysis(root, name, pattern, force=force)
+    except ScaffoldError as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(f"notebook  {_show(scaffold.notebook)}")
+
+    if extract:
+        try:
+            tables = extract_all(
+                root / "jobs", pattern, root / "results" / "task_catalogue.json", root=root
+            )
+        except FileNotFoundError as error:
+            typer.echo(f"warn  no tables written: {error}")
+        else:
+            write_csvs(scaffold.directory / "data", tables)
+            typer.echo(f"tables    {len(tables['trials'])} trials -> {_show(scaffold.directory / 'data')}")
+
+    typer.echo("")
+    typer.echo("next:")
+    typer.echo("  uv sync --group analysis")
+    typer.echo(f"  uv run --group analysis jupyter lab {_show(scaffold.notebook)}")

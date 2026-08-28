@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluation pipeline — from instruction to reward, duration and cost</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #5b6570;
+    --rule: #e2e6ea;
+    --code-bg: #f5f7f9;
+    --accent: #0b5fa5;
+    --warn-bg: #fff7e6;
+    --warn-border: #e0a800;
+    --stop-bg: #fdecec;
+    --stop-border: #c0392b;
+    --note-bg: #eef5fb;
+    --note-border: #0b5fa5;
+    --ok: #1a7f4b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171a;
+      --fg: #e8eaed;
+      --muted: #9aa4ae;
+      --rule: #2a2f35;
+      --code-bg: #1c2126;
+      --accent: #6db3f2;
+      --warn-bg: #2a2418;
+      --warn-border: #b38600;
+      --stop-bg: #2b1a1a;
+      --stop-border: #d9635a;
+      --note-bg: #16222d;
+      --note-border: #3f7fb8;
+      --ok: #57c98a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 5rem;
+    max-width: 68rem;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 .5rem; }
+  h2 { font-size: 1.3rem; margin: 3rem 0 .75rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 1.05rem; margin: 1.9rem 0 .5rem; }
+  h4 { font-size: .95rem; margin: 1.4rem 0 .4rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  p, li { margin: .5rem 0; }
+  .lede { color: var(--muted); font-size: 1.05rem; }
+  a { color: var(--accent); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em;
+         background: var(--code-bg); padding: .1em .35em; border-radius: 3px; }
+  pre { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px;
+        padding: .9rem 1rem; overflow-x: auto; margin: 1rem 0; }
+  pre code { background: none; padding: 0; font-size: .85rem; line-height: 1.5; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--rule); padding: .45rem .6rem; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .note, .warn, .stop {
+    border-left: 4px solid var(--note-border); background: var(--note-bg);
+    padding: .75rem 1rem; margin: 1.25rem 0; border-radius: 0 4px 4px 0;
+  }
+  .warn { border-left-color: var(--warn-border); background: var(--warn-bg); }
+  .stop { border-left-color: var(--stop-border); background: var(--stop-bg); }
+  .note > :first-child, .warn > :first-child, .stop > :first-child { margin-top: 0; }
+  .note > :last-child, .warn > :last-child, .stop > :last-child { margin-bottom: 0; }
+  figure { margin: 1.5rem 0; }
+  figure .mermaid { text-align: center; overflow-x: auto; background: var(--code-bg);
+                    border: 1px solid var(--rule); border-radius: 6px; padding: 1rem; }
+  figcaption { color: var(--muted); font-size: .87rem; margin-top: .5rem; }
+  .legend { font-size: .87rem; color: var(--muted); }
+  .toc { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem 1.25rem; }
+  .toc ol { margin: .25rem 0; padding-left: 1.4rem; }
+  .toc li { margin: .2rem 0; }
+  .src { color: var(--muted); font-size: .87rem; }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+  .fallback { color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+
+<h1>Evaluation pipeline: from instruction to reward, duration and cost</h1>
+<p class="lede">
+  A complete description of what happens in <code>harbor-methodology-bench</code> between the moment a
+  task's <code>instruction.md</code> is handed to a coding agent and the moment a number appears in
+  <code>results/&lt;name&gt;_report.md</code> — every metric, the exact code that computes it, and the
+  ways each one can mislead you.
+</p>
+
+<div class="note">
+  <p><strong>Scope and provenance.</strong> Two codebases are involved and this document keeps them
+  apart. <em>This repository</em> owns task-variant generation, the two integrity gates, the matrix
+  runner and the reporting aggregator. <em>Harbor</em> (version <code>0.21.0</code>, installed as a
+  <code>uv</code> tool) owns the trial lifecycle: container start, agent installation, prompt delivery,
+  timeouts, verifier execution, reward parsing, token accounting and cost attribution. All file
+  references below are to real code; Harbor paths are shown relative to its package root
+  (<code>~/.local/share/uv/tools/harbor/lib/python3.12/site-packages/harbor/</code>).</p>
+</div>
+
+<nav class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#overview">The pipeline end to end</a></li>
+    <li><a href="#stage-generate">Stage 1 — Selection and variant generation</a></li>
+    <li><a href="#stage-gates">Stage 2 — The two integrity gates</a></li>
+    <li><a href="#stage-runner">Stage 3 — The matrix runner</a></li>
+    <li><a href="#stage-trial">Stage 4 — The Harbor trial lifecycle</a></li>
+    <li><a href="#stage-instruction">Stage 5 — How the instruction reaches the agent</a></li>
+    <li><a href="#stage-reward">Stage 6 — Reward: how the verifier produces a score</a></li>
+    <li><a href="#stage-cost">Stage 7 — Tokens and cost: how they are computed</a></li>
+    <li><a href="#stage-duration">Stage 8 — Duration: which clock is running</a></li>
+    <li><a href="#stage-aggregate">Stage 9 — Aggregation: Harbor job stats and <code>report.py</code></a></li>
+    <li><a href="#metrics">Metric reference — exact definitions</a></li>
+    <li><a href="#worked">A measured example: the DS/ML run</a></li>
+    <li><a href="#caveats">Caveats and known measurement hazards</a></li>
+    <li><a href="#artifacts">Appendix A — On-disk artifacts of one trial</a></li>
+    <li><a href="#glossary">Appendix B — Glossary</a></li>
+  </ol>
+</nav>
+
+<hr>
+
+<h2 id="overview">1. The pipeline end to end</h2>
+
+<p>
+  An experiment is a matrix of <em>agents × conditions</em> evaluated over a set of tasks. One matrix
+  cell applied to one task is a <strong>job</strong>; one repetition inside that job is a
+  <strong>trial</strong>; a trial produces exactly one reward, one duration, one token account and one
+  cost figure. Everything in the reports is an aggregation over trials.
+</p>
+
+<figure>
+<pre class="mermaid">
+flowchart TB
+  classDef store fill:#eef5fb,stroke:#0b5fa5,color:#123
+  classDef gate fill:#fff7e6,stroke:#e0a800,color:#332
+  classDef proc fill:#f5f7f9,stroke:#5b6570,color:#123
+  classDef data fill:#ffffff,stroke:#5b6570,color:#123
+  classDef term fill:#e8f5ee,stroke:#1a7f4b,color:#123
+
+  src[("source-tasks/terminal-bench/TASK<br/>immutable benchmark tasks")]:::store
+  kit[("toolkits/ID/snapshot<br/>frozen by GIT_SHA")]:::store
+  cfg[/"config/experiments*.yaml<br/>conditions · models · matrix"/]:::data
+
+  subgraph HOST["Host — build and proof"]
+    direction TB
+    sel[["catalogue --ids-only<br/>task selection"]]:::proc
+    gen[["generate<br/>copy task + stage payload + patch task.toml"]]:::proc
+    val{{"validate<br/>host-side hash re-derivation"}}:::gate
+    pre{{"preflight<br/>build image + probe from inside"}}:::gate
+    genout[("generated/CONDITION/TASK")]:::store
+  end
+
+  subgraph RUN["Execution — one Harbor trial per matrix cell × task"]
+    direction TB
+    plan[["matrix-plan<br/>cell_id · variant · agent · model"]]:::proc
+    harbor[["harbor run -p … -a … -m … -n …"]]:::proc
+    env[["environment_setup<br/>docker build/start"]]:::proc
+    asetup[["agent_setup<br/>install CLI + register skills"]]:::proc
+    aexec[["agent_execution<br/>instruction.md as prompt"]]:::proc
+    ver[["verifier<br/>tests/test.sh inside the container"]]:::proc
+  end
+
+  subgraph AGG["Measurement and aggregation"]
+    direction TB
+    trial[/"jobs/JOB/TRIAL/result.json<br/>reward · timings · tokens · cost"/]:::data
+    traj[/"agent/trajectory.json + claude-code.txt<br/>steps · usage · total_cost_usd"/]:::data
+    rep[["scripts/report.py<br/>parse · group by cell · adherence"]]:::proc
+    out(["results/NAME_report.md<br/>results/NAME_summary.json"]):::term
+  end
+
+  src --> sel --> gen
+  kit --> gen
+  cfg --> sel
+  cfg --> gen
+  cfg --> plan
+  gen --> genout --> val --> pre
+  pre -->|"report written per variant"| genout
+  plan --> harbor
+  genout --> harbor
+  harbor --> env --> asetup --> aexec --> ver
+  ver --> trial
+  aexec --> traj
+  trial --> rep
+  traj --> rep
+  rep --> out
+</pre>
+<figcaption>
+  <strong>Diagram 1 — end-to-end pipeline.</strong> Cylinders are persistent stores, hexagons are
+  fail-closed gates, double-bordered boxes are processes (subroutines), parallelograms are data
+  artifacts, the rounded box is the terminator. The two gates run before any model tokens are spent.
+  Throughout the diagrams, uppercase words in paths are placeholders: <code>TASK</code>,
+  <code>CONDITION</code> / <code>VARIANT</code>, <code>ID</code> (toolkit), <code>JOB</code>,
+  <code>TRIAL</code>, <code>NAME</code> (report name) and <code>PATTERN</code> (job-name glob).
+</figcaption>
+</figure>
+
+<p>
+  The framework separates two questions on purpose, and each has its own answer path in the diagram:
+  <em>was the methodology available to the agent?</em> is answered by <code>preflight</code>, inside
+  the container, before execution; <em>did the agent use it?</em> is answered by
+  <code>report.py</code>, from the agent's own trajectory, after execution. A passing preflight with
+  zero adherence is a finding about the toolkit. A failing preflight is a broken experiment, and the
+  runner refuses to execute the cell.
+</p>
+
+<hr>
+
+<h2 id="stage-generate">2. Stage 1 — Selection and variant generation</h2>
+
+<p>
+  A run begins with a task selection resolved through the same code the generator uses, so a stale
+  directory under <code>generated/</code> can never join a run by accident
+  (<code>scripts/run-pilot-experiment.sh:119</code>).
+</p>
+
+<p>
+  <code>generate</code> (<code>src/harbor_methodology_bench/cli.py:81</code>) copies each source task
+  verbatim, then <code>build_environment</code>
+  (<code>src/harbor_methodology_bench/environment.py:375</code>) turns the copy into one variant per
+  declared condition:
+</p>
+
+<ul>
+  <li>the frozen toolkit snapshot is staged under
+    <code>environment/.methodology-bench/payload/</code>, filtered by the condition's
+    <code>include</code> / <code>exclude</code> lists;</li>
+  <li>skill directories found under <code>.claude/skills</code>, <code>.agents/skills</code> or
+    <code>skills</code> are merged into one registry, first source wins
+    (<code>environment.py:178</code>);</li>
+  <li>a Dockerfile is rendered that is <em>byte-identical across every condition of a task</em> —
+    only the staged payload differs (<code>environment.py:272</code>), which removes the build path as
+    a possible confound;</li>
+  <li><code>task.toml</code> is patched twice: <code>[environment].docker_image</code> is commented out
+    and reused as the Dockerfile <code>FROM</code> (otherwise Harbor prefers the prebuilt image and
+    ignores the payload layer), and <code>[environment].skills_dir</code> is set so the agent adapter
+    installs the toolkit's skills (<code>environment.py:319</code>);</li>
+  <li>a separate-environment verifier without an explicit image gets the original image pinned, so
+    verification always runs against clean, toolkit-free benchmark code.</li>
+</ul>
+
+<p>
+  At build time <code>deploy-payload.sh</code> (<code>environment.py:214</code>) copies each top-level
+  payload entry into the agent's working directory. If the name already exists there, the entry is
+  archived to <code>/methodology-bench/toolkit-collisions/</code> and the benchmark's own file
+  survives. Every decision is appended to <code>/methodology-bench/deployment-report.tsv</code>, which
+  is what preflight later reads back.
+</p>
+
+<hr>
+
+<h2 id="stage-gates">3. Stage 2 — The two integrity gates</h2>
+
+<p>
+  Neither gate spends model tokens, and both are prerequisites for a valid measurement rather than
+  measurements themselves.
+</p>
+
+<h3>Gate 1 — <code>validate</code>, host-side</h3>
+<p>
+  <code>validate_task</code> (<code>src/harbor_methodology_bench/validate.py:66</code>) re-derives the
+  entire generated environment through the same code path that produced it and hash-compares, which
+  makes it a reproducibility check rather than a restatement of what happens to be on disk. It fails
+  on a modified benchmark file, a non-reproducible generated <code>Dockerfile</code> or
+  <code>task.toml</code>, an unexpected extra file, instruction files leaking into a condition that
+  declares none, and a condition that declares instructions or skills but ships none.
+</p>
+
+<h3>Gate 2 — <code>preflight</code>, in-container</h3>
+<p>
+  <code>preflight_task</code> (<code>src/harbor_methodology_bench/preflight.py:381</code>) builds every
+  variant image and probes the running container from the inside
+  (<code>preflight.py:53</code> renders the probe shell). Two different assertions are made:
+</p>
+<ul>
+  <li><strong>Baseline inertness</strong> (<code>preflight.py:206</code>) — the baseline container's
+    workdir is compared file-hash by file-hash against the task's untouched base image. Any changed
+    file, added file, registered skill or gained <code>CLAUDE.md</code> is an error. This is what makes
+    "the pure agent" a proven condition rather than an assumption.</li>
+  <li><strong>Toolkit arrival</strong> (<code>preflight.py:264</code>) — every staged payload file must
+    be present with its exact digest, no benchmark file may be overwritten, no unexplained file may
+    appear, and the declared intent is asserted in <em>both</em> directions: a condition expecting
+    project instructions fails when none reach the workdir, and a condition expecting none fails when
+    any do. The probe additionally replays the agent adapters' skill-install idiom into
+    <code>/tmp</code>, so "the CLI would fail to install this skill" is caught before the run.</li>
+</ul>
+<p>
+  Each variant's outcome is persisted next to the generated task as
+  <code>.methodology-bench-preflight.json</code> (<code>preflight.py:415</code>), and that file is the
+  runner's per-cell licence to execute.
+</p>
+
+<hr>
+
+<h2 id="stage-runner">4. Stage 3 — The matrix runner</h2>
+
+<p>
+  <code>scripts/run-pilot-experiment.sh</code> expands tasks × cells and invokes Harbor once per pair.
+  The cells come from <code>matrix-plan</code> (<code>cli.py:273</code>), not from the script, so
+  changing <code>config/experiments*.yaml</code> changes the run without editing shell code.
+</p>
+
+<figure>
+<pre class="mermaid">
+flowchart TB
+  classDef proc fill:#f5f7f9,stroke:#5b6570,color:#123
+  classDef dec fill:#fff7e6,stroke:#e0a800,color:#332
+  classDef term fill:#e8f5ee,stroke:#1a7f4b,color:#123
+  classDef stop fill:#fdecec,stroke:#c0392b,color:#321
+
+  entry(["run-pilot-experiment.sh SELECTION --config"]):::term
+  docker{"docker hello-world OK<br/>and config/local.env present?"}:::dec
+  tasks[["catalogue.sh --ids-only<br/>resolve task ids"]]:::proc
+  cells[["matrix-plan<br/>resolve cells"]]:::proc
+  missing{"every generated variant<br/>directory exists?"}:::dec
+  gate[["validate-variants.sh<br/>preflight-variants.sh"]]:::proc
+  loop["for each task and cell"]:::proc
+  pf{"preflight report<br/>passed == true?"}:::dec
+  exists{"job directory exists?"}:::dec
+  force{"--force given?"}:::dec
+  fin{"finished_at set and<br/>n_cancelled_trials == 0?"}:::dec
+  rm[["remove the job directory"]]:::proc
+  skip(["skip — count as completed"]):::term
+  run[["harbor run -p TASK_PATH -a AGENT -m MODEL<br/>-n ATTEMPTS --env-file config/local.env"]]:::proc
+  tally[["tally PASSED_RUNS and FAILED_RUNS"]]:::proc
+  report(["scripts/report.py --pattern prefix-*"]):::term
+  abort(["abort the run"]):::stop
+
+  entry --> docker
+  docker -- no --> abort
+  docker -- yes --> tasks --> cells --> missing
+  missing -- no --> abort
+  missing -- yes --> gate --> loop --> pf
+  pf -- no --> abort
+  pf -- yes --> exists
+  exists -- no --> run
+  exists -- yes --> force
+  force -- yes --> rm --> run
+  force -- no --> fin
+  fin -- yes --> skip
+  fin -- no --> rm
+  run --> tally --> report
+</pre>
+<figcaption>
+  <strong>Diagram 2 — runner control flow.</strong> Two safety properties are visible here. The run
+  <em>fails closed</em>: a cell may only execute against a variant whose container was proven
+  (<code>assert_preflight_passed</code>, <code>run-pilot-experiment.sh:175</code>). And resumption is
+  honest: a <code>result.json</code> alone does not count as data, because an interrupted run leaves
+  one behind with <code>finished_at: null</code> and cancelled trials, which would silently drop the
+  cell from the matrix (<code>job_finished</code>, <code>run-pilot-experiment.sh:194</code>).
+</figcaption>
+</figure>
+
+<div class="note">
+  <p><strong>Fairness of the wall-clock budget.</strong> <code>--timeout-multiplier</code> is applied to
+  every cell in the run, never to one condition
+  (<code>run-pilot-experiment.sh:136</code>). A condition given more wall-clock than its comparison
+  would be a confound, so the value is a property of the whole run and must be recorded with the
+  result — it changes the budget the benchmark declares.</p>
+</div>
+
+<hr>
+
+<h2 id="stage-trial">5. Stage 4 — The Harbor trial lifecycle</h2>
+
+<p>
+  One <code>harbor run</code> creates a job; the job runs <code>n</code> trials of the task. Each trial
+  is a <code>SingleStepTrial</code> — one instruction, one agent run, one verifier
+  (<code>trial/single_step.py</code>). Four timed phases are recorded, and each is stamped into
+  <code>result.json</code> with its own <code>started_at</code> / <code>finished_at</code>.
+</p>
+
+<figure>
+<pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant J as Harbor Job
+  participant T as Trial (SingleStepTrial)
+  participant E as Docker environment
+  participant A as Agent CLI (in container)
+  participant V as Verifier (in container)
+  participant R as result.json
+
+  J->>T: create trial (task, agent, model, timeout multipliers)
+  T->>R: _init_result — started_at, agent_info, task_checksum
+  rect rgb(238,245,251)
+    note over T,E: phase environment_setup — bounded by [environment].build_timeout_sec
+    T->>E: start(force_build) — build generated image, run container
+    E-->>T: healthcheck OK
+    T->>E: upload injected skills (if any)
+  end
+  rect rgb(238,245,251)
+    note over T,A: phase agent_setup — bounded by agent setup timeout
+    T->>A: apt-get curl bash nodejs npm procps
+    T->>A: install Claude Code / Codex CLI
+    T->>A: cp -r /methodology-bench/skills/* $CLAUDE_CONFIG_DIR/skills/
+  end
+  rect rgb(238,245,251)
+    note over T,A: phase agent_execution — bounded by [agent].timeout_sec × multiplier
+    T->>A: instruction via env var, piped to CLI --print --output-format=stream-json
+    A->>A: tool calls, edits, commands in the task workdir
+    A-->>T: stdout stream teed to /logs/agent/claude-code.txt
+    T->>R: agent_result — n_input/output/cache tokens, cost_usd
+  end
+  T->>E: download agent logs, collect artifacts
+  rect rgb(238,245,251)
+    note over T,V: phase verifier — bounded by [verifier].timeout_sec × multiplier
+    T->>V: upload tests/ to /tests, exec test.sh
+    V-->>T: /logs/verifier/reward.txt or reward.json (+ ctrf.json, test-stdout.txt)
+    T->>R: verifier_result.rewards
+  end
+  T->>E: stop and delete container
+  T->>R: finished_at, exception_info (if any)
+  R-->>J: trial result folded into job stats
+</pre>
+<figcaption>
+  <strong>Diagram 3 — trial lifecycle.</strong> Sources: <code>trial/trial.py:370</code>
+  (<code>run</code>), <code>:408</code> (<code>_prepare</code>), <code>:445</code>
+  (<code>_run_agent_phase</code>), <code>:1206</code> (environment), <code>:1227</code> (agent setup);
+  <code>trial/single_step.py</code> (agent → artifacts → verifier → stop);
+  <code>verifier/verifier.py:133</code> (<code>verify</code>).
+</figcaption>
+</figure>
+
+<h3>Timeouts and how a trial can end</h3>
+
+<p>
+  Every phase has its own budget, resolved as
+  <code>min(base_sec, max_sec) × multiplier</code> (<code>trial/trial.py:433</code>). Base values come
+  from the task's own <code>task.toml</code> — for the DS/ML task set, <code>[agent].timeout_sec</code>
+  and <code>[verifier].timeout_sec</code> are typically <code>1800</code> and
+  <code>[environment].build_timeout_sec</code> <code>600</code>.
+</p>
+
+<figure>
+<pre class="mermaid">
+stateDiagram-v2
+  direction LR
+  [*] --> EnvironmentSetup
+  EnvironmentSetup --> AgentSetup: container healthy
+  EnvironmentSetup --> Errored: EnvironmentStartTimeoutError
+  AgentSetup --> AgentExecution: CLI installed, skills registered
+  AgentSetup --> Errored: AgentSetupTimeoutError
+  AgentExecution --> Verification: agent exits 0
+  AgentExecution --> VerificationAfterFault: AgentTimeoutError / NonZeroAgentExitCodeError
+  note right of VerificationAfterFault
+    Recorded on the trial, but the
+    verifier still runs — a timed-out
+    agent is graded on what it left
+    behind, normally reward 0.0
+  end note
+  VerificationAfterFault --> Verification
+  Verification --> Completed: reward parsed
+  Verification --> Errored: VerifierTimeoutError
+  Verification --> Errored: RewardFileNotFoundError / RewardFileEmptyError / VerifierOutputParseError
+  Completed --> [*]
+  Errored --> [*]
+  Cancelled --> [*]
+  AgentExecution --> Cancelled: CancelledError (Ctrl-C, kill)
+</pre>
+<figcaption>
+  <strong>Diagram 4 — terminal states.</strong> An <code>AgentTimeoutError</code> or a non-zero agent
+  exit is caught, recorded in <code>exception_info</code>, and the trial <em>continues</em> to
+  verification (<code>trial/single_step.py</code>, <code>_run_agent</code>) — so such trials normally
+  appear as reward <code>0.0</code> <em>plus</em> a named exception. A missing or empty reward file, by
+  contrast, is a trial error and never a zero score (<code>verifier/verifier.py:227</code>).
+</figcaption>
+</figure>
+
+<hr>
+
+<h2 id="stage-instruction">6. Stage 5 — How the instruction reaches the agent</h2>
+
+<p>
+  Harbor's task contract transfers only three things from a task directory: <code>instruction.md</code>
+  becomes the prompt, <code>tests/</code> lands at <code>/tests</code> for the verifier, and
+  <code>solution/</code> at <code>/solution</code> for the oracle agent. <strong>Nothing else from the
+  task directory reaches the container</strong> — which is precisely why methodology has to be injected
+  through the image.
+</p>
+
+<p>
+  For Claude Code the prompt is passed as an environment variable and piped into the CLI in headless
+  mode. Reproduced from a real <code>trial.log</code>:
+</p>
+
+<pre><code>harbor_claude_code_instruction_&lt;uuid&gt;="$HARBOR_CLAUDE_CODE_INSTRUCTION_&lt;UUID&gt;";
+unset HARBOR_CLAUDE_CODE_INSTRUCTION_&lt;UUID&gt;;
+printf "%s" "$harbor_claude_code_instruction_&lt;uuid&gt;" \
+  | claude --verbose --output-format=stream-json \
+           --permission-mode=bypassPermissions --print 2&gt;&amp;1 \
+  | tee /logs/agent/claude-code.txt</code></pre>
+
+<p>Three consequences matter for interpreting results:</p>
+<ul>
+  <li>The instruction is delivered <strong>via an environment variable, then unset</strong>, so the
+    prompt text does not linger in the process table or shell history inside the container.</li>
+  <li><code>--permission-mode=bypassPermissions</code> means the agent is not prompted for
+    confirmation — tool use inside the sandboxed container is unrestricted, which is what makes an
+    unattended trial possible.</li>
+  <li><code>--output-format=stream-json</code> teed to <code>/logs/agent/claude-code.txt</code> is the
+    <em>same file</em> that later yields the authoritative cost figure (§8) and the skill-registration
+    evidence used for adherence (§10).</li>
+</ul>
+
+<p>
+  The startup event in that stream also proves what the CLI actually saw. In an <code>sdd</code>
+  container it lists the toolkit's skills alongside the CLI's own:
+  <code>"skills":["sdd-analyze","sdd-clarify","sdd-implement","sdd-plan","sdd-specify","sdd-tasks","sdd-verify",…]</code>,
+  with <code>"cwd":"/app"</code> — the directory the payload was deployed into.
+</p>
+
+<hr>
+
+<h2 id="stage-reward">7. Stage 6 — Reward: how the verifier produces a score</h2>
+
+<p>
+  The verifier runs <em>after</em> the agent stops, normally in the same container
+  (<code>verifier_environment_mode: "shared"</code>), as the task's own
+  <code>tests/test.sh</code>. Its contract is a single file.
+</p>
+
+<figure>
+<pre class="mermaid">
+flowchart TB
+  classDef proc fill:#f5f7f9,stroke:#5b6570,color:#123
+  classDef dec fill:#fff7e6,stroke:#e0a800,color:#332
+  classDef data fill:#ffffff,stroke:#5b6570,color:#123
+  classDef term fill:#e8f5ee,stroke:#1a7f4b,color:#123
+  classDef stop fill:#fdecec,stroke:#c0392b,color:#321
+
+  up[["upload tests/ → /tests"]]:::proc
+  ex[["exec /tests/test.sh<br/>stdout → /logs/verifier/test-stdout.txt"]]:::proc
+  suite[["task's own test suite<br/>e.g. pytest --ctrf /logs/verifier/ctrf.json"]]:::proc
+  wr[/"write 1 to reward.txt (pass)<br/>write 0 to reward.txt (fail)"/]:::data
+  dl[["download /logs/verifier → jobs/JOB/TRIAL/verifier/"]]:::proc
+  j{"reward.json exists?"}:::dec
+  t{"reward.txt exists?"}:::dec
+  pj[["json.loads → dict of named metrics"]]:::proc
+  pt[["float(text) → single metric named 'reward'"]]:::proc
+  empty{"file empty?"}:::dec
+  vr[/"verifier_result.rewards<br/>in result.json"/]:::data
+  succ(["report.py: success = reward above 0.0"]):::term
+  err(["RewardFileNotFoundError /<br/>RewardFileEmptyError /<br/>VerifierOutputParseError<br/>→ trial error, not a zero"]):::stop
+
+  up --> ex --> suite --> wr --> dl --> j
+  j -- yes --> empty
+  j -- no --> t
+  t -- yes --> empty
+  t -- no --> err
+  empty -- yes --> err
+  empty -- no --> pj
+  empty -- no --> pt
+  pj --> vr
+  pt --> vr
+  vr --> succ
+</pre>
+<figcaption>
+  <strong>Diagram 5 — reward derivation.</strong> Sources: <code>verifier/verifier.py:133</code>
+  (upload, exec, download), <code>:227</code> (<code>reward.json</code> takes precedence over
+  <code>reward.txt</code>), <code>:64</code> / <code>:78</code> (parsers),
+  <code>scripts/report.py:120</code> (reward and success).
+</figcaption>
+</figure>
+
+<p>The contract, verbatim from the authoring guide and confirmed in the parser:</p>
+<ul>
+  <li>write a float to <code>/logs/verifier/reward.txt</code> — <code>1</code> for pass, <code>0</code>
+    for fail, or anything in between for partial credit; <em>or</em></li>
+  <li>write a JSON object of named metrics to <code>/logs/verifier/reward.json</code>, which takes
+    precedence when both exist.</li>
+</ul>
+
+<p>
+  Terminal-Bench tasks in this repository use the binary form. A real
+  <code>tests/test.sh</code> tail from <code>mteb-retrieve</code>:
+</p>
+
+<pre><code>uvx -p 3.13 -w pytest==8.4.1 -w mteb==1.36.8 -w pytest-json-ctrf==0.3.5 \
+  pytest --ctrf /logs/verifier/ctrf.json /tests/test_outputs.py -rA
+
+if [ $? -eq 0 ]; then
+  echo 1 &gt; /logs/verifier/reward.txt
+else
+  echo 0 &gt; /logs/verifier/reward.txt
+fi</code></pre>
+
+<p>
+  So the reward is <strong>all-or-nothing per task</strong>: one failing assertion in a two-test suite
+  yields <code>0</code>. The per-test detail survives in <code>verifier/ctrf.json</code> — for that
+  trial, <code>test_result_exists</code> passed and <code>test_data_matches</code> failed with the wrong
+  string written to <code>/app/result.txt</code> — but no aggregate in this repository reads it. If you
+  want partial credit, that is a task-authoring decision (write a fractional reward or named metrics),
+  not a reporting option.
+</p>
+
+<div class="note">
+  <p><strong>Verifier isolation.</strong> When a task runs its verifier in a <em>separate</em>
+  environment and does not pin an image, the generator pins the original benchmark image under
+  <code>[verifier.environment]</code> (<code>environment.py:356</code>). Grading therefore never
+  happens against toolkit-contaminated code, no matter which condition the agent ran in.</p>
+</div>
+
+<hr>
+
+<h2 id="stage-cost">8. Stage 7 — Tokens and cost: how they are computed</h2>
+
+<p>
+  Token and cost accounting is the agent adapter's job, not the task's. Harbor reads the CLI's own
+  telemetry, converts it into a normalized trajectory, and writes four scalars onto the trial.
+</p>
+
+<figure>
+<pre class="mermaid">
+flowchart TB
+  classDef proc fill:#f5f7f9,stroke:#5b6570,color:#123
+  classDef dec fill:#fff7e6,stroke:#e0a800,color:#332
+  classDef data fill:#ffffff,stroke:#5b6570,color:#123
+  classDef term fill:#e8f5ee,stroke:#1a7f4b,color:#123
+  classDef warnnode fill:#fdecec,stroke:#c0392b,color:#321
+
+  stream[/"/logs/agent/claude-code.txt<br/>stream-json events"/]:::data
+  sess[/"$CLAUDE_CONFIG_DIR session JSONL<br/>per-message usage"/]:::data
+  dedup[["per message id keep the LAST usage<br/>(the CLI accumulates it while streaming)"]]:::proc
+  step[["_build_metrics per step<br/>prompt = input + cache_read + cache_creation<br/>completion = output_tokens<br/>cached = cache_read_input_tokens"]]:::proc
+  fm[["FinalMetrics = Σ steps"]]:::proc
+  res{"result event carries<br/>total_cost_usd?"}:::dec
+  auth[["authoritative CLI cost"]]:::proc
+  est[["litellm.cost_per_token per step<br/>extra.cost_source = litellm_estimate"]]:::proc
+  ctx[/"AgentContext → result.json agent_result<br/>n_input_tokens · n_cache_tokens<br/>n_output_tokens · cost_usd"/]:::data
+  incl["n_input_tokens INCLUDES cache tokens"]:::warnnode
+  rep[["report.py:139<br/>input · output · cache · cost_usd"]]:::proc
+  tt["total_tokens = input + output + cache<br/>double-counts cache reads"]:::warnnode
+  cell(["per-cell Total Cost ($) = Σ trial cost_usd"]):::term
+
+  sess --> dedup --> step --> fm
+  stream --> res
+  res -- yes --> auth --> ctx
+  res -- no --> est --> ctx
+  fm --> ctx
+  ctx --- incl
+  ctx --> rep --> cell
+  rep --> tt
+</pre>
+<figcaption>
+  <strong>Diagram 6 — token and cost derivation (Claude Code).</strong> Sources:
+  <code>agents/installed/claude_code.py:745</code> (<code>_build_metrics</code>), <code>:1060</code>
+  (last-usage-per-message deduplication), <code>:857</code>
+  (<code>_parse_total_cost_from_stream_json</code>), <code>:888</code>
+  (<code>_estimate_total_cost_from_steps</code>), <code>:1463</code> and <code>:1525</code>
+  (<code>FinalMetrics</code> → <code>AgentContext</code>);
+  <code>models/trial/result.py</code> (<code>compute_token_cost_totals</code>, whose docstring states
+  the inclusion explicitly).
+</figcaption>
+</figure>
+
+<h3>What each token field means</h3>
+
+<table>
+  <thead>
+    <tr><th>Field in <code>result.json</code></th><th>Computed as</th><th>Note</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>agent_result.n_input_tokens</code></td>
+      <td>Σ over steps of <code>input_tokens + cache_read_input_tokens + cache_creation_input_tokens</code></td>
+      <td>Aligns with Anthropic session totals. <strong>Includes</strong> cache.</td>
+    </tr>
+    <tr>
+      <td><code>agent_result.n_cache_tokens</code></td>
+      <td>Σ over steps of <code>cache_read_input_tokens</code></td>
+      <td>A <em>subset</em> of <code>n_input_tokens</code>, not an addition to it.</td>
+    </tr>
+    <tr>
+      <td><code>agent_result.n_output_tokens</code></td>
+      <td>Σ over steps of <code>output_tokens</code></td>
+      <td>Thinking tokens are billed as output by the provider; the CLI's separate
+          <code>thinking_tokens</code> stream events are estimates and are not summed here.</td>
+    </tr>
+    <tr>
+      <td><code>agent_result.cost_usd</code></td>
+      <td><code>total_cost_usd</code> from the CLI's final <code>result</code> event; otherwise a
+          LiteLLM per-step estimate</td>
+      <td>The fallback is flagged in the trajectory as
+          <code>final_metrics.extra.cost_source = "litellm_estimate"</code>. Check that field before
+          comparing costs across trials.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  A guard worth knowing about: a streaming response interrupted by a timeout can leave
+  <code>"output_tokens": null</code> present in the payload, so the adapter uses <code>or 0</code>
+  rather than a <code>get</code> default — without it the whole trajectory conversion would raise and
+  token accounting for the entire trial would be discarded (<code>claude_code.py:745</code>). In other
+  words, a timed-out trial still reports tokens and cost.
+</p>
+
+<h3>Codex is accounted differently</h3>
+<p>
+  The Codex adapter reads <code>token_count</code> events from the CLI session
+  (<code>agents/installed/codex.py:514</code>) and takes <code>total_token_usage.input_tokens</code>
+  verbatim as prompt tokens, with <code>cached_input_tokens</code> reported separately. Cost comes from
+  <code>info.total_cost</code> / <code>info.cost_usd</code> when the CLI provides it, and otherwise from
+  a LiteLLM price-table computation summed per API call (<code>codex.py:743</code>, <code>:1120</code>).
+</p>
+<div class="warn">
+  <p><strong>Cross-agent token and cost comparisons are not apples-to-apples.</strong> Claude Code's
+  prompt total is an explicit sum of three fields and its cost is normally the CLI's own authoritative
+  figure; Codex's prompt total is whatever its CLI reports and its cost is frequently a LiteLLM
+  estimate. Compare <em>conditions within one agent</em> freely; compare <em>agents</em> only with the
+  cost source of each cell established first.</p>
+</div>
+
+<hr>
+
+<h2 id="stage-duration">9. Stage 8 — Duration: which clock is running</h2>
+
+<p>
+  Harbor stamps five intervals per trial. <code>report.py</code> reads exactly one of them.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Interval in <code>result.json</code></th><th>Covers</th><th>Read by <code>report.py</code>?</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>started_at</code> → <code>finished_at</code></td><td>the whole trial, container start through container teardown</td><td><strong>Yes</strong> — this is <code>duration_sec</code></td></tr>
+    <tr><td><code>environment_setup</code></td><td>image build/pull and container start</td><td>No</td></tr>
+    <tr><td><code>agent_setup</code></td><td><code>apt-get</code>, agent CLI install, skill registration</td><td>No</td></tr>
+    <tr><td><code>agent_execution</code></td><td><em>the agent actually working</em></td><td>No</td></tr>
+    <tr><td><code>verifier</code></td><td>test dependency installation and the test suite</td><td>No</td></tr>
+  </tbody>
+</table>
+
+<p>
+  <code>duration_sec</code> is computed as the difference of the two ISO-8601 trial timestamps, clamped
+  at zero, and left as <code>None</code> when either is missing
+  (<code>scripts/report.py:127</code>). The "Avg Time (s)" column of the matrix summary is the mean of
+  those values over the non-<code>None</code> trials in the cell — which means it is a
+  <strong>total trial cost in wall-clock</strong>, not agent latency.
+</p>
+
+<figure>
+<pre class="mermaid">
+gantt
+  title Real phase timeline — ds-ml-claude-sdd-mteb-retrieve (216.5 s total)
+  dateFormat  X
+  axisFormat  %M:%S
+  todayMarker off
+  section Trial phases
+  environment_setup 3.2 s :done, env, 0, 3
+  agent_setup 59.3 s :active, setup, 3, 62
+  agent_execution 66.5 s :crit, agent, 62, 129
+  verifier 74.7 s :done, ver, 129, 204
+  teardown and result write 12.4 s :done, tail, 204, 216
+</pre>
+<figcaption>
+  <strong>Diagram 7 — where the wall-clock goes in one real trial.</strong> The agent worked for 66.5 s
+  of a 216.5 s trial (31%). Agent CLI installation alone cost 59.3 s, the verifier — which installs
+  <code>pytest</code> and <code>mteb</code> through <code>uvx</code> before it can assert anything —
+  cost 74.7 s, and container teardown plus writing <code>result.json</code> accounts for the remaining
+  12.4 s. Numbers computed from
+  <code>jobs/ds-ml-claude-sdd-mteb-retrieve/mteb-retrieve__hhNTcFb/result.json</code>; the phase
+  intervals are consecutive there, with only ~0.3 s between the agent stopping and the verifier
+  starting.
+</figcaption>
+</figure>
+
+<hr>
+
+<h2 id="stage-aggregate">10. Stage 9 — Aggregation: Harbor job stats and <code>report.py</code></h2>
+
+<p>
+  Two independent aggregations exist and they answer different questions. Harbor's is per job and
+  computed live; this repository's is cross-job and computed on demand.
+</p>
+
+<figure>
+<pre class="mermaid">
+flowchart TB
+  classDef proc fill:#f5f7f9,stroke:#5b6570,color:#123
+  classDef data fill:#ffffff,stroke:#5b6570,color:#123
+  classDef term fill:#e8f5ee,stroke:#1a7f4b,color:#123
+  classDef store fill:#eef5fb,stroke:#0b5fa5,color:#123
+
+  tr[/"jobs/JOB/TRIAL/result.json"/]:::data
+
+  subgraph HB["Harbor — per job (job.py, models/job/result.py)"]
+    direction TB
+    inc[["JobStats.increment per trial"]]:::proc
+    key[["evals key = agent__model__dataset<br/>(dataset = 'adhoc' for local task paths)"]]:::proc
+    rs[["reward_stats: value → [trial names]<br/>exception_stats: type → [trial names]"]]:::proc
+    mm[["Mean metric over the cell's rewards"]]:::proc
+    pk[["pass@k, only when every reward ∈ {0,1}<br/>1 − Π(n−c−i)/(n−i)"]]:::proc
+    tok[["Σ n_input / n_cache / n_output / cost_usd"]]:::proc
+    jr[/"jobs/JOB/result.json — stats"/]:::data
+  end
+
+  subgraph MB["This repository — cross job (scripts/report.py)"]
+    direction TB
+    glob[["find_all_trials: jobs/PATTERN/*/result.json"]]:::proc
+    parse[["parse_trial_result<br/>variant + task from generated/VARIANT/TASK"]]:::proc
+    adh[["parse_adherence<br/>startup log vs agent-authored steps"]]:::proc
+    cellagg[["group by (agent, model, variant)<br/>success rate · mean reward · avg time · Σ cost"]]:::proc
+    md[/"results/NAME_report.md — 4 tables"/]:::data
+    js[/"results/NAME_summary.json — per-trial records"/]:::data
+  end
+
+  out[("results/ — the durable artifact;<br/>jobs/ is git-ignored and reproducible")]:::store
+
+  tr --> inc --> key --> rs
+  inc --> mm
+  inc --> tok
+  rs --> pk
+  rs --> jr
+  mm --> jr
+  tok --> jr
+  pk --> jr
+  tr --> glob --> parse --> adh --> cellagg --> md
+  cellagg --> js
+  md --> out
+  js --> out
+</pre>
+<figcaption>
+  <strong>Diagram 8 — the two aggregations.</strong> Sources: <code>models/job/result.py:129</code>
+  (<code>increment</code>), <code>metrics/mean.py</code>, <code>utils/pass_at_k.py:87</code>;
+  <code>scripts/report.py:177</code> (<code>find_all_trials</code>), <code>:95</code>
+  (<code>parse_trial_result</code>), <code>:49</code> (<code>parse_adherence</code>), <code>:190</code>
+  (<code>generate_markdown_report</code>).
+</figcaption>
+</figure>
+
+<h3>Harbor's per-job statistics</h3>
+<p>
+  Written into <code>jobs/&lt;job&gt;/result.json</code> under <code>stats</code>. Trials are keyed by
+  <code>agent__model__dataset</code>; for local task paths the dataset is <code>adhoc</code>, so a
+  whole job collapses into one eval bucket such as
+  <code>claude-code__claude-sonnet-5__adhoc</code>. That bucket carries <code>n_trials</code>,
+  <code>n_errors</code>, the <code>Mean</code> metric over the rewards, a
+  <code>reward_stats</code> inverted index (reward value → trial names), <code>exception_stats</code>,
+  and — only when every reward is exactly 0 or 1 and there is more than one attempt per task —
+  <code>pass_at_k</code> using the standard unbiased estimator
+  <code>1 − Π<sub>i&lt;k</sub>(n−c−i)/(n−i)</code>. With <code>repetitions: 1</code>,
+  <code>pass_at_k</code> is empty by construction, which is exactly what the DS/ML job files show.
+</p>
+
+<h3>This repository's cross-job report</h3>
+<p>
+  <code>report.py</code> globs <code>jobs/&lt;pattern&gt;/*/result.json</code>, so one report can span a
+  single cell, one experiment, or every job on disk. The condition and task are recovered from the task
+  path (<code>generated/&lt;variant&gt;/&lt;task&gt;</code>) rather than from the job name, which keeps
+  the grouping correct even if a job was named unusually. Trials are grouped by
+  <code>(agent, model, variant)</code> and four tables are emitted: matrix summary, per-task breakdown,
+  methodology adherence for non-baseline conditions, and an exception summary.
+</p>
+
+<h3>Adherence: available versus used</h3>
+<p>
+  <code>parse_adherence</code> (<code>scripts/report.py:49</code>) deliberately reads two different
+  sources:
+</p>
+<table>
+  <thead>
+    <tr><th>Signal</th><th>Read from</th><th>Means</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>skills_available</code></td>
+      <td>the agent CLI's own top-level logs in <code>&lt;trial&gt;/agent/</code>, capped at 32 MB</td>
+      <td>which of the toolkit's skills the CLI registered at runtime</td>
+    </tr>
+    <tr>
+      <td><code>skills_invoked</code></td>
+      <td><code>agent/trajectory.json</code>, steps whose <code>source</code> is neither
+          <code>system</code> nor <code>user</code></td>
+      <td>which registered skills the agent itself referred to</td>
+    </tr>
+    <tr>
+      <td><code>skill_tool_calls</code></td>
+      <td>same steps, counting <code>"name": "Skill"</code></td>
+      <td>explicit Skill-tool invocations</td>
+    </tr>
+    <tr>
+      <td><code>config_markers_seen</code></td>
+      <td>same steps, searching for <code>CLAUDE.md</code> / <code>AGENTS.md</code></td>
+      <td>whether the agent named the project instruction files</td>
+    </tr>
+  </tbody>
+</table>
+<p>
+  Excluding <code>system</code> and <code>user</code> steps is essential: a CLI's system prompt mentions
+  <code>AGENTS.md</code> unconditionally, and counting it would register as adherence in every trial.
+  The expected skill names come from the variant's own
+  <code>.methodology-bench-manifest.json</code> (<code>environment.skills_registered</code>), so
+  adherence is measured against what the generator installed, not against a hard-coded list.
+</p>
+
+<hr>
+
+<h2 id="metrics">11. Metric reference — exact definitions</h2>
+
+<table>
+  <thead>
+    <tr><th>Metric</th><th>Definition</th><th>Computed at</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>reward</code></td>
+      <td><code>float(verifier_result.rewards["reward"])</code>, defaulting to <code>0.0</code> when
+          absent. For Terminal-Bench tasks: 1 if the task's whole test suite exits 0, else 0.</td>
+      <td><code>report.py:120</code>; produced by <code>verifier/verifier.py:227</code></td>
+    </tr>
+    <tr>
+      <td><code>success</code></td>
+      <td><code>reward &gt; 0.0</code> — a strict-positive threshold, so any partial credit counts as a
+          success.</td>
+      <td><code>report.py:124</code></td>
+    </tr>
+    <tr>
+      <td>Success Rate</td>
+      <td><code>successes / trials × 100</code> within one <code>(agent, model, variant)</code> cell.</td>
+      <td><code>report.py:213</code></td>
+    </tr>
+    <tr>
+      <td>Mean Reward</td>
+      <td>Arithmetic mean of trial rewards in the cell. Equals the success rate for binary tasks.</td>
+      <td><code>report.py:214</code></td>
+    </tr>
+    <tr>
+      <td><code>duration_sec</code></td>
+      <td><code>finished_at − started_at</code> of the <em>whole trial</em>, clamped at 0,
+          <code>None</code> if a timestamp is missing.</td>
+      <td><code>report.py:127</code></td>
+    </tr>
+    <tr>
+      <td>Avg Time (s)</td>
+      <td>Mean of the non-<code>None</code> <code>duration_sec</code> values in the cell.</td>
+      <td><code>report.py:215</code></td>
+    </tr>
+    <tr>
+      <td><code>input_tokens</code> / <code>cache_tokens</code> / <code>output_tokens</code></td>
+      <td>Copied from <code>agent_result</code>. <code>cache_tokens</code> is a subset of
+          <code>input_tokens</code>.</td>
+      <td><code>report.py:139</code></td>
+    </tr>
+    <tr>
+      <td><code>total_tokens</code></td>
+      <td><code>input + output + cache</code> — <strong>double-counts cache reads</strong> (see §12).</td>
+      <td><code>report.py:143</code></td>
+    </tr>
+    <tr>
+      <td><code>cost_usd</code> / Total Cost ($)</td>
+      <td>Per trial: the CLI's <code>total_cost_usd</code>, or a LiteLLM estimate. Per cell: the sum
+          (a total, not a mean).</td>
+      <td><code>report.py:144</code>, <code>:217</code></td>
+    </tr>
+    <tr>
+      <td><code>exception_type</code> / <code>exception_msg</code></td>
+      <td><code>exception_info.exception_type</code> / <code>…_message</code>. Present alongside a
+          reward when the agent timed out or exited non-zero.</td>
+      <td><code>report.py:147</code></td>
+    </tr>
+    <tr>
+      <td>Skills Available / Skills Used / Config Referenced</td>
+      <td>Boolean per trial, printed as <code>k/n</code> per cell. See §10 for the source of each.</td>
+      <td><code>report.py:170</code>, <code>:218</code></td>
+    </tr>
+    <tr>
+      <td><code>pass@k</code> (Harbor only)</td>
+      <td><code>1 − Π<sub>i&lt;k</sub>(n−c−i)/(n−i)</code>, averaged over tasks; emitted only for
+          binary rewards and <code>k ≤ min</code> attempts per task.</td>
+      <td><code>utils/pass_at_k.py:87</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2 id="worked">12. A measured example: the DS/ML run</h2>
+
+<p>
+  The committed run in <code>results/ds-ml_report.md</code> is 10 data-science / machine-learning tasks
+  × 2 conditions × 1 attempt = 20 trials, Claude Code on <code>claude-sonnet-5</code>,
+  <code>config/experiments.sdd-ds-ml.yaml</code>. Its headline table:
+</p>
+
+<table>
+  <thead>
+    <tr><th>Condition</th><th class="num">Trials</th><th class="num">Successes</th><th class="num">Success rate</th><th class="num">Mean reward</th><th class="num">Avg time</th><th class="num">Total cost</th><th class="num">Skills available</th><th class="num">Skills used</th><th class="num">Config referenced</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>BASELINE</strong></td><td class="num">10</td><td class="num">8</td><td class="num">80.0%</td><td class="num">0.80</td><td class="num">659.3 s</td><td class="num">$8.8538</td><td class="num">0/10</td><td class="num">0/10</td><td class="num">0/10</td></tr>
+    <tr><td><strong>SDD</strong></td><td class="num">10</td><td class="num">7</td><td class="num">70.0%</td><td class="num">0.70</td><td class="num">846.6 s</td><td class="num">$10.7135</td><td class="num">10/10</td><td class="num">2/10</td><td class="num">4/10</td></tr>
+  </tbody>
+</table>
+
+<p>Reading this correctly requires everything above:</p>
+<ul>
+  <li><strong>The 10-point gap is one task.</strong> Ten tasks at one attempt each means one flip is
+    10 percentage points; only <code>query-optimize</code> differs
+    (baseline pass, SDD fail). With <code>repetitions: 1</code> there is no standard error to report,
+    no <code>pass@k</code>, and no way to separate a methodology effect from run-to-run variance. The
+    repository's own guidance is that three or more attempts per cell is the practical minimum.</li>
+  <li><strong>"Avg time" is trial time, not agent time.</strong> Summing the recorded phases across all
+    20 trials: 15 059 s total, of which agent execution is 11 261 s (74.8%), the verifier 2 242 s
+    (14.9%), agent CLI installation 1 270 s (8.4%) and container start 40 s (0.3%). Agent CLI
+    installation is a near-constant ~60 s tax on every trial, and it inflates a short trial's apparent
+    duration far more than a long one's.</li>
+  <li><strong>Availability was proven, adherence was low.</strong> All seven SDD skills were registered
+    in all ten containers; the agent invoked them in two trials and named the instruction files in
+    four. That is a finding about the toolkit under these tasks, not a broken injection — SDD gates
+    itself to "substantial feature development", so a short data-science task skipping its skills is
+    the toolkit behaving as written.</li>
+  <li><strong>The cost figures are sums, not means.</strong> $8.85 versus $10.71 is 10 trials each; the
+    SDD condition cost about 21% more, consistent with the extra instruction and skill context in its
+    prompt.</li>
+  <li><strong>Cache dominates the token account.</strong> Across the 20 trials, input tokens total
+    30 690 559 of which 29 924 695 are cache reads (97.5%), against 366 764 output tokens. Any
+    "total tokens" figure that adds cache to input therefore overstates the true total by roughly
+    half.</li>
+</ul>
+
+<p>
+  One task was deliberately excluded from the set, and the reasoning is a good example of separating
+  the environment from the methodology: <code>caffe-cifar-10</code> asks the agent to build BVLC Caffe
+  from source and train CIFAR-10 within a 1200 s agent budget on 1 CPU and 2048 MB. Both conditions
+  failed on the environment rather than the task — the baseline exhausted the budget mid-build, and the
+  SDD cell was OOM-killed (exit 137, which Harbor mislabels as <code>ApiRateLimitError</code>) after
+  running <code>make -j$(nproc)</code>, because <code>nproc</code> reports the host's cores while
+  Docker's <code>--cpus</code> quota is only a scheduler limit. It measured the container budget, not
+  the methodology (<code>config/tasks-ds-ml.txt</code>).
+</p>
+
+<hr>
+
+<h2 id="caveats">13. Caveats and known measurement hazards</h2>
+
+<div class="stop">
+  <p><strong>1. <code>total_tokens</code> double-counts cache reads.</strong>
+  <code>report.py:143</code> computes <code>input + output + cache</code>, but
+  <code>n_input_tokens</code> already includes cache reads and cache creation — the Claude adapter sums
+  them explicitly (<code>claude_code.py:745</code>) and
+  <code>TrialResult.compute_token_cost_totals</code> documents it. The correct total is
+  <code>input_tokens + output_tokens</code>; the cache field is a breakdown, not an addend. On the
+  DS/ML run this inflates the total by about 49%. The field appears only in
+  <code>results/*_summary.json</code>, not in the markdown tables, so no published table is affected —
+  but any downstream analysis reading <code>total_tokens</code> is.</p>
+</div>
+
+<div class="warn">
+  <p><strong>2. "Avg Time" includes container start, CLI installation and verification.</strong> It is
+  a per-trial wall-clock total (§9). For latency claims, read <code>agent_execution</code> from the
+  trial's <code>result.json</code> instead. For short tasks the ~60 s CLI installation and a
+  dependency-installing verifier can together exceed the agent's own runtime.</p>
+</div>
+
+<div class="warn">
+  <p><strong>3. <code>success = reward &gt; 0.0</code> treats partial credit as a pass.</strong> Harmless
+  for the current binary Terminal-Bench tasks; wrong the moment a task writes a fractional reward or a
+  <code>reward.json</code> with named metrics. In the latter case <code>report.py</code> reads only the
+  key literally named <code>reward</code> and silently scores <code>0.0</code> for any other key set.</p>
+</div>
+
+<div class="warn">
+  <p><strong>4. A timed-out or crashed agent still produces a reward.</strong> The verifier runs anyway,
+  so such trials appear as a legitimate-looking <code>0.00</code> <em>with</em> an
+  <code>exception_type</code>. Always read the exception table, not just the reward column — a cell of
+  zeros caused by <code>ApiUsageLimitError</code> means the trials never reached the task at all.</p>
+</div>
+
+<div class="warn">
+  <p><strong>5. Cost provenance differs per agent and can silently change.</strong> Claude Code's cost
+  is normally the CLI's authoritative <code>total_cost_usd</code>; when that event is absent it becomes
+  a LiteLLM price-table estimate, marked only inside the trajectory
+  (<code>final_metrics.extra.cost_source</code>) and not surfaced in any report. Codex is estimate-first
+  in practice. Cross-agent cost comparison needs that field checked first (§8).</p>
+</div>
+
+<div class="warn">
+  <p><strong>6. Adherence detection is textual and one-sided.</strong> Claude Code loads a project
+  <code>CLAUDE.md</code> silently into its system prompt, so an empty "Config Referenced" means the
+  agent never <em>named</em> the file — not that it never received it. Availability is what preflight
+  proves. Conversely, <code>skills_invoked</code> matches skill names as substrings of trajectory JSON,
+  so a skill mentioned in passing counts as invoked; <code>skill_tool_calls</code> is the stricter
+  signal.</p>
+</div>
+
+<div class="warn">
+  <p><strong>7. Single-attempt runs carry no uncertainty estimate.</strong> With
+  <code>repetitions: 1</code>, Harbor emits no <code>pass_at_k</code> and the report has no standard
+  error. Mean reward over 10 tasks moves in 10-point steps. Use <code>--attempts 3</code> or more
+  before drawing a conclusion, and record the intended count as <code>repetitions:</code> in the
+  configuration so the design is documented.</p>
+</div>
+
+<div class="note">
+  <p><strong>8. Per-cell aggregation folds tasks together.</strong> The matrix summary averages over
+  whichever tasks the run happened to include, so two reports are only comparable if their task sets
+  are identical. The per-task table is the honest comparison surface; <code>--pattern</code> is a glob
+  over job names, which makes it easy to accidentally mix two different task sets into one summary.</p>
+</div>
+
+<div class="note">
+  <p><strong>9. Timeout scaling changes the declared budget.</strong> <code>--timeout-multiplier</code>
+  is applied uniformly, so a comparison stays internally fair, but the absolute result is no longer
+  comparable with an unscaled run. Record the value alongside the report.</p>
+</div>
+
+<div class="note">
+  <p><strong>10. <code>jobs/</code> is disposable, <code>results/</code> is the artifact.</strong> Raw
+  Harbor output — agent trajectories, session state, container logs — is git-ignored and reproducible by
+  re-running the job. Only the aggregated report and summary are durable, so anything you will want
+  later (per-test <code>ctrf.json</code> detail, per-phase timings) must be extracted before the job
+  directory is cleaned.</p>
+</div>
+
+<hr>
+
+<h2 id="artifacts">Appendix A — On-disk artifacts of one trial</h2>
+
+<pre><code>jobs/&lt;job-name&gt;/                          # one matrix cell × one task
+├── config.json                           # resolved job configuration
+├── lock.json                             # task checksum, agent + model pinning
+├── job.log
+├── result.json                           # job stats: evals, reward_stats, pass_at_k, token totals
+└── &lt;task&gt;__&lt;suffix&gt;/                     # one trial (one repetition)
+    ├── config.json  lock.json  trial.log
+    ├── result.json                       # THE measurement record: reward, phase timings,
+    │                                     # agent_result tokens + cost, exception_info
+    ├── agent/
+    │   ├── claude-code.txt               # raw stream-json; source of authoritative cost
+    │   ├── trajectory.json               # normalized ATIF trajectory; source of adherence
+    │   ├── sessions/                     # CLI session state
+    │   └── setup/                        # agent installation logs
+    ├── verifier/
+    │   ├── reward.txt                    # the reward contract: "0" or "1"
+    │   ├── ctrf.json                     # per-test detail (pass/fail, trace, duration)
+    │   └── test-stdout.txt
+    └── artifacts/
+        ├── manifest.json
+        └── logs/</code></pre>
+
+<p>
+  And on the generation side, per variant:
+  <code>generated/&lt;condition&gt;/&lt;task&gt;/.methodology-bench-manifest.json</code> records what was
+  injected and from where (source file digests, toolkit file digests, registered skills, skill-name
+  conflicts, <code>task.toml</code> patches), while
+  <code>.methodology-bench-preflight.json</code> records what the container actually contained
+  (workdir, deployed top-level entries, collisions, skills present and installable, config markers,
+  payload file count, pass/fail).
+</p>
+
+<hr>
+
+<h2 id="glossary">Appendix B — Glossary</h2>
+
+<table>
+  <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Condition / variant</strong></td><td>One experimental treatment: <code>baseline</code> (task and nothing else, always generated) or a declared toolkit payload such as <code>sdd</code>.</td></tr>
+    <tr><td><strong>Cell</strong></td><td>One <code>(agent, model, condition)</code> triple from the configured matrix, identified by its <code>id</code> and printed by <code>matrix-plan</code>.</td></tr>
+    <tr><td><strong>Job</strong></td><td>One <code>harbor run</code>: one cell applied to one task, named <code>&lt;prefix&gt;-&lt;cell_id&gt;-&lt;task&gt;</code>.</td></tr>
+    <tr><td><strong>Trial</strong></td><td>One repetition inside a job. The atomic unit of measurement: one reward, one duration, one token account, one cost.</td></tr>
+    <tr><td><strong>Attempt / repetition</strong></td><td><code>harbor -n N</code>, surfaced as <code>--attempts N</code>. Multiple trials per job.</td></tr>
+    <tr><td><strong>Payload</strong></td><td>The frozen toolkit snapshot staged into the image and deployed into the agent's working directory at build time.</td></tr>
+    <tr><td><strong>Preflight</strong></td><td>The in-container proof that a condition is what it declares. Persisted per variant; the runner's licence to execute a cell.</td></tr>
+    <tr><td><strong>Adherence</strong></td><td>Evidence from the agent's own logs and trajectory that it registered and used the methodology, as opposed to merely having it available.</td></tr>
+    <tr><td><strong>Oracle / nop</strong></td><td>Harbor's token-free reference agents: <code>oracle</code> runs <code>solution/solve.sh</code> and must score 1.0; <code>nop</code> does nothing and must score 0.0. Used to prove a task before benchmarking with it.</td></tr>
+  </tbody>
+</table>
+
+<p class="src">
+  Generated for <code>harbor-methodology-bench</code> against Harbor 0.21.0 and the DS/ML experiment
+  recorded in <code>results/ds-ml_report.md</code>. All quantitative statements were computed from the
+  trial <code>result.json</code> files present in <code>jobs/</code> at the time of writing.
+</p>
+
+<script type="module">
+  const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  try {
+    const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: dark ? 'dark' : 'neutral',
+      flowchart: { curve: 'basis', htmlLabels: true, nodeSpacing: 45, rankSpacing: 55 },
+      sequence: { actorMargin: 45, showSequenceNumbers: false },
+      gantt: { barHeight: 22, fontSize: 12 },
+      securityLevel: 'loose'
+    });
+    await mermaid.run({ querySelector: 'pre.mermaid' });
+  } catch (error) {
+    // Offline or CDN blocked: keep the diagram sources readable as plain text.
+    for (const node of document.querySelectorAll('pre.mermaid')) {
+      const hint = document.createElement('p');
+      hint.className = 'fallback';
+      hint.textContent = 'Mermaid renderer unavailable (offline). Diagram source shown as text.';
+      node.parentNode.insertBefore(hint, node);
+    }
+  }
+</script>
+
+</body>
+</html>

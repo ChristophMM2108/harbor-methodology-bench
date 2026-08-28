@@ -5,6 +5,84 @@ active development and does not yet publish versioned releases.
 
 ## Unreleased
 
+### Added — one-command setup, and pinned external sources
+
+A colleague can now go from a clone to a runnable experiment without following a
+step-by-step guide.
+
+- `./bootstrap.sh` installs uv if missing, creates the project environment,
+  installs the Harbor CLI and this repository's own `hmb` command as uv tools,
+  materialises every pinned source, and finishes with `hmb doctor`. Idempotent,
+  and it needs only `git` and `curl` to start.
+- `config/sources.yaml` declares every external input — the benchmark task suite
+  and each methodology toolkit — as a repository URL plus a full 40-character
+  commit SHA. `hmb setup` fetches them, writes `SOURCE` / `GIT_SHA` / `BRANCH` /
+  `VERSION` provenance next to the content, and skips a source that is already at
+  its pin. A source marked `optional` is reported and skipped when it cannot be
+  fetched, so a colleague without access to a private toolkit can still set up.
+  Nothing external is committed to this repository any more.
+- `hmb doctor` checks the toolchain, the Docker daemon, the agent CLIs, disk
+  space, credentials and every pinned source, and names the command that fixes
+  each problem. `--strict` fails on a warning too, for CI.
+- `hmb experiment new NAME` scaffolds `config/experiments.NAME.yaml` and
+  `config/tasks-NAME.txt`, resolving any task-selection flag into explicit ids so
+  an experiment records the task set it measured rather than a query that can
+  drift with the task-suite pin. `hmb experiment list` shows what a checkout has.
+- `hmb analysis init NAME --pattern GLOB` scaffolds an analysis notebook and
+  derives four tidy tables from raw job output: per trial, per verifier test, per
+  agent step and per tool call. `hmb analysis extract` does the tables alone.
+- `toolkits/demo-kit/` is a tiny vendored methodology, so the default
+  configuration, the scenarios example and the whole generate → validate →
+  preflight path run immediately after cloning with no external access.
+- `HMB_ROOT`, and repository-root resolution throughout, so every command means
+  the same thing from any directory.
+- `config/sources.yaml` ships no private pins. The kits used while building the
+  framework were test subjects, not defaults; the file now carries the vendored
+  `demo-kit` plus commented templates for declaring your own conditions,
+  including the two-commit A/B shape for comparing a rewritten instruction file
+  or an added skill against its predecessor.
+- `docs/experiments.md` gains scenario F (two variants of one repository) and
+  scenario G, the recipe for asking whether one skill earns its place: state the
+  claim, pick the axis that tests it plus a control, screen out tasks the bare
+  agent already passes, run with and without the skill, gate on adherence, then
+  read cost next to outcome.
+
+### Fixed — the adherence metric reported zero skill invocations
+
+`parse_adherence` counted the substring `"name": "Skill"`, but the ATIF
+trajectory names the field `function_name`. The counter could never fire, so
+every run reported zero skill invocations — a number that reads like a finding.
+It now counts `Skill` tool calls whose skill name is one the variant installed,
+and reports the loose text match separately as `Skills Named`, because an agent
+listing its own skills directory names every skill it owns. A re-run of the
+reporter over an existing 48-trial job set changed the strict counts from 0 to
+7/16 and 1/16 and left every other number identical.
+
+`parse_trial_result` also reads the variant path from `task_id.path` when
+`config.task.path` is absent, and resolves it against the repository root rather
+than the caller's working directory — the previous behaviour silently lost the
+manifest, and with it every adherence number, when the reporter ran from
+elsewhere.
+
+### Changed — `hmb` is the command surface; the documentation is a navigation bar
+
+- The thin wrapper scripts (`catalogue.sh`, `generate-variants.sh`,
+  `validate-variants.sh`, `preflight-variants.sh`, `freeze-kits.sh`,
+  `run-smoke-plan.sh`) are removed in favour of `hmb <command>`. The two
+  experiment runners remain, and now resolve the CLI themselves. `scripts/report.py`
+  stays as a shim over the packaged reporter.
+- `README.md` is a short overview plus a documentation table. The long-form
+  content moved to `docs/setup.md`, `docs/architecture.md`,
+  `docs/experiments.md`, `docs/tasks.md`, `docs/analysis.md`,
+  `docs/reference.md` and `docs/troubleshooting.md`, with tests asserting that
+  every internal link and heading anchor resolves.
+- `results/` is git-ignored: reports, summaries and analyses belong to the run
+  that produced them, on the branch that ran it.
+- Experiment-specific configurations, task sets and runbooks are no longer
+  shipped; `config/experiments.yaml` and `config/experiments.scenarios.yaml` are
+  generic examples over the vendored `demo-kit`, and `tests/test_configs.py`
+  asserts that the default configuration needs no external access.
+
 ### Changed — `jobs/` is no longer tracked
 
 Raw Harbor execution output is machine-generated and large: one directory per

@@ -1,0 +1,50 @@
+# Experiment: {{NAME}}
+#
+# Created by `hmb experiment new {{NAME}}`. Edit this file rather than
+# config/experiments.yaml, so a command line names the experiment it belongs to
+# and the default stays runnable.
+#
+# Command sequence for this experiment (also printed by `hmb experiment show
+# {{NAME}}`):
+#
+#   C=config/experiments.{{NAME}}.yaml
+#   T=config/tasks-{{NAME}}.txt
+#   hmb catalogue  --config $C --tasks-file $T          # what will run
+#   hmb generate   --config $C --tasks-file $T --force  # build the variants
+#   hmb validate   --config $C --tasks-file $T          # host-side check
+#   hmb preflight  --config $C --tasks-file $T          # in-container proof
+#   ./scripts/run-pilot-experiment.sh --config $C --tasks-file $T \
+#       --job-prefix {{NAME}} --attempts 1 --dry-run    # inspect the plan
+#   ./scripts/run-pilot-experiment.sh --config $C --tasks-file $T \
+#       --job-prefix {{NAME}} --attempts 1              # run it
+#   hmb report --pattern "{{NAME}}-*" \
+#       --md-out results/{{NAME}}_report.md \
+#       --json-out results/{{NAME}}_summary.json
+#   hmb analysis init {{NAME}} --pattern "{{NAME}}-*"   # deep analysis notebook
+
+source_root: source-tasks/terminal-bench
+generated_root: generated
+
+# Documents the intended attempt count. The runner takes the real count from
+# `--attempts`, so state both and keep them equal.
+repetitions: 1
+
+models:
+  claude-code: claude-sonnet-5
+  codex: gpt-5.6-terra
+
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+# One entry per condition. `baseline` is always generated and never declared.
+# Add a toolkit to config/sources.yaml and run `hmb setup` before naming it here.
+toolkits:
+{{TOOLKITS}}
+
+# The cells this experiment runs. Keep the agent name in the cell id: job
+# directories are named after it, so two agents can share one job prefix and one
+# report.
+matrix:
+{{MATRIX}}

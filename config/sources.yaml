@@ -1,0 +1,70 @@
+# Every external input this repository pins, in one file.
+#
+# `hmb setup` reads this and materialises each entry at its exact commit. Nothing
+# here is fetched at run time, and nothing is vendored into git: a pin plus a
+# repository URL is enough for anyone to re-derive byte-identical content, which
+# is what makes a result reproducible.
+#
+# To move to a newer upstream commit, change `ref` and re-run
+# `hmb setup --force`. Record the change with the result — the pin is part of
+# the experiment.
+
+# ---------------------------------------------------------------------------
+# Benchmark task suites. One directory per Harbor task lands under `dest`.
+# ---------------------------------------------------------------------------
+task_suites:
+  - id: terminal-bench
+    description: >-
+      Terminal-Bench 2.0 — containerised terminal tasks from the Laude
+      Institute, Stanford and Snorkel AI. 89 tasks at this pin.
+    repo: https://github.com/harbor-framework/terminal-bench-2.git
+    ref: 2fd12b88aafdd04a52c298e3940bcb189f9766d6
+    branch: main
+    dest: source-tasks/terminal-bench
+    # The upstream repository keeps its task directories at the repository root,
+    # so a directory is a task exactly when it contains a task.toml.
+    layout: task-dirs-at-root
+
+# ---------------------------------------------------------------------------
+# Methodology toolkits. Each becomes one experimental condition.
+#
+# `vendored: true`  the snapshot is committed here; nothing is fetched.
+# `optional: true`  a fetch failure is reported and skipped, not fatal. Use it
+#                   for private repositories, so a colleague without access can
+#                   still set the framework up and run the conditions they have.
+# ---------------------------------------------------------------------------
+toolkits:
+  - id: demo-kit
+    description: >-
+      A minimal methodology shipped with this repository so the whole pipeline
+      is runnable immediately after cloning, with no external access. Not a
+      serious methodology — a fixture.
+    vendored: true
+    dest: toolkits/demo-kit
+
+  # ---------------------------------------------------------------------
+  # Your own conditions go here. A "toolkit" is any repository whose agent
+  # configuration you want to measure: a team's CLAUDE.md and skills, a
+  # published agent kit, a variant of either, or the same repository at two
+  # commits. Copy the block below, point it at your repository, and run
+  # `hmb setup`.
+  #
+  # - id: my-kit
+  #   description: Our team's agent configuration as of the sprint-12 review.
+  #   repo: git@github.com:us/our-repo.git
+  #   ref: <full 40-character commit SHA>
+  #   branch: main
+  #   dest: toolkits/my-kit
+  #   optional: true          # a private repository a colleague may not read
+  #
+  # To A/B two variants of the same repository — a rewritten CLAUDE.md, a skill
+  # added, a skill removed — declare it twice with different `ref` and `dest`:
+  #
+  # - id: my-kit-before
+  #   repo: git@github.com:us/our-repo.git
+  #   ref: <sha of the commit before the change>
+  #   dest: toolkits/my-kit-before
+  # - id: my-kit-after
+  #   repo: git@github.com:us/our-repo.git
+  #   ref: <sha of the commit after the change>
+  #   dest: toolkits/my-kit-after

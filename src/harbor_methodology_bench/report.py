@@ -1,0 +1,371 @@
+"""Aggregate Harbor trial results into a comparison table and a JSON summary.
+
+One row per (agent, model, condition) cell, plus per-task, adherence and
+exception sections. `hmb analysis` goes further, back to the raw trial
+artefacts; this module is the cell-level view.
+
+Adherence is reported in two strengths, because they answer different questions
+and conflating them was a real source of error:
+
+    skills_named        a toolkit skill name appears in agent-authored text.
+                        Cheap, and prone to false positives — an agent listing
+                        its own skills directory scores on every skill it owns.
+    skill_tool_calls    the agent actually called the `Skill` tool with a skill
+                        the variant installed. This is the strict measure.
+"""
+
+from __future__ import annotations
+
+import datetime
+import json
+from pathlib import Path
+from typing import Any
+
+
+CONFIG_MARKERS = ("CLAUDE.md", "AGENTS.md")
+
+
+def registered_skills(task_path: Path) -> list[str]:
+    """Skill names the generator installed for this variant, if discoverable."""
+    manifest = task_path / ".methodology-bench-manifest.json"
+    if not manifest.is_file():
+        return []
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    return list((data.get("environment") or {}).get("skills_registered") or [])
+
+
+MAX_AGENT_LOG_BYTES = 32 * 1024 * 1024
+
+
+def _agent_log_text(agent_dir: Path) -> str:
+    """Concatenate the agent's own top-level logs, including its native stream."""
+    chunks: list[str] = []
+    budget = MAX_AGENT_LOG_BYTES
+    for path in sorted(agent_dir.glob("*")):
+        if not path.is_file() or budget <= 0:
+            continue
+        try:
+            chunks.append(path.read_text(encoding="utf-8", errors="replace")[:budget])
+        except OSError:
+            continue
+        budget -= path.stat().st_size
+    return "\n".join(chunks)
+
+
+def _agent_tool_calls(data: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
+    """(tool name, arguments) for every tool call in agent-authored steps.
+
+    The ATIF trajectory names the field `function_name`. Counting a different
+    key — as an earlier version of this file did with `"name": "Skill"` — silently
+    reports zero for every trial, which reads like a finding and is a bug.
+    """
+    calls: list[tuple[str, dict[str, Any]]] = []
+    for step in data.get("steps") or []:
+        if step.get("source") in ("system", "user"):
+            continue
+        for call in step.get("tool_calls") or []:
+            calls.append((str(call.get("function_name") or ""), call.get("arguments") or {}))
+    return calls
+
+
+def parse_adherence(trial_dir: Path, task_path: Path) -> dict[str, Any]:
+    """Separate what the agent *had* from what the agent *used*.
+
+    `skills_available` reads the agent CLI's own startup log, so it reflects the
+    skills the CLI registered at runtime. Everything else looks only at
+    agent-authored trajectory steps, because a CLI's system prompt mentions
+    `AGENTS.md` unconditionally and would otherwise register as adherence.
+
+    Note that Claude Code loads a project `CLAUDE.md` silently into its system
+    prompt. An empty `config_markers_seen` therefore means the agent never
+    referred to the file by name, not that the file was absent — presence is
+    what preflight proves.
+    """
+    agent_dir = trial_dir / "agent"
+    trajectory = agent_dir / "trajectory.json"
+    expected = registered_skills(task_path)
+    adherence: dict[str, Any] = {
+        "trajectory_found": trajectory.is_file(),
+        "config_markers_seen": [],
+        "skills_available": [],
+        "skills_named": [],
+        "skills_invoked": [],
+        "skill_tool_calls": 0,
+        "foreign_skill_calls": 0,
+    }
+    if agent_dir.is_dir() and expected:
+        logs = _agent_log_text(agent_dir)
+        adherence["skills_available"] = sorted(name for name in expected if name in logs)
+    if not trajectory.is_file():
+        return adherence
+    try:
+        data = json.loads(trajectory.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return adherence
+
+    text = "\n".join(
+        json.dumps(step)
+        for step in (data.get("steps") or [])
+        if step.get("source") not in ("system", "user")
+    )
+    adherence["config_markers_seen"] = [m for m in CONFIG_MARKERS if m in text]
+    # Loose: the name appears anywhere the agent wrote. Kept for continuity, and
+    # reported under its own column so it is never mistaken for invocation.
+    adherence["skills_named"] = sorted(name for name in expected if name in text)
+
+    invoked: list[str] = []
+    foreign = 0
+    for name, arguments in _agent_tool_calls(data):
+        if name != "Skill":
+            continue
+        skill = str(arguments.get("skill") or "")
+        if skill in expected:
+            invoked.append(skill)
+        else:
+            foreign += 1
+    adherence["skills_invoked"] = sorted(set(invoked))
+    adherence["skill_tool_calls"] = len(invoked)
+    adherence["foreign_skill_calls"] = foreign
+    return adherence
+
+
+def parse_trial_result(result_path: Path, root: Path | None = None) -> dict[str, Any] | None:
+    try:
+        data = json.loads(result_path.read_text(encoding="utf-8"))
+    except Exception as err:
+        print(f"Warning: Failed to parse {result_path}: {err}")
+        return None
+
+    config = data.get("config", {})
+    task_cfg = config.get("task", {})
+    # Harbor records the variant path twice: under `config.task` and under
+    # `task_id`. Read either, so a result written by a different Harbor version
+    # still resolves to its variant.
+    task_path_str = task_cfg.get("path") or (data.get("task_id") or {}).get("path") or ""
+    task_parts = Path(task_path_str).parts
+
+    # Derive variant and task name from generated/<variant>/<task_name>
+    if len(task_parts) >= 2:
+        variant = task_parts[-2]
+        task_name = task_parts[-1]
+    else:
+        variant = "unknown"
+        task_name = task_path_str or result_path.parent.name
+
+    agent_info = data.get("agent_info") or {}
+    agent_name = agent_info.get("name") or config.get("agent", {}).get("name") or "unknown"
+    model_info = agent_info.get("model_info") or {}
+    model_name = model_info.get("name") or config.get("agent", {}).get("model_name") or "unknown"
+
+    # Verifier reward
+    verifier_result = data.get("verifier_result") or {}
+    rewards = verifier_result.get("rewards") or {}
+    reward_val = float(rewards.get("reward", 0.0) if isinstance(rewards, dict) else 0.0)
+    success = reward_val > 0.0
+
+    # Timing
+    started_at_str = data.get("started_at")
+    finished_at_str = data.get("finished_at")
+    duration_sec: float | None = None
+    if started_at_str and finished_at_str:
+        try:
+            t0 = datetime.datetime.fromisoformat(started_at_str.replace("Z", "+00:00"))
+            t1 = datetime.datetime.fromisoformat(finished_at_str.replace("Z", "+00:00"))
+            duration_sec = max(0.0, (t1 - t0).total_seconds())
+        except Exception:
+            duration_sec = None
+
+    # Agent result metrics
+    agent_res = data.get("agent_result") or {}
+    n_input_tokens = agent_res.get("n_input_tokens") or 0
+    n_output_tokens = agent_res.get("n_output_tokens") or 0
+    n_cache_tokens = agent_res.get("n_cache_tokens") or 0
+    total_tokens = n_input_tokens + n_output_tokens + n_cache_tokens
+    cost_usd = float(agent_res.get("cost_usd") or 0.0)
+
+    # Exception
+    exception_info = data.get("exception_info") or {}
+    exception_type = exception_info.get("exception_type") if exception_info else None
+    exception_msg = exception_info.get("exception_message") if exception_info else None
+
+    task_path = Path(task_path_str)
+    if not task_path.is_absolute():
+        # `task_id.path` is recorded relative to the repository root. Resolving it
+        # against the caller's working directory would silently lose the manifest,
+        # and with it every adherence number.
+        base = root or result_path.parent.parent.parent.parent
+        task_path = base / task_path
+    adherence = parse_adherence(result_path.parent, task_path)
+
+    return {
+        "job_name": result_path.parent.parent.name,
+        "trial_name": result_path.parent.name,
+        "task_name": task_name,
+        "variant": variant,
+        "agent": agent_name,
+        "model": model_name,
+        "reward": reward_val,
+        "success": success,
+        "duration_sec": duration_sec,
+        "input_tokens": n_input_tokens,
+        "output_tokens": n_output_tokens,
+        "cache_tokens": n_cache_tokens,
+        "total_tokens": total_tokens,
+        "cost_usd": cost_usd,
+        "exception_type": exception_type,
+        "exception_msg": exception_msg,
+        "skills_available": bool(adherence["skills_available"]),
+        "referenced_project_config": bool(adherence["config_markers_seen"]),
+        "named_toolkit_skill": bool(adherence["skills_named"]),
+        "used_toolkit_skill": adherence["skill_tool_calls"] > 0,
+        "adherence": adherence,
+    }
+
+
+def find_all_trials(
+    jobs_dir: Path, pattern: str = "*", root: Path | None = None
+) -> list[dict[str, Any]]:
+    """Every trial under `jobs_dir` whose job name matches `pattern`.
+
+    `root` is the repository root that `task_id.path` in each result is relative
+    to; it defaults to the parent of `jobs_dir`, which is where Harbor writes.
+    """
+    root = root or jobs_dir.parent
+    trials: list[dict[str, Any]] = []
+    for job_path in sorted(jobs_dir.glob(pattern)):
+        if not job_path.is_dir():
+            continue
+        # Trial subdirectories: jobs/<job_name>/<trial_name>/result.json
+        for trial_res in sorted(job_path.glob("*/result.json")):
+            parsed = parse_trial_result(trial_res, root)
+            if parsed:
+                trials.append(parsed)
+    return trials
+
+
+def generate_markdown_report(trials: list[dict[str, Any]]) -> str:
+    if not trials:
+        return "# Benchmark Results Report\n\nNo trial results found."
+
+    lines: list[str] = [
+        "# Harbor Methodology Bench — Results Report",
+        f"\n**Total Trials Collected**: {len(trials)}",
+        f"**Generated At**: {datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n",
+        "## 1. Matrix Summary (By Agent & Methodology Condition)",
+        "",
+        "| Agent | Model | Condition | Trials | Successes | Success Rate | Mean Reward | Avg Time (s) | Total Cost ($) | Skills Available | Skills Named | Skills Invoked | Config Referenced |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+
+    # Aggregate by (agent, model, variant)
+    cells: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
+    for t in trials:
+        key = (t["agent"], t["model"], t["variant"])
+        cells.setdefault(key, []).append(t)
+
+    for (agent, model, variant), group in sorted(cells.items()):
+        n_trials = len(group)
+        n_success = sum(1 for x in group if x["success"])
+        success_rate = (n_success / n_trials * 100.0) if n_trials > 0 else 0.0
+        mean_reward = sum(x["reward"] for x in group) / n_trials if n_trials > 0 else 0.0
+        valid_durations = [x["duration_sec"] for x in group if x["duration_sec"] is not None]
+        avg_dur = (sum(valid_durations) / len(valid_durations)) if valid_durations else 0.0
+        total_cost = sum(x["cost_usd"] for x in group)
+        available = sum(1 for x in group if x.get("skills_available"))
+        named = sum(1 for x in group if x.get("named_toolkit_skill"))
+        used_skill = sum(1 for x in group if x.get("used_toolkit_skill"))
+        referenced = sum(1 for x in group if x.get("referenced_project_config"))
+
+        lines.append(
+            f"| `{agent}` | `{model}` | **{variant.upper()}** | {n_trials} | {n_success} | "
+            f"{success_rate:.1f}% | {mean_reward:.2f} | {avg_dur:.1f}s | ${total_cost:.4f} | "
+            f"{available}/{n_trials} | {named}/{n_trials} | {used_skill}/{n_trials} | "
+            f"{referenced}/{n_trials} |"
+        )
+
+    lines.extend([
+        "",
+        "## 2. Per-Task Breakdown",
+        "",
+        "| Task | Condition | Agent | Reward | Success | Duration | Exception |",
+        "|---|---|---|---:|:---:|---:|---|",
+    ])
+
+    for t in sorted(trials, key=lambda x: (x["task_name"], x["agent"], x["variant"])):
+        dur_str = f"{t['duration_sec']:.1f}s" if t["duration_sec"] is not None else "N/A"
+        succ_str = "✓ PASS" if t["success"] else "✗ FAIL"
+        exc_str = f"`{t['exception_type']}`" if t["exception_type"] else "-"
+        lines.append(
+            f"| `{t['task_name']}` | **{t['variant']}** | `{t['agent']}` | {t['reward']:.2f} | "
+            f"{succ_str} | {dur_str} | {exc_str} |"
+        )
+
+    methodology = [t for t in trials if t["variant"] not in ("baseline", "unknown")]
+    if methodology:
+        lines.extend([
+            "",
+            "## 3. Methodology Adherence (toolkit conditions only)",
+            "",
+            "| Task | Condition | Agent | Skills Available | Skills Named (text match) | Skills Invoked (Skill calls) | Skill Calls | Config Referenced |",
+            "|---|---|---|---:|---|---|---:|---|",
+        ])
+        for t in sorted(methodology, key=lambda x: (x["task_name"], x["agent"], x["variant"])):
+            detail = t.get("adherence") or {}
+            markers = ", ".join(detail.get("config_markers_seen") or []) or "-"
+            named = ", ".join(detail.get("skills_named") or []) or "-"
+            invoked = ", ".join(detail.get("skills_invoked") or []) or "-"
+            available = len(detail.get("skills_available") or [])
+            lines.append(
+                f"| `{t['task_name']}` | **{t['variant']}** | `{t['agent']}` | {available} | "
+                f"{named} | {invoked} | {detail.get('skill_tool_calls', 0)} | {markers} |"
+            )
+
+    # Exceptions summary if any
+    exceptions = [t for t in trials if t["exception_type"]]
+    if exceptions:
+        lines.extend([
+            "",
+            "## 4. Exceptions & Failures",
+            "",
+            "| Job | Task | Agent | Exception Type | Details |",
+            "|---|---|---|---|---|",
+        ])
+        for t in exceptions:
+            short_msg = (t["exception_msg"] or "").replace("\n", " ")[:80]
+            lines.append(
+                f"| `{t['job_name']}` | `{t['task_name']}` | `{t['agent']}` | `{t['exception_type']}` | {short_msg} |"
+            )
+
+    return "\n".join(lines)
+
+
+def write_report(
+    jobs_dir: Path,
+    pattern: str = "*",
+    md_out: Path | None = None,
+    json_out: Path | None = None,
+) -> tuple[str, list[dict[str, Any]]]:
+    """Aggregate, then optionally write the markdown and JSON forms.
+
+    Returns the markdown report and the trial records, so a caller can print or
+    post-process them without re-reading anything.
+    """
+    if not jobs_dir.is_dir():
+        raise FileNotFoundError(f"jobs directory {jobs_dir} does not exist")
+    trials = find_all_trials(jobs_dir, pattern=pattern, root=jobs_dir.parent)
+    markdown = generate_markdown_report(trials)
+    if md_out:
+        md_out.parent.mkdir(parents=True, exist_ok=True)
+        md_out.write_text(markdown, encoding="utf-8")
+    if json_out:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "total_trials": len(trials),
+            "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "trials": trials,
+        }
+        json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return markdown, trials
