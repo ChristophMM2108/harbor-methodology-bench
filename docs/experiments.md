@@ -163,6 +163,61 @@ Declare both; the matrix crosses them with your agents. Keep the agent name in
 each cell id: job directories are named after it, so two agents can share one job
 prefix and one report.
 
+### F — two variants of one repository
+
+The common case in practice: you rewrote a `CLAUDE.md`, added a skill, tightened
+a skill's trigger, or dropped one. Freeze the repository twice at the two commits
+and declare each as its own condition — see
+[setup.md § 6](setup.md#6-adding-your-own-toolkit) for the `config/sources.yaml`
+shape:
+
+```yaml
+toolkits:
+  - id: my-kit-before
+    snapshot: toolkits/my-kit-before/snapshot
+  - id: my-kit-after
+    snapshot: toolkits/my-kit-after/snapshot
+
+matrix:
+  - {id: claude-baseline, agent: claude-code, toolkit: baseline}
+  - {id: claude-before,   agent: claude-code, toolkit: my-kit-before}
+  - {id: claude-after,    agent: claude-code, toolkit: my-kit-after}
+```
+
+Keep `baseline` in the matrix even when the question is only before-versus-after.
+Without it, a change that made both variants worse than no configuration at all
+looks like a tie.
+
+To isolate a single skill inside one snapshot, use `include` / `exclude` rather
+than a second commit — `exclude: ["my-skill"]` drops that skill's directory at
+any depth, and preflight reports the resulting skill count so the subtraction is
+visible in the record.
+
+### G — one skill, does it earn its place?
+
+The question this framework exists for. The recipe:
+
+1. **Write down the skill's claim** in one sentence, in outcome terms: "it makes
+   the agent root-cause before patching", "it stops the agent declaring done
+   without running tests".
+2. **Pick the axis that tests that claim** and one control axis — see
+   [tasks.md § 2](tasks.md#2-two-orthogonal-classifications). A skill for
+   diagnosis is tested on `diagnose-first`, not on the whole suite; the control
+   is where its overhead should show up as pure cost.
+3. **Screen the tasks** so the bare agent does not already pass them
+   ([tasks.md § 1](tasks.md#1-choosing-tasks-that-can-discriminate)). This is the
+   step that decides whether the run can answer anything.
+4. **Run three conditions**: baseline, the configuration with the skill, the same
+   configuration without it. The third is what separates "the skill helped" from
+   "the repository configuration helped".
+5. **Gate on adherence before reading the outcome.** If the skill was never
+   invoked, the comparison measured its presence, not its effect — and that is
+   itself the finding, usually about the skill's trigger wording rather than its
+   content. See [analysis.md § 2](analysis.md#2-reading-adherence).
+6. **Report cost next to outcome.** A skill that changes nothing and costs 50 %
+   more is a decision; a skill that changes nothing and costs nothing is a
+   different one.
+
 ---
 
 ## 5. Running the matrix

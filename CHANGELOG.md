@@ -36,6 +36,16 @@ step-by-step guide.
   preflight path run immediately after cloning with no external access.
 - `HMB_ROOT`, and repository-root resolution throughout, so every command means
   the same thing from any directory.
+- `config/sources.yaml` ships no private pins. The kits used while building the
+  framework were test subjects, not defaults; the file now carries the vendored
+  `demo-kit` plus commented templates for declaring your own conditions,
+  including the two-commit A/B shape for comparing a rewritten instruction file
+  or an added skill against its predecessor.
+- `docs/experiments.md` gains scenario F (two variants of one repository) and
+  scenario G, the recipe for asking whether one skill earns its place: state the
+  claim, pick the axis that tests it plus a control, screen out tasks the bare
+  agent already passes, run with and without the skill, gate on adherence, then
+  read cost next to outcome.
 
 ### Fixed — the adherence metric reported zero skill invocations
 

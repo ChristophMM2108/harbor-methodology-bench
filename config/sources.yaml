@@ -42,31 +42,29 @@ toolkits:
     vendored: true
     dest: toolkits/demo-kit
 
-  # The three toolkits the original experiments used. Private repositories: fill
-  # in your own, or delete these entries.
-  - id: sdd
-    description: Spec-driven development kit; 7 skills.
-    repo: git@github.com:ChristophMM2108/sdd-agent-kit.git
-    ref: dc4b09e730f6e38a43ba85b44991bb6de890b6d9
-    branch: main
-    dest: toolkits/sdd
-    optional: true
-
-  - id: codezen
-    description: CodeZen agent kit, reprojected from a Claude Code plugin.
-    repo: git@github.com:ChristophMM2108/codezen-agent-kit.git
-    ref: cc50eba852ca516fa5e3a2334aff6873acc30226
-    branch: main
-    dest: toolkits/codezen
-    optional: true
-
-  - id: dfg
-    description: >-
-      Harness/DFG kit. Note the known confound documented in
-      docs/troubleshooting.md — its settings.json registers hooks under an
-      absolute home directory that does not exist inside a container.
-    repo: git@github.com:ChristophMM2108/harness-perf.git
-    ref: d5c0f1a720b009dd1712bec33260c5560474ca7d
-    branch: main
-    dest: toolkits/dfg
-    optional: true
+  # ---------------------------------------------------------------------
+  # Your own conditions go here. A "toolkit" is any repository whose agent
+  # configuration you want to measure: a team's CLAUDE.md and skills, a
+  # published agent kit, a variant of either, or the same repository at two
+  # commits. Copy the block below, point it at your repository, and run
+  # `hmb setup`.
+  #
+  # - id: my-kit
+  #   description: Our team's agent configuration as of the sprint-12 review.
+  #   repo: git@github.com:us/our-repo.git
+  #   ref: <full 40-character commit SHA>
+  #   branch: main
+  #   dest: toolkits/my-kit
+  #   optional: true          # a private repository a colleague may not read
+  #
+  # To A/B two variants of the same repository — a rewritten CLAUDE.md, a skill
+  # added, a skill removed — declare it twice with different `ref` and `dest`:
+  #
+  # - id: my-kit-before
+  #   repo: git@github.com:us/our-repo.git
+  #   ref: <sha of the commit before the change>
+  #   dest: toolkits/my-kit-before
+  # - id: my-kit-after
+  #   repo: git@github.com:us/our-repo.git
+  #   ref: <sha of the commit after the change>
+  #   dest: toolkits/my-kit-after

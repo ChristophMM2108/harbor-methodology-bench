@@ -1,17 +1,26 @@
 # Harbor Methodology Bench
 
-Measure what a repository's **agent configuration** actually does to a coding
-agent — not what its documentation claims.
+Does that skill actually help? Does that `CLAUDE.md` rewrite change anything but
+the token bill? This measures it, instead of arguing about it.
 
-You give it a benchmark suite (Terminal-Bench 2.0) and one or more repositories
-that carry an agent methodology: a `CLAUDE.md` or `AGENTS.md`, skills, slash
-commands, kit directories. It builds one Docker image per (task × condition),
+You give it a benchmark suite (Terminal-Bench 2.0) and one or more repository
+configurations to compare. It builds one Docker image per (task × condition),
 proves from inside each container that the condition is what you declared, runs
 coding agents against them in isolated [Harbor](https://github.com/harbor-framework/terminal-bench)
-containers, and aggregates rewards, cost, telemetry and methodology adherence.
+containers, and aggregates rewards, partial credit, cost, behavioural telemetry
+and whether the agent actually followed the configuration.
 
-The framework is toolkit-agnostic and pins everything external by commit, so a
-result is reproducible from a clone.
+**A condition is anything a repository can hand an agent**, so all of these are
+measurable the same way:
+
+- a `CLAUDE.md` or `AGENTS.md`, and any rewrite of one;
+- a skill set, a single skill, or a skill removed from a set;
+- a published agent kit, as shipped or with parts filtered out;
+- the same repository at two commits — before and after your change;
+- nothing at all, which is the built-in `baseline` control.
+
+The framework is agnostic about what it measures and pins everything external by
+commit, so a result is reproducible from a clone.
 
 ```bash
 git clone git@github.com:ChristophMM2108/harbor-methodology-bench.git
@@ -130,10 +139,14 @@ preflight sqlite-db-truncate ...
 preflight passed for 1 tasks
 ```
 
-To measure your own methodology instead, add it to
+To measure your own configuration instead, add it to
 [`config/sources.yaml`](config/sources.yaml) with its repository URL and a commit
 SHA, run `hmb setup`, and name it with `--toolkit`. See
-[docs/setup.md](docs/setup.md#6-adding-your-own-toolkit).
+[docs/setup.md](docs/setup.md#6-adding-your-own-toolkit) for the shape, and
+[docs/experiments.md](docs/experiments.md#g--one-skill-does-it-earn-its-place)
+for the recipe that answers "does this skill earn its place?" — including the two
+steps most runs skip: screening tasks the bare agent already passes, and gating on
+adherence before reading the outcome.
 
 ---
 

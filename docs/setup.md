@@ -67,7 +67,7 @@ warn  agent credentials          config/local.env exists but every value is stil
       fix: run `claude setup-token` and paste the token into config/local.env
 ok    task-suite terminal-bench  at 2fd12b88aafd
 ok    toolkit demo-kit           vendored in this repository
-warn  toolkit sdd                not fetched (optional)
+warn  toolkit my-kit             not fetched (optional)
       fix: `hmb setup`
 ```
 
@@ -128,10 +128,10 @@ toolkits:
   - id: demo-kit
     vendored: true                   # committed here; nothing is fetched
     dest: toolkits/demo-kit
-  - id: sdd
-    repo: git@github.com:you/sdd-agent-kit.git
+  - id: my-kit
+    repo: git@github.com:us/our-repo.git
     ref: dc4b09e730f6e38a43ba85b44991bb6de890b6d9
-    dest: toolkits/sdd
+    dest: toolkits/my-kit
     optional: true                   # a fetch failure is reported, not fatal
 ```
 
@@ -146,7 +146,7 @@ toolkits:
 ```bash
 hmb sources        # what is declared, and whether it is present at its pin
 hmb setup          # materialise everything missing or stale
-hmb setup --only sdd --force
+hmb setup --only my-kit --force
 hmb setup --skip-credentials
 ```
 
