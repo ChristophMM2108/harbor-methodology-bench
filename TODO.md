@@ -1,13 +1,22 @@
 # Harbor Methodology Bench — where we left off
 
-**Last updated:** 2026-08-26
-**Branch:** `feat/container-payload-layer-and-task-catalogue`
-**State:** Experiment A (the probe) has been run and reported. The decision gate in
-front of experiment B1 is now answerable. Nothing is committed yet.
+**Last updated:** 2026-08-28
+**Branch:** `experiment/codezen-vs-sdd-prog16` (renamed from
+`feat/container-payload-layer-and-task-catalogue`)
+**State:** Experiment A (the probe) and B1 (the 16-task Claude measurement) have
+both been run, reported and analysed, and everything is committed and pushed. B1
+recorded **1 attempt per cell, not 2** — `--attempts` was omitted and the runner
+defaults to 1 — so the run has no within-cell replicate.
+
+`main` now carries the portable framework (PR #3): one-command `./bootstrap.sh`,
+pinned sources in `config/sources.yaml`, the `hmb` CLI, and a documentation set
+under `docs/`. This branch is the experiment record and still runs on its own
+older copies of the scripts; merge `main` into it before running anything new
+here, or start the next experiment from a fresh branch off `main`.
 
 ---
 
-## 1. What happened today (2026-08-26)
+## 1. What happened on 2026-08-26 (the probe)
 
 ### The probe ran, and it succeeded
 
@@ -124,15 +133,11 @@ rewritten:
 
 ## 2. Next steps, in order
 
-### Step 1 — Commit the current working tree
+### Step 1 — Commit and publish the record: done
 
-Uncommitted right now: `README.md`, `config/tasks-programming.txt`,
-`config/tasks-programming-probe.txt`, `docs/experiment-codezen-vs-sdd.html`,
-`docs/experiment-programming-tasks.html`, plus untracked
-`results/probe3_report.md` and `results/probe3_summary.json`.
-
-Two commits are cleaner than one: the documentation reconciliation, then the
-probe result.
+The probe and measurement reports, the analysis notebook, its figures and tables,
+and the discussion document are committed on this branch and pushed. The
+documentation reconciliation from 2026-08-26 went in with them.
 
 ### Step 2 — Adherence question: closed
 
@@ -244,6 +249,19 @@ experiment, so this does not block anything now, but the toolkit's own entry
 point is a dead link inside the container and any DFG result would be invalid
 until it is fixed.
 
+### The two `torch-*` tasks need a GPU host, so their failures stay unexplained
+
+`torch-tensor-parallelism` failed in all three conditions and
+`torch-pipeline-parallelism` failed in two, with its `codezen-viable` verifier
+timing out and producing no reward at all. Re-running the verifier against each
+trial's final state would separate a strict or flaky verifier from a real
+failure, and it costs no model tokens — but it needs a GPU host, which this
+machine does not have. **Deferred, not dismissed:** until it is done, treat the
+all-fail row as unexplained rather than as a capability floor, and keep both
+tasks out of any success-rate headline. Their trial artefacts are on disk under
+`jobs/prog16-claude-*-torch-*`, so the check can be run later without repeating
+the agent runs.
+
 ### Earlier pilot numbers are void
 
 `results/pilot_report.md` predates the container payload layer. Harbor copies
@@ -266,6 +284,8 @@ and is valid.
 | `docs/experiment-codezen-vs-sdd.html` §2–§3 | How CodeZen was reprojected as a repository, and why it appears twice |
 | `docs/evaluation-pipeline.md` | How a trial becomes reward / duration / cost, and the hazards in each metric |
 | `tests/test_configs.py` | The invariants holding the four CodeZen configs comparable |
+| `results/analysis/prog16_discussion.md` | Section-by-section reading of the measurement, with the figures |
+| `docs/experiments.md` on `main` § G | The recipe for the next experiment: state the claim, pick the axis, screen the tasks, gate on adherence |
 
 Configs, at a glance:
 
