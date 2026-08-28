@@ -115,11 +115,11 @@ uv run hmb doctor || true
 cat <<'NEXT'
 
 Next steps
-  1. Put agent credentials in config/local.env      (claude setup-token)
-  2. Pick a task set                                hmb catalogue --suite balanced --ids-only
-  3. Create your experiment                         hmb experiment new my-run --toolkit demo-kit
-  4. Build, check and prove the variants            hmb generate|validate|preflight --config ...
-  5. Run it                                        ./scripts/run-pilot-experiment.sh --config ...
+  1. Put agent credentials in config/local.env   claude setup-token
+  2. Pick a task set                             hmb catalogue --suite balanced --ids-only
+  3. Create your experiment                      hmb experiment new my-run --toolkit demo-kit
+  4. Build and prove the variants                hmb generate | validate | preflight --config ...
+  5. Run it                                      ./scripts/run-pilot-experiment.sh --config ...
 
 Read docs/setup.md for the long form, docs/experiments.md to declare conditions.
 NEXT

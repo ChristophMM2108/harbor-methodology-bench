@@ -104,6 +104,28 @@ def check_disk(root: Path) -> Check:
     return Check("disk space", "ok", detail)
 
 
+# Keys that carry an actual credential. A flag like CODEX_FORCE_AUTH_JSON=1 is
+# configuration, not a secret, and must not make an unfilled template look ready.
+SECRET_KEY_HINTS = ("TOKEN", "KEY", "SECRET", "PASSWORD")
+PLACEHOLDER_HINTS = ("<", "paste", "your-", "changeme", "xxx")
+
+
+def _env_values(text: str) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        values[key.strip()] = value.strip().strip('"').strip("'")
+    return values
+
+
+def _is_placeholder(value: str) -> bool:
+    lowered = value.lower()
+    return not value or any(hint in lowered for hint in PLACEHOLDER_HINTS)
+
+
 def check_credentials(root: Path) -> Check:
     """Agents authenticate inside the container from this file."""
     env_file = root / "config" / "local.env"
@@ -114,31 +136,28 @@ def check_credentials(root: Path) -> Check:
             "config/local.env is absent, so no credentials are forwarded into containers",
             "`hmb setup` writes a template; fill it with `claude setup-token`",
         )
-    text = env_file.read_text(encoding="utf-8", errors="replace")
+    values = _env_values(env_file.read_text(encoding="utf-8", errors="replace"))
     filled = [
-        line.split("=", 1)[0]
-        for line in text.splitlines()
-        if "=" in line
-        and not line.lstrip().startswith("#")
-        and line.split("=", 1)[1].strip().strip('"').strip("'")
-        and "<" not in line.split("=", 1)[1]
+        key
+        for key, value in values.items()
+        if any(hint in key.upper() for hint in SECRET_KEY_HINTS) and not _is_placeholder(value)
     ]
     mode = stat.S_IMODE(env_file.stat().st_mode)
     if not filled:
         return Check(
             "agent credentials",
             "warn",
-            "config/local.env exists but every value is still a placeholder",
+            "config/local.env holds no credential value yet — every agent trial would fail to authenticate",
             "run `claude setup-token` and paste the token into config/local.env",
         )
     if mode & (stat.S_IRWXG | stat.S_IRWXO):
         return Check(
             "agent credentials",
             "warn",
-            f"config/local.env is group/world readable (mode {mode:o}) and holds {len(filled)} value(s)",
+            f"config/local.env is group/world readable (mode {mode:o}) and holds {len(filled)} credential(s)",
             "`chmod 600 config/local.env`",
         )
-    return Check("agent credentials", "ok", f"{len(filled)} value(s) set, mode {mode:o}")
+    return Check("agent credentials", "ok", f"{len(filled)} credential(s) set, mode {mode:o}")
 
 
 def check_source(source: Source) -> Check:

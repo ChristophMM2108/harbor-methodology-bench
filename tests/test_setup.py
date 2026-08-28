@@ -292,3 +292,23 @@ def test_credentials_template_is_written_once_and_kept_private(tmp_path: Path) -
     path, written = credentials_template(tmp_path)
     assert not written, "an existing credentials file must never be overwritten"
     assert path.read_text() == "CLAUDE_CODE_OAUTH_TOKEN=real\n"
+
+
+def test_credentials_check_ignores_flags(tmp_path: Path) -> None:
+    """An unfilled template must not read as ready.
+
+    `CLAUDE_FORCE_OAUTH=1` and `CODEX_FORCE_AUTH_JSON=1` are configuration, not
+    credentials; counting them made a fresh clone report `ok` while every trial
+    would have failed to authenticate.
+    """
+    (tmp_path / "config").mkdir()
+    env = tmp_path / "config" / "local.env"
+    env.write_text(
+        "CLAUDE_FORCE_OAUTH=1\n"
+        'CLAUDE_CODE_OAUTH_TOKEN="<paste-your-single-line-token-here>"\n'
+        "CODEX_FORCE_AUTH_JSON=1\n",
+        encoding="utf-8",
+    )
+    env.chmod(0o600)
+    check = check_credentials(tmp_path)
+    assert check.status == "warn" and "no credential value" in check.detail
