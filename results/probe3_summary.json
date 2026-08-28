@@ -1,0 +1,476 @@
+{
+  "total_trials": 12,
+  "generated_at": "2026-08-26T17:23:02.355547+00:00",
+  "trials": [
+    {
+      "job_name": "probe3-claude-baseline-circuit-fibsqrt",
+      "trial_name": "circuit-fibsqrt__bs6QJD3",
+      "task_name": "circuit-fibsqrt",
+      "variant": "baseline",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 815.152513,
+      "input_tokens": 775131,
+      "output_tokens": 64482,
+      "cache_tokens": 696727,
+      "total_tokens": 1536340,
+      "cost_usd": 1.0977373999999998,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": false,
+      "referenced_project_config": false,
+      "used_toolkit_skill": false,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [],
+        "skills_available": [],
+        "skills_invoked": [],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-baseline-fix-ocaml-gc",
+      "trial_name": "fix-ocaml-gc__NEpnvVu",
+      "task_name": "fix-ocaml-gc",
+      "variant": "baseline",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 2041.364214,
+      "input_tokens": 2516496,
+      "output_tokens": 16827,
+      "cache_tokens": 2446171,
+      "total_tokens": 4979494,
+      "cost_usd": 0.9386601999999998,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": false,
+      "referenced_project_config": false,
+      "used_toolkit_skill": false,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [],
+        "skills_available": [],
+        "skills_invoked": [],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-baseline-schemelike-metacircular-eval",
+      "trial_name": "schemelike-metacircular-eval__RCbJGsh",
+      "task_name": "schemelike-metacircular-eval",
+      "variant": "baseline",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 0.0,
+      "success": false,
+      "duration_sec": 2608.652379,
+      "input_tokens": 4117380,
+      "output_tokens": 189730,
+      "cache_tokens": 3957306,
+      "total_tokens": 8264416,
+      "cost_usd": 3.0889112,
+      "exception_type": "AgentTimeoutError",
+      "exception_msg": "Agent execution timed out after 2400.0 seconds",
+      "skills_available": false,
+      "referenced_project_config": false,
+      "used_toolkit_skill": false,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [],
+        "skills_available": [],
+        "skills_invoked": [],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-codezen-full-circuit-fibsqrt",
+      "trial_name": "circuit-fibsqrt__HvzKcki",
+      "task_name": "circuit-fibsqrt",
+      "variant": "codezen-full",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 721.596009,
+      "input_tokens": 791807,
+      "output_tokens": 55905,
+      "cache_tokens": 724989,
+      "total_tokens": 1572701,
+      "cost_usd": 0.9712798000000001,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": true,
+      "referenced_project_config": false,
+      "used_toolkit_skill": false,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [],
+        "skills_available": [
+          "agentic-e2e",
+          "brainstorm",
+          "code-review",
+          "fix",
+          "noc-fix",
+          "noc-tdd",
+          "security-review",
+          "setup",
+          "sut-bootstrap",
+          "tdd",
+          "to-notion"
+        ],
+        "skills_invoked": [],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-codezen-full-fix-ocaml-gc",
+      "trial_name": "fix-ocaml-gc__7539FSs",
+      "task_name": "fix-ocaml-gc",
+      "variant": "codezen-full",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 2050.591898,
+      "input_tokens": 8381230,
+      "output_tokens": 99889,
+      "cache_tokens": 8140736,
+      "total_tokens": 16621855,
+      "cost_usd": 3.433659200000001,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": true,
+      "referenced_project_config": true,
+      "used_toolkit_skill": true,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [
+          "CLAUDE.md",
+          "AGENTS.md"
+        ],
+        "skills_available": [
+          "agentic-e2e",
+          "brainstorm",
+          "code-review",
+          "fix",
+          "noc-fix",
+          "noc-tdd",
+          "security-review",
+          "setup",
+          "sut-bootstrap",
+          "tdd",
+          "to-notion"
+        ],
+        "skills_invoked": [
+          "brainstorm",
+          "code-review",
+          "fix",
+          "noc-fix",
+          "noc-tdd",
+          "security-review",
+          "setup",
+          "tdd"
+        ],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-codezen-full-schemelike-metacircular-eval",
+      "trial_name": "schemelike-metacircular-eval__XCLxJGb",
+      "task_name": "schemelike-metacircular-eval",
+      "variant": "codezen-full",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 0.0,
+      "success": false,
+      "duration_sec": 2612.686094,
+      "input_tokens": 1855848,
+      "output_tokens": 213875,
+      "cache_tokens": 1667887,
+      "total_tokens": 3737610,
+      "cost_usd": 2.9422129,
+      "exception_type": "AgentTimeoutError",
+      "exception_msg": "Agent execution timed out after 2400.0 seconds",
+      "skills_available": true,
+      "referenced_project_config": true,
+      "used_toolkit_skill": true,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [
+          "CLAUDE.md",
+          "AGENTS.md"
+        ],
+        "skills_available": [
+          "agentic-e2e",
+          "brainstorm",
+          "code-review",
+          "fix",
+          "noc-fix",
+          "noc-tdd",
+          "security-review",
+          "setup",
+          "sut-bootstrap",
+          "tdd",
+          "to-notion"
+        ],
+        "skills_invoked": [
+          "brainstorm",
+          "code-review",
+          "fix",
+          "noc-fix",
+          "noc-tdd",
+          "security-review",
+          "tdd"
+        ],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-codezen-viable-circuit-fibsqrt",
+      "trial_name": "circuit-fibsqrt__YfykctY",
+      "task_name": "circuit-fibsqrt",
+      "variant": "codezen-viable",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 1581.382996,
+      "input_tokens": 7290183,
+      "output_tokens": 124754,
+      "cache_tokens": 7137053,
+      "total_tokens": 14551990,
+      "cost_usd": 3.287258599999999,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": true,
+      "referenced_project_config": true,
+      "used_toolkit_skill": true,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [
+          "CLAUDE.md",
+          "AGENTS.md"
+        ],
+        "skills_available": [
+          "code-review",
+          "noc-fix",
+          "noc-tdd",
+          "security-review"
+        ],
+        "skills_invoked": [
+          "code-review",
+          "noc-fix",
+          "noc-tdd",
+          "security-review"
+        ],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-codezen-viable-fix-ocaml-gc",
+      "trial_name": "fix-ocaml-gc__PuHvZCp",
+      "task_name": "fix-ocaml-gc",
+      "variant": "codezen-viable",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 1823.8981,
+      "input_tokens": 2689536,
+      "output_tokens": 18914,
+      "cache_tokens": 2621677,
+      "total_tokens": 5330127,
+      "cost_usd": 0.9847634000000002,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": true,
+      "referenced_project_config": true,
+      "used_toolkit_skill": false,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [
+          "CLAUDE.md",
+          "AGENTS.md"
+        ],
+        "skills_available": [
+          "code-review",
+          "noc-fix",
+          "noc-tdd",
+          "security-review"
+        ],
+        "skills_invoked": [],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-codezen-viable-schemelike-metacircular-eval",
+      "trial_name": "schemelike-metacircular-eval__NGtoiy6",
+      "task_name": "schemelike-metacircular-eval",
+      "variant": "codezen-viable",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 1933.095046,
+      "input_tokens": 6389791,
+      "output_tokens": 139297,
+      "cache_tokens": 6196565,
+      "total_tokens": 12725653,
+      "cost_usd": 3.4050270000000005,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": true,
+      "referenced_project_config": true,
+      "used_toolkit_skill": true,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [
+          "CLAUDE.md",
+          "AGENTS.md"
+        ],
+        "skills_available": [
+          "code-review",
+          "noc-fix",
+          "noc-tdd",
+          "security-review"
+        ],
+        "skills_invoked": [
+          "code-review",
+          "noc-fix",
+          "noc-tdd",
+          "security-review"
+        ],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-sdd-circuit-fibsqrt",
+      "trial_name": "circuit-fibsqrt__QqtEChW",
+      "task_name": "circuit-fibsqrt",
+      "variant": "sdd",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 872.355672,
+      "input_tokens": 1405132,
+      "output_tokens": 70330,
+      "cache_tokens": 1324928,
+      "total_tokens": 2800390,
+      "cost_usd": 1.2890416000000002,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": true,
+      "referenced_project_config": true,
+      "used_toolkit_skill": false,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [
+          "CLAUDE.md",
+          "AGENTS.md"
+        ],
+        "skills_available": [
+          "sdd-analyze",
+          "sdd-clarify",
+          "sdd-implement",
+          "sdd-plan",
+          "sdd-specify",
+          "sdd-tasks",
+          "sdd-verify"
+        ],
+        "skills_invoked": [],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-sdd-fix-ocaml-gc",
+      "trial_name": "fix-ocaml-gc__QSK5u6K",
+      "task_name": "fix-ocaml-gc",
+      "variant": "sdd",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 2241.441138,
+      "input_tokens": 1505161,
+      "output_tokens": 12915,
+      "cache_tokens": 1447995,
+      "total_tokens": 2966071,
+      "cost_usd": 0.647317,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": true,
+      "referenced_project_config": true,
+      "used_toolkit_skill": false,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [
+          "CLAUDE.md",
+          "AGENTS.md"
+        ],
+        "skills_available": [
+          "sdd-analyze",
+          "sdd-clarify",
+          "sdd-implement",
+          "sdd-plan",
+          "sdd-specify",
+          "sdd-tasks",
+          "sdd-verify"
+        ],
+        "skills_invoked": [],
+        "skill_tool_calls": 0
+      }
+    },
+    {
+      "job_name": "probe3-claude-sdd-schemelike-metacircular-eval",
+      "trial_name": "schemelike-metacircular-eval__gHZJkfj",
+      "task_name": "schemelike-metacircular-eval",
+      "variant": "sdd",
+      "agent": "claude-code",
+      "model": "claude-sonnet-5",
+      "reward": 1.0,
+      "success": true,
+      "duration_sec": 1768.594756,
+      "input_tokens": 4423050,
+      "output_tokens": 131664,
+      "cache_tokens": 4262343,
+      "total_tokens": 8817057,
+      "cost_usd": 2.850591600000001,
+      "exception_type": null,
+      "exception_msg": null,
+      "skills_available": true,
+      "referenced_project_config": true,
+      "used_toolkit_skill": true,
+      "adherence": {
+        "trajectory_found": true,
+        "config_markers_seen": [
+          "CLAUDE.md",
+          "AGENTS.md"
+        ],
+        "skills_available": [
+          "sdd-analyze",
+          "sdd-clarify",
+          "sdd-implement",
+          "sdd-plan",
+          "sdd-specify",
+          "sdd-tasks",
+          "sdd-verify"
+        ],
+        "skills_invoked": [
+          "sdd-analyze",
+          "sdd-clarify",
+          "sdd-implement",
+          "sdd-plan",
+          "sdd-specify",
+          "sdd-tasks",
+          "sdd-verify"
+        ],
+        "skill_tool_calls": 0
+      }
+    }
+  ]
+}
