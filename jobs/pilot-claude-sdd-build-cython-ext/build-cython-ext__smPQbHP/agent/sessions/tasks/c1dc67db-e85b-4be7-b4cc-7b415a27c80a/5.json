@@ -1,8 +1,0 @@
-{
-  "id": "5",
-  "subject": "Verify README snippet runs",
-  "description": "Run the exact code snippet from README.md importing chelpers, ccomplexity, cinvariants and computing alexander_polynomial",
-  "status": "completed",
-  "blocks": [],
-  "blockedBy": []
-}

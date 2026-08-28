@@ -1,8 +1,0 @@
-{
-  "id": "5",
-  "subject": "Install pyknotid to system global Python environment",
-  "description": "pip install --no-build-isolation . or similar so it's globally importable",
-  "status": "completed",
-  "blocks": [],
-  "blockedBy": []
-}

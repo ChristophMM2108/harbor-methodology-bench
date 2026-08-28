@@ -1,8 +1,0 @@
-{
-  "id": "4",
-  "subject": "Install pyknotid to system global Python env",
-  "description": "Install the package (with compiled extensions) into /usr/local site-packages",
-  "status": "completed",
-  "blocks": [],
-  "blockedBy": []
-}

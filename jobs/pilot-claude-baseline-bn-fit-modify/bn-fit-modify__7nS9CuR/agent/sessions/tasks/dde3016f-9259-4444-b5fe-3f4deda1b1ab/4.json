@@ -1,9 +1,0 @@
-{
-  "id": "4",
-  "subject": "Sample 10k points from intervened BN and save final_bn_sample.csv",
-  "description": "Sample 10000 rows from the intervened Bayesian network and save with columns U,Y,R,D,M to /app/final_bn_sample.csv",
-  "activeForm": "Sampling from intervened BN",
-  "status": "completed",
-  "blocks": [],
-  "blockedBy": []
-}

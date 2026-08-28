@@ -1,8 +1,0 @@
-{
-  "id": "4",
-  "subject": "Fix remaining runtime errors from Cython/numpy C-API mismatch",
-  "description": "Iterate on build errors (e.g. numpy C API version macros) until chelpers, ccomplexity, cinvariants import cleanly",
-  "status": "completed",
-  "blocks": [],
-  "blockedBy": []
-}
