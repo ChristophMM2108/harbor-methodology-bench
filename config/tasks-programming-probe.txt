@@ -1,10 +1,15 @@
 # Probe set — 3 complex programming tasks
 #
-# Purpose: prove the 8-cell matrix runs end to end on hard programming work, and
-# find out whether either methodology's skills are invoked at all, before
-# committing to the 12-task run. This file is a strict subset of
+# This is experiment A, the probe. Paired with config/tasks-programming.txt,
+# which is the measurement (experiments B1 and B2). Use this file only with
+# config/experiments.codezen-probe.yaml: 4 cells, 1 attempt, 12 trials.
+#
+# Purpose: prove the pipeline runs end to end on hard programming work, and find
+# out whether either methodology's skills are invoked at all, before committing
+# to the 96-trial measurement. This file is a strict subset of
 # config/tasks-programming.txt, so a probe result carries over as evidence about
-# the same three tasks in the larger experiment.
+# the same three tasks in the larger experiment — tests/test_configs.py asserts
+# the subset relation.
 #
 # Selected for complexity *with* budget headroom. Several nominally harder
 # software-engineering tasks (gpt2-codegolf, write-compressor: 24-hour expert
@@ -18,6 +23,36 @@
 #   circuit-fibsqrt               hard   960m     60m   build from scratch against a 13 kB test surface
 #   fix-ocaml-gc                  hard  1440m     60m   root-cause, then change code the agent did not write
 #   schemelike-metacircular-eval  med    300m     40m   long-horizon build, largest test surface in the set (24 kB)
+#
+# ---------------------------------------------------------------------------
+# Experiment A — the probe. Run these, in order, with this file.
+# Full write-up, including the decision gate that follows:
+# docs/experiment-programming-tasks.html §4-§5.
+#
+#   ./scripts/catalogue.sh          --config config/experiments.codezen-probe.yaml \
+#    --tasks-file config/tasks-programming-probe.txt --ids-only
+#   ./scripts/generate-variants.sh  --config config/experiments.codezen-probe.yaml \
+#    --tasks-file config/tasks-programming-probe.txt --force
+#   ./scripts/validate-variants.sh  --config config/experiments.codezen-probe.yaml \
+#    --tasks-file config/tasks-programming-probe.txt
+#   ./scripts/preflight-variants.sh --config config/experiments.codezen-probe.yaml \
+#    --tasks-file config/tasks-programming-probe.txt
+#   ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-probe.yaml \
+#    --tasks-file config/tasks-programming-probe.txt \
+#    --job-prefix probe3 --attempts 1 --dry-run          # 12 trial invocations
+#   ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-probe.yaml \
+#    --tasks-file config/tasks-programming-probe.txt \
+#    --job-prefix probe3 --attempts 1                    # spends tokens
+#   python3 scripts/report.py --pattern "probe3-*" \
+#    --md-out results/probe3_report.md --json-out results/probe3_summary.json
+#
+# --attempts 1 is explicit on purpose. The `repetitions:` key in the config file
+# is documentary; the runner reads its count from --attempts, default 1.
+#
+# generate/validate/preflight build all four conditions whatever config is
+# passed — a variant is a property of (task, condition), not of the matrix. The
+# three variants built here are the ones the measurement reuses.
+# ---------------------------------------------------------------------------
 
 circuit-fibsqrt
 fix-ocaml-gc

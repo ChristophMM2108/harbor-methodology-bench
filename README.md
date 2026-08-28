@@ -1212,8 +1212,8 @@ harbor-methodology-bench/
 │   ├── experiments.codezen-probe.yaml   # Same conditions, Claude-only, 1 attempt
 │   ├── experiments.codezen-claude.yaml  # Claude half, 3 cells × 2 attempts
 │   ├── experiments.codezen-codex.yaml   # Codex half, run separately or not at all
-│   ├── tasks-programming.txt       # 16 complex programming tasks
-│   ├── tasks-programming-probe.txt # The 3-task probe subset
+│   ├── tasks-programming.txt       # 16 complex programming tasks + the B1/B2 commands
+│   ├── tasks-programming-probe.txt # The 3-task probe subset + the probe commands
 │   ├── benchmark.env.example       # Environment template
 │   └── local.env                   # Host credentials (git-ignored)
 ├── source-tasks/terminal-bench/    # Source benchmark tasks
@@ -1225,8 +1225,8 @@ harbor-methodology-bench/
 │   ├── evaluation-pipeline.md      # How a trial becomes reward/duration/cost (see below)
 │   ├── evaluation-pipeline.html    # Same document, standalone page
 │   ├── experiment-sdd-ds-ml.html   # Runbook for the SDD vs baseline DS/ML experiment
-│   ├── experiment-codezen-vs-sdd.html  # Runbook for CodeZen vs SDD vs baseline
-│   └── experiment-programming-tasks.html  # 3-task probe + 12-task programming run
+│   ├── experiment-codezen-vs-sdd.html  # Superseded design; still the CodeZen toolkit reference
+│   └── experiment-programming-tasks.html  # Current runbook: 3-task probe + 16-task run
 ├── results/                        # Aggregated reports, summaries, catalogue JSON
 ├── scripts/                        # Thin wrappers around the CLI, plus runners
 ├── src/harbor_methodology_bench/
@@ -1255,8 +1255,8 @@ harbor-methodology-bench/
 | [`docs/evaluation-pipeline.html`](docs/evaluation-pipeline.html) | The same document as a standalone page for offline reading or printing. |
 | [`docs/task-catalogue.md`](docs/task-catalogue.md) | Generated classification of every source task, with the axes and suites used for selection (§6). |
 | [`docs/experiment-sdd-ds-ml.html`](docs/experiment-sdd-ds-ml.html) | Runbook for the SDD-versus-baseline experiment on the data-science and machine-learning categories. |
-| [`docs/experiment-codezen-vs-sdd.html`](docs/experiment-codezen-vs-sdd.html) | Runbook for the four-condition CodeZen-versus-SDD-versus-baseline experiment on `verification-heavy`, including how a plugin-shipped methodology is reprojected as a repository so it can be measured at all. |
-| [`docs/experiment-programming-tasks.html`](docs/experiment-programming-tasks.html) | Instructions for the programming-task experiments: a 3-task probe that decides whether the 16-task measurement is worth paying for, then that measurement split into a Claude half and an optional Codex half that can be run later or skipped. Includes the task-selection rule, the decision gate, and the budget. |
+| [`docs/experiment-codezen-vs-sdd.html`](docs/experiment-codezen-vs-sdd.html) | How a plugin-shipped methodology is reprojected as a repository so it can be measured at all, and why CodeZen appears twice (§2–§3). **Its experiment design is superseded** by the programming-task runbook below — its §1, §6 and §7 describe the retired 8-cell, suite-selected, 3-attempt plan and its commands should not be run. |
+| [`docs/experiment-programming-tasks.html`](docs/experiment-programming-tasks.html) | **The current runbook.** A 3-task probe that decides whether the 16-task measurement is worth paying for, then that measurement split into a Claude half and an optional Codex half that can be run later or skipped. Includes the task-selection rule, the decision gate, and the budget. The per-experiment command sequences are mirrored as comment blocks at the foot of `config/tasks-programming-probe.txt` and `config/tasks-programming.txt`. |
 
 GitHub serves `.html` files as plain text rather than rendering them, so the standalone pages are only
 viewable in a browser after cloning — or through GitHub Pages. To publish them, open

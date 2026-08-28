@@ -1,5 +1,9 @@
 # Programming task set — 16 tasks
 #
+# This is the measurement, experiments B1 (Claude) and B2 (Codex). Run the probe
+# in config/tasks-programming-probe.txt first — it is a strict subset of this
+# file, and its report is the gate on whether spending this one is worth it.
+#
 # Every task here has [metadata].category of `software-engineering` or
 # `debugging`: the tightest reading of "programming task" the benchmark's own
 # metadata supports. file-operations and data-processing tasks are excluded even
@@ -60,6 +64,56 @@
 # is SDD's strongest claim. That is a property of the benchmark's programming
 # tasks rather than of this selection — run `--suite spec-dense` as a separate
 # experiment if the comparison needs SDD's home axis.
+#
+# ---------------------------------------------------------------------------
+# Experiment B1 — the measurement, Claude Code. 16 tasks x 3 cells x 2 attempts
+# = 96 trials, 48 Harbor invocations. Full write-up:
+# docs/experiment-programming-tasks.html §6.
+#
+#   ./scripts/catalogue.sh          --config config/experiments.codezen-claude.yaml \
+    --tasks-file config/tasks-programming.txt --ids-only
+#   ./scripts/generate-variants.sh  --config config/experiments.codezen-claude.yaml \
+#    --tasks-file config/tasks-programming.txt --force       # 64 variants
+#   ./scripts/validate-variants.sh  --config config/experiments.codezen-claude.yaml \
+#    --tasks-file config/tasks-programming.txt
+#   ./scripts/preflight-variants.sh --config config/experiments.codezen-claude.yaml \
+#    --tasks-file config/tasks-programming.txt               # builds 64 images
+#   ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-claude.yaml \
+#    --tasks-file config/tasks-programming.txt \
+#    --job-prefix prog16 --attempts 2 --dry-run              # 48 invocations
+#   ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-claude.yaml \
+#    --tasks-file config/tasks-programming.txt \
+#    --job-prefix prog16 --attempts 2                        # spends tokens
+#   python3 scripts/report.py --pattern "prog16-*" \
+#    --md-out results/prog16_report.md --json-out results/prog16_summary.json
+#
+# Experiment B2 — the same measurement, Codex. Optional, and later: every Codex
+# trial in an earlier run failed with ApiUsageLimitError before reaching the
+# task. Confirm the quota on the cheapest task first, then run the same steps
+# against the Codex config. Details: docs/experiment-programming-tasks.html §7.
+#
+#   ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-codex.yaml \
+#     --task kv-store-grpc --job-prefix quotacheck --attempts 1   # canary
+#   ./scripts/preflight-variants.sh --config config/experiments.codezen-codex.yaml \
+#     --tasks-file config/tasks-programming.txt              # no-op after B1
+#   ./scripts/run-pilot-experiment.sh --config config/experiments.codezen-codex.yaml \
+#     --tasks-file config/tasks-programming.txt \
+#     --job-prefix prog16 --attempts 2
+#
+# Both halves write under the same `prog16` prefix — cell ids carry the agent
+# name — so the one report command above spans B1 alone today and both halves
+# once B2 lands.
+#
+# --attempts 2 is not optional. `repetitions:` in the config file is
+# documentary; the runner reads its count from --attempts, whose default is 1.
+# Omit the flag and you get 48 trials instead of 96, silently. Both halves must
+# use the same count or they are not comparable; tests/test_configs.py asserts
+# the configs agree on it.
+#
+# Do not build these lines from zsh variables: zsh does not word-split unquoted
+# expansions, so `CFG="--config …"; cmd $CFG` arrives as one argument and the
+# CLI rejects it with `No such option`. Use ${=CFG}, or bash.
+# ---------------------------------------------------------------------------
 
 circuit-fibsqrt
 fix-ocaml-gc

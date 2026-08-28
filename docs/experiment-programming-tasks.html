@@ -112,7 +112,7 @@ spend model tokens.</p>
     <tr><td>Trials</td><td class="num"><strong>12</strong></td><td class="num"><strong>96</strong> (48 invocations × <code>-n 2</code>)</td><td class="num"><strong>96</strong></td></tr>
     <tr><td>Job prefix</td><td><code>probe3</code></td><td><code>prog16</code></td><td><code>prog16</code> — the same</td></tr>
     <tr><td>Answers</td><td>Do either toolkit's skills fire <em>at all</em> on a bare Harbor prompt?</td><td>Do the methodologies change measured performance, and do they differ?</td><td>Does any of that hold for a second CLI?</td></tr>
-    <tr><td>Reportable?</td><td>No — 1 attempt, 3 tasks. One flaky trial moves a rate by 33 points.</td><td>Yes — 3 attempts gives a mean with a standard error.</td><td>Yes, and it turns B1's single-CLI result into a cross-CLI one.</td></tr>
+    <tr><td>Reportable?</td><td>No — 1 attempt, 3 tasks. One flaky trial moves a rate by 33 points.</td><td>Yes — but paired across the 16 tasks, not as a per-cell standard error over 2 attempts.</td><td>Yes, and it turns B1's single-CLI result into a cross-CLI one.</td></tr>
   </tbody>
 </table>
 </div>
@@ -185,9 +185,19 @@ an injected divergence, not merely to pass today.
 </div>
 
 <p>The four conditions are <code>baseline</code>, <code>sdd</code>, <code>codezen-full</code> and
-<code>codezen-viable</code>. See <a href="experiment-codezen-vs-sdd.html">the CodeZen runbook</a> for
+<code>codezen-viable</code>. See <a href="experiment-codezen-vs-sdd.html">the CodeZen page</a> §2–§3 for
 why CodeZen appears twice, what the pair isolates, and how a plugin-shipped methodology was
-reprojected as a repository so it could be measured at all.</p>
+reprojected as a repository so it could be measured at all. That page's own experiment design —
+8 cells, suite-selected tasks, 3 attempts — is superseded by this one; only its §2, §3, §5 and §8
+still apply.</p>
+
+<div class="note">
+<strong>The command sequences below are mirrored where the tasks are.</strong> Each task file carries
+the exact block for its own experiment as a trailing comment —
+<code>config/tasks-programming-probe.txt</code> for A, <code>config/tasks-programming.txt</code> for
+B1 and B2 — so opening a task file tells you which config and which flags it belongs with, without
+coming back here.
+</div>
 
 <h2>2. Why these tasks</h2>
 

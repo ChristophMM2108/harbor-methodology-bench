@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Experiment runbook — CodeZen vs SDD vs baseline on verification-heavy</title>
+<title>Superseded runbook — CodeZen vs SDD vs baseline on verification-heavy</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -92,13 +92,44 @@
 </head>
 <body>
 
-<h1>Experiment runbook: CodeZen vs SDD vs clean baseline</h1>
+<h1>Experiment runbook: CodeZen vs SDD vs clean baseline <span class="muted">(superseded)</span></h1>
 <p class="lede">Two repository-carried engineering methods, measured against each other and against
 no methodology at all, on the one task axis both of them claim — with a control axis to price their
-overhead. 4 conditions × 2 agents = 8 cells. Every command below was executed against this
-repository except the ones that build all images or spend model tokens, which are marked as such.</p>
+overhead. 4 conditions × 2 agents = 8 cells.</p>
 
-<h2>1. What this experiment is</h2>
+<div class="stop">
+<strong>Superseded as a runbook. Do not run the commands below.</strong>
+
+<p>The experiment of record is now <a href="experiment-programming-tasks.html">Programming-task
+experiments: probe, then measure</a>. It carries the same four conditions and the same two agents, but
+a different design, and it is the one kept in step with the configuration files:</p>
+
+<div class="wrap">
+<table>
+  <thead><tr><th></th><th>This page</th><th>The current design</th></tr></thead>
+  <tbody>
+    <tr><td>Task selection</td><td><code>--suite verification-heavy</code> / <code>--suite quick</code>, 33 tasks</td><td>An explicit set — <code>config/tasks-programming.txt</code>, 16 tasks, plus a 3-task probe subset</td></tr>
+    <tr><td>Configuration</td><td><code>experiments.codezen.yaml</code>, 8 cells, <code>repetitions: 3</code></td><td><code>experiments.codezen-probe.yaml</code>, then <code>experiments.codezen-claude.yaml</code> and <code>experiments.codezen-codex.yaml</code> — 3 measurement cells each, 2 attempts</td></tr>
+    <tr><td>Codex</td><td>Four cells in the one matrix</td><td>A separate, optional run, so a Claude-only result is complete on its own</td></tr>
+    <tr><td>Trials</td><td class="num">792</td><td class="num">12 probe + 96 per agent half</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><code>config/experiments.codezen.yaml</code> still exists and still declares the 8-cell matrix this
+page describes, so nothing here is broken — it is simply no longer the plan. The commands to run are
+in <a href="experiment-programming-tasks.html">the current runbook</a>, and repeated as comment blocks
+at the foot of the two task files themselves: <code>config/tasks-programming-probe.txt</code> for the
+probe, <code>config/tasks-programming.txt</code> for the measurement.</p>
+
+<p><strong>Still current, and not repeated anywhere else:</strong> §2, how the CodeZen plugin was
+reprojected into a repository-shaped toolkit and what that costs in fidelity, and §3, why CodeZen
+appears twice and what the <code>codezen-full</code>/<code>codezen-viable</code> pair isolates. §5
+(rebuilding the kit) and §8 (reading the result honestly) also still hold. §1, §6 and §7 describe the
+retired design.</p>
+</div>
+
+<h2>1. What this experiment is <span class="muted">(retired design)</span></h2>
 
 <dl class="kv">
   <dt>Question</dt><dd>Does a repository's agent configuration change measured performance — and do two methods making <em>different</em> claims separate from each other?</dd>
@@ -253,7 +284,7 @@ front of the agent, and the numbers are the design, not an accident:
 harbor --version
 claude --version
 codex --version
-uv run pytest                                                  # 31 passed
+uv run pytest                                                  # 38 passed
 ./scripts/freeze-kits.sh --config config/experiments.codezen.yaml</code></pre>
 
 <p>That last command is the one that matters here — it proves all three snapshots and their metadata
@@ -295,7 +326,16 @@ git -C "$REPO" archive HEAD | tar -x -C toolkits/codezen/snapshot
 <p>The sync script fails loudly if any unresolvable <code>${CLAUDE_PLUGIN_ROOT}/standards</code>
 reference survives, so a silent regression back to the broken-path state is not possible.</p>
 
-<h2>6. The commands, in order</h2>
+<h2>6. The commands, in order <span class="muted">(retired design)</span></h2>
+
+<div class="stop">
+<strong>These are not the commands to run.</strong> They drive the 8-cell suite-selected design this
+page retired. The current, spelled-out command sequences — one per experiment, with the config and
+task file written out on every line — are in <a href="experiment-programming-tasks.html">the current
+runbook</a> §4 (probe), §6 (Claude measurement) and §7 (Codex), and as comment blocks at the foot of
+<code>config/tasks-programming-probe.txt</code> and <code>config/tasks-programming.txt</code>.
+The section below is kept only as a record of what was executed against this repository.
+</div>
 
 <p>Every command takes the same selection flags, so one task group flows through the whole pipeline
 unchanged. <code>$C</code> and <code>$SET</code> below keep it to one place:</p>
@@ -370,7 +410,10 @@ OK-hook-script</code></pre>
   --md-out results/codezen_report.md \
   --json-out results/codezen_summary.json</code></pre>
 
-<h2>7. Budget — read this before starting</h2>
+<h2>7. Budget — read this before starting <span class="muted">(retired design)</span></h2>
+
+<p class="muted">Costs the 792-trial matrix, not the 108-trial Claude-only path now planned. See
+<a href="experiment-programming-tasks.html">the current runbook</a> §8 for the live figures.</p>
 
 <p>33 tasks × 8 cells × 3 attempts = <strong>792 trials</strong>. At the repository's own measured
 figure of roughly 200–800 s and $0.40–$1.30 per trial, that is <strong>$320–$1,030</strong> and,
