@@ -1,7 +1,6 @@
 # prog16 — discussion of results
 
-A section-by-section reading of [`prog16_analysis.ipynb`](prog16_analysis.ipynb): what each
-figure shows, what it supports, and what it cannot. Figures are the ones the notebook
+A section-by-section reading of [`prog16_analysis.ipynb`](prog16_analysis.ipynb). Figures are the ones the notebook
 generates into [`figures/`](figures); every number quoted here comes from the executed
 notebook or the tables in [`data/`](data).
 
