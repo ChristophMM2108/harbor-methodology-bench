@@ -1,0 +1,15 @@
+metric,vs,n_pairs,median delta,mean delta,ratio of totals,wilcoxon p
+partial_credit,SDD,16,0.0,-0.0521,0.9419,0.593
+partial_credit,CodeZen (viable),15,0.0,0.0,1.0,1.0
+cost_usd,SDD,16,0.0006,0.3133,1.2515,0.9799
+cost_usd,CodeZen (viable),16,0.1614,0.6678,1.5361,0.1439
+agent_sec,SDD,16,-50.0077,53.2589,1.0665,0.5282
+agent_sec,CodeZen (viable),16,109.6342,193.0427,1.241,0.1754
+output_tokens,SDD,16,-2574.5,7361.0625,1.1439,0.4037
+output_tokens,CodeZen (viable),16,3211.5,30692.8125,1.6001,0.2979
+n_steps,SDD,16,1.5,6.125,1.2207,0.3254
+n_steps,CodeZen (viable),16,4.5,15.625,1.5631,0.0228
+n_tool_calls,SDD,16,1.5,5.4375,1.1895,0.4371
+n_tool_calls,CodeZen (viable),16,5.0,17.5625,1.6122,0.0197
+budget_used,SDD,16,-0.0359,-0.0192,0.956,0.3225
+budget_used,CodeZen (viable),16,0.0986,0.1269,1.2906,0.1046

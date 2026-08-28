@@ -1,0 +1,4 @@
+condition,trials,successes,success_rate,partial_credit,cost_usd,cost_per_trial,agent_sec,budget_used,output_tokens,steps,tool_calls,agent_timeouts,skill_calls,cost_per_success
+baseline,16,13,0.8125,0.8958,19.9296,1.2456,801.0202,0.4366,51142.75,27.75,28.6875,0,0,1.533
+sdd,16,12,0.75,0.8438,24.9426,1.5589,854.2791,0.4174,58503.8125,33.875,34.125,1,6,2.0786
+codezen-viable,16,13,0.8125,0.9111,30.6147,1.9134,994.0629,0.5635,81835.5625,43.375,46.25,4,9,2.355

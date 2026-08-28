@@ -1,0 +1,17 @@
+task,baseline,sdd,codezen-viable
+build-cython-ext,1,1,1
+build-pmars,1,1,1
+circuit-fibsqrt,1,1,1
+custom-memory-heap-crash,1,1,1
+kv-store-grpc,1,1,1
+fix-ocaml-gc,1,1,1
+path-tracing-reverse,1,1,1
+path-tracing,1,1,1
+regex-chess,1,1,1
+sqlite-db-truncate,1,1,1
+make-mips-interpreter,1,1,0
+cancel-async-tasks,1,0,1
+schemelike-metacircular-eval,1,0,1
+polyglot-rust-c,0,0,1
+torch-pipeline-parallelism,0,1,0
+torch-tensor-parallelism,0,0,0

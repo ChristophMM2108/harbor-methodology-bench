@@ -23,6 +23,16 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
 ]
+# Result analysis: results/analysis/prog16_analysis.ipynb and its extraction module.
+# Not needed to build, validate or run an experiment.
+analysis = [
+    "pandas>=2.2",
+    "matplotlib>=3.9",
+    "scipy>=1.14",
+    "jupyterlab>=4.2",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
