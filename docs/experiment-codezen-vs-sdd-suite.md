@@ -75,41 +75,118 @@ the cell. Keep them apart: `screen-*` for the screen, `suite-*` for the run.
 
 ## 4. Running it
 
+Every command is safe to re-run. Nothing below re-pays for a trial that already
+finished.
+
 ```bash
 C=config/experiments.codezen-vs-sdd.yaml
 CAND=config/tasks-suite-candidates.txt
 SET=config/tasks-suite.txt
+```
 
-# 1. Build and prove every variant. Also what makes the run's builds cache hits.
+### Step 0 — build and prove every variant (no tokens)
+
+```bash
+hmb doctor
 hmb generate  --config $C --tasks-file $CAND --force
 hmb validate  --config $C --tasks-file $CAND
 hmb preflight --config $C --tasks-file $CAND --jobs 4
+```
 
-# 2. Screen. The first stage spends no tokens; the second spends one baseline
-#    trial per task. Inspect the plan first with --dry-run.
+The gate is not optional: it is also what turns the run's own image builds into
+cache hits, and `docker build` is the one part of a trial that runs on the
+daemon outside any container's cpu allowance.
+
+### Step 1 — screen for solvability (no tokens)
+
+```bash
 hmb screen --config $C --tasks-file $CAND --stage solvability --job-prefix screen
-hmb screen --config $C --tasks-file $CAND --stage baseline    --job-prefix screen \
-    --out $SET
+```
 
-# 3. The measurement.
+`oracle` must score 1.0 and `nop` must score 0.0. Anything else is a broken task
+or a self-passing one, and neither can measure a methodology.
+
+### Step 2 — screen for the ceiling (~$100)
+
+```bash
+hmb screen --config $C --tasks-file $CAND --stage baseline --job-prefix screen --out $SET
+```
+
+One bare-agent trial per task. Tasks it already passes cannot discriminate and
+are dropped. `$SET` is written with every rejected task kept as a commented line
+and its reason.
+
+Re-run the same command after an interruption; it reports the jobs that already
+exist and points at `hmb resume` for the one that did not finish.
+
+### Step 3 — the measurement (~$9.4 per surviving task)
+
+```bash
 ./scripts/run-pilot-experiment.sh --config $C --tasks-file $SET \
-    --job-prefix suite --attempts 2 --dry-run
+    --job-prefix suite --attempts 2 --dry-run     # inspect the plan, spends nothing
+
 ./scripts/run-pilot-experiment.sh --config $C --tasks-file $SET \
     --job-prefix suite --attempts 2
+```
 
-# 4. Results.
+One job, `jobs/suite-claude-code`, holding every condition and task, up to 9
+trials at a time. Progress goes to `jobs/suite-claude-code.log`.
+
+### Step 4 — stopping, and continuing tomorrow
+
+Press **Ctrl+C** in the terminal running the script. Harbor records the trials
+that were in flight as `CancelledError` and stops; trials that already finished
+keep their results. If the run was started in the background, `kill -TERM <pid>`
+does the same thing — Harbor traps it identically. Then check nothing was left
+behind:
+
+```bash
+docker ps                     # expect none of the task containers
+docker ps -q | xargs -r docker rm -f     # only if some survived
+```
+
+**Re-running the script does not continue the job.** It sees an unfinished job
+directory, refuses to touch it, and names the command that continues it — a bare
+re-run would discard trials you have already paid for. Continue with:
+
+```bash
+hmb resume jobs/suite-claude-code
+```
+
+That classifies every trial first, prints the breakdown, and then re-runs only
+the cancelled and infrastructure failures plus the trials that never started.
+Finished trials are never re-paid.
+
+| Situation | Command |
+|---|---|
+| Interrupted, or an infrastructure failure | `hmb resume jobs/suite-claude-code` |
+| The account's quota ran out mid-run, and you have topped it up | `hmb resume jobs/suite-claude-code --recharged` |
+| See what would happen without running anything | `hmb resume jobs/suite-claude-code --dry-run` |
+| The screen's baseline stage was interrupted | `hmb resume jobs/screen-baseline`, then re-run the Step 2 command to write `$SET` |
+| Start the whole job again, discarding paid trials | `./scripts/run-pilot-experiment.sh ... --force` |
+
+Two things a resume cannot do. It cannot change concurrency — Harbor refuses to
+resume a job whose stored config differs, so `--concurrent` is fixed for the
+job's life. And it will not re-run a trial that failed for a reason that is
+itself a finding: `OutputTokenExceededError` and timeouts stay in the results.
+
+Check where a partially finished run stands at any time:
+
+```bash
+hmb resume jobs/suite-claude-code --dry-run     # per-exception breakdown
+hmb report --pattern "suite-*"                  # the results so far
+```
+
+### Step 5 — results
+
+```bash
 hmb report --pattern "suite-*" --md-out results/suite_report.md \
     --json-out results/suite_summary.json
 hmb analysis init suite --pattern "suite-*"
 ```
 
-A trial that dies of a rate limit must never be left as a 0.0 result: resume the
-job instead, which classifies the failures first.
-
-```bash
-hmb resume jobs/suite-claude-code              # infrastructure failures
-hmb resume jobs/suite-claude-code --recharged  # after topping the account up
-```
+Keep the pattern as `suite-*`: it must not match the `screen-*` jobs, whose
+baseline stage would otherwise be folded in as extra baseline trials.
 
 ## 5. What it costs
 
