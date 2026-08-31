@@ -5,6 +5,37 @@ active development and does not yet publish versioned releases.
 
 ## Unreleased
 
+### Added — task screening, and the metrics prog16 asked for
+
+Groundwork for the suite-wide CodeZen vs SDD run on this branch. See
+[docs/experiment-codezen-vs-sdd-suite.md](docs/experiment-codezen-vs-sdd-suite.md).
+
+- `hmb screen` decides which tasks can discriminate before a matrix spends on
+  them. `oracle` must score 1.0 and `nop` must score 0.0 — both token-free —
+  and then one bare-agent trial per task drops the tasks it already passes. In
+  the prog16 run 10 of 16 tasks were passed by every condition and consumed 60 %
+  of the budget; this turns that into an inclusion criterion. The surviving set
+  is written as a task file that keeps every rejected task as a commented line
+  with its reason.
+- `hmb report` reports partial credit and pooled test-level pass rate beside the
+  binary reward, from the verifier's own per-test results, which were already on
+  disk. A trial that passes 11 of 12 tests and one that passes none are no longer
+  the same number.
+- `hmb report` counts a trial that hit its wall-clock budget as **censored**
+  rather than failed, and excludes it from the success denominator. Two of five
+  informative outcomes in prog16 were clock, not capability.
+- `hmb analysis extract` adds `time_to_first_passing_test_sec`,
+  `steps_to_first_passing_test`, `n_test_runs` and `n_passing_test_runs` — a
+  speed metric that survives a ceiling, read from each test command's exit status
+  rather than from its output text — and the compliance flags
+  `config_read_before_code`, `skill_before_code`, `doc_written_before_code`,
+  `test_run_before_code` with their `compliance_score`, which measure whether the
+  method was followed rather than merely available.
+- `config/experiments.codezen-vs-sdd.yaml` and
+  `config/tasks-suite-candidates.txt` declare the run: the same two toolkits at
+  the same pins as prog16, over the whole suite minus the tasks no agent could
+  finish inside their budget.
+
 ### Added — parallel experiment execution
 
 A matrix run no longer executes one trial at a time.

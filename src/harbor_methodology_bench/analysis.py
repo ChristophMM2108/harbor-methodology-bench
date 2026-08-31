@@ -91,11 +91,52 @@ ERROR_MARKERS = (
     "Permission denied",
 )
 EDIT_TOOLS = ("Edit", "Write", "NotebookEdit")
+
+# A file the agent wrote as process output rather than as the solution: a plan,
+# a specification, a set of notes. Both toolkits under comparison ask for one
+# before code is touched, so writing one is evidence the method was followed and
+# not merely available.
+DOC_SUFFIXES = (".md", ".markdown", ".rst", ".txt", ".adoc")
+
+# The shell reports a nonzero exit status on the first line of a tool result,
+# and omits the line entirely when the command succeeded.
+EXIT_CODE_RE = re.compile(r"^Exit code (\d+)")
+TOOL_FAILURE_MARKER = "[error] tool reported failure"
 TEST_FILE_RE = re.compile(r"(^|/)(test_[\w-]+|[\w-]+_test)\.(py|rs|c|ml|js|ts|go)$|(^|/)tests?/")
 
 _TEST_RE = [re.compile(p) for p in TEST_PATTERNS]
 _BUILD_RE = [re.compile(p) for p in BUILD_PATTERNS]
 _INSPECT_RE = [re.compile(p) for p in INSPECT_PATTERNS]
+
+
+def _call_results(step: dict[str, Any]) -> dict[str, bool]:
+    """`tool_call_id -> whether the call failed`, from one step's observation.
+
+    Failure is read from the exit status the harness records, not from the text:
+    a test runner exits nonzero when a test fails, which is the only signal here
+    that does not depend on guessing a framework's output format.
+    """
+    observation = step.get("observation")
+    if not isinstance(observation, dict):
+        return {}
+    failed: dict[str, bool] = {}
+    for entry in observation.get("results") or []:
+        call_id = entry.get("source_call_id")
+        if not call_id:
+            continue
+        content = str(entry.get("content") or "")
+        metadata = (entry.get("extra") or {}).get("tool_result_metadata") or {}
+        match = EXIT_CODE_RE.match(content)
+        failed[call_id] = bool(
+            metadata.get("tool_result_is_error")
+            or TOOL_FAILURE_MARKER in content
+            or (match and match.group(1) != "0")
+        )
+    return failed
+
+
+def _is_doc(path: str) -> bool:
+    return path.lower().endswith(DOC_SUFFIXES)
 
 
 def _any(patterns: Iterable[re.Pattern[str]], text: str) -> bool:
@@ -160,7 +201,8 @@ def _condition_from_task_path(result: dict[str, Any]) -> str:
     return parts[1] if len(parts) >= 2 else "unknown"
 
 
-def _read_ctrf(trial_dir: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+def read_ctrf(trial_dir: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """The verifier's own test summary and per-test rows, when it wrote them."""
     ctrf = trial_dir / "verifier" / "ctrf.json"
     if not ctrf.is_file():
         return {}, []
@@ -221,7 +263,7 @@ def extract_trial(result_path: Path, catalogue: dict[str, dict[str, Any]], root:
     reward = rewards.get("reward")
     exception_info = result.get("exception_info") or {}
 
-    summary, tests = _read_ctrf(trial_dir)
+    summary, tests = read_ctrf(trial_dir)
     tests_total = summary.get("tests")
     tests_passed = summary.get("passed")
 
@@ -353,6 +395,20 @@ def _trajectory_features(trial_dir: Path) -> dict[str, Any]:
         "wrote_test_file": False,
         "time_to_first_edit_sec": None,
         "explore_share": None,
+        # Speed that survives a ceiling: when the work first demonstrably worked,
+        # rather than whether it did by the end.
+        "n_test_runs": 0,
+        "n_passing_test_runs": 0,
+        "time_to_first_test_sec": None,
+        "time_to_first_passing_test_sec": None,
+        "steps_to_first_passing_test": None,
+        # Was the method followed, or merely available? Each flag is about order:
+        # what the agent did before it first touched code.
+        "config_read_before_code": False,
+        "skill_before_code": False,
+        "doc_written_before_code": False,
+        "test_run_before_code": False,
+        "compliance_score": None,
         "error_observations": 0,
         "error_rate": None,
         "config_markers": "",
@@ -387,6 +443,14 @@ def _trajectory_features(trial_dir: Path) -> dict[str, Any]:
 
     first_edit_ts: datetime | None = None
     steps_before_first_edit: int | None = None
+    first_code_edit_index: int | None = None
+    first_test_ts: datetime | None = None
+    first_pass_ts: datetime | None = None
+    steps_to_first_pass: int | None = None
+    first_config_read_index: int | None = None
+    first_skill_index: int | None = None
+    first_doc_write_index: int | None = None
+    first_test_index: int | None = None
 
     for index, step in enumerate(agent_steps):
         metrics = step.get("metrics") or {}
@@ -401,6 +465,7 @@ def _trajectory_features(trial_dir: Path) -> dict[str, Any]:
                 config_seen.add(marker)
 
         ts = _ts(step.get("timestamp"))
+        failed_calls = _call_results(step)
         for call in step.get("tool_calls") or []:
             name = call.get("function_name") or ""
             args = call.get("arguments") or {}
@@ -411,11 +476,31 @@ def _trajectory_features(trial_dir: Path) -> dict[str, Any]:
                     files.add(path)
                     if TEST_FILE_RE.search(path):
                         out["wrote_test_file"] = True
+                    if _is_doc(path):
+                        if first_doc_write_index is None:
+                            first_doc_write_index = index
+                    elif first_code_edit_index is None:
+                        first_code_edit_index = index
+                elif first_code_edit_index is None:
+                    first_code_edit_index = index
                 if first_edit_ts is None:
                     first_edit_ts = ts
                     steps_before_first_edit = index
             if name == "Skill":
                 skills.append(str(args.get("skill") or ""))
+                if first_skill_index is None:
+                    first_skill_index = index
+            if name == "Bash" and classify_bash(str(args.get("command") or "")) == "test":
+                out["n_test_runs"] += 1
+                if first_test_index is None:
+                    first_test_index = index
+                if first_test_ts is None:
+                    first_test_ts = ts
+                if not failed_calls.get(str(call.get("tool_call_id") or ""), False):
+                    out["n_passing_test_runs"] += 1
+                    if first_pass_ts is None:
+                        first_pass_ts = ts
+                        steps_to_first_pass = index
             arg_text = json.dumps(args)
             for marker in CONFIG_MARKERS:
                 if marker in arg_text:
@@ -424,6 +509,8 @@ def _trajectory_features(trial_dir: Path) -> dict[str, Any]:
                     # the agent actually opening it, not merely mentioning it.
                     if name == "Read" or (name == "Bash" and marker in str(args.get("command") or "")):
                         out["n_config_reads"] += 1
+                        if first_config_read_index is None:
+                            first_config_read_index = index
 
         observation = step.get("observation")
         if observation:
@@ -465,6 +552,26 @@ def _trajectory_features(trial_dir: Path) -> dict[str, Any]:
         out["time_to_first_edit_sec"] = (first_edit_ts - first_ts).total_seconds()
     if steps_before_first_edit is not None and agent_steps:
         out["explore_share"] = steps_before_first_edit / len(agent_steps)
+    if first_test_ts and first_ts:
+        out["time_to_first_test_sec"] = (first_test_ts - first_ts).total_seconds()
+    if first_pass_ts and first_ts:
+        out["time_to_first_passing_test_sec"] = (first_pass_ts - first_ts).total_seconds()
+    out["steps_to_first_passing_test"] = steps_to_first_pass
+
+    # Compliance is about order, so it is only defined once code was touched:
+    # a trial that never edited anything cannot have done these things "first".
+    code_at = first_code_edit_index if first_code_edit_index is not None else len(agent_steps)
+    flags = {
+        "config_read_before_code": first_config_read_index is not None
+        and first_config_read_index < code_at,
+        "skill_before_code": first_skill_index is not None and first_skill_index < code_at,
+        "doc_written_before_code": first_doc_write_index is not None
+        and first_doc_write_index < code_at,
+        "test_run_before_code": first_test_index is not None and first_test_index < code_at,
+    }
+    out.update(flags)
+    if first_code_edit_index is not None:
+        out["compliance_score"] = sum(flags.values()) / len(flags)
 
     return out
 

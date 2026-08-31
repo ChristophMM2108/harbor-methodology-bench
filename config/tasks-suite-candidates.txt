@@ -1,0 +1,105 @@
+# Candidate task set — every terminal-bench task that could discriminate
+#
+# This is the input to `hmb screen`, not the measured set. It is the whole
+# suite (89 tasks at pin 2fd12b88) minus the 6 tasks whose own expert
+# estimate is 32x their agent budget or more. Those cannot be solved inside the
+# budget by anything, so every condition floors at 0 and the trial buys nothing:
+#
+#   gpt2-codegolf                     2400m expert vs  15m budget  (160x)
+#   write-compressor                  1440m expert vs  15m budget  (96x)
+#   sparql-university                  800m expert vs  15m budget  (53x)
+#   feal-linear-cryptanalysis          960m expert vs  30m budget  (32x)
+#   make-doom-for-mips                 480m expert vs  15m budget  (32x)
+#   model-extraction-relu-logits       480m expert vs  15m budget  (32x)
+#
+# Nothing else is filtered here on purpose. Difficulty, category and axis are
+# not evidence about whether a task can separate the conditions; the screen is.
+# `hmb screen` then drops the tasks whose oracle fails, the tasks `nop` passes,
+# and the tasks the bare agent already passes, and writes the measured set to
+# config/tasks-suite.txt.
+#
+# 83 candidates, 39.8 h of declared agent budget for one pass over all of them.
+
+adaptive-rejection-sampler
+bn-fit-modify
+break-filter-js-from-html
+build-cython-ext
+build-pmars
+build-pov-ray
+caffe-cifar-10
+cancel-async-tasks
+chess-best-move
+circuit-fibsqrt
+cobol-modernization
+code-from-image
+compile-compcert
+configure-git-webserver
+constraints-scheduling
+count-dataset-tokens
+crack-7z-hash
+custom-memory-heap-crash
+db-wal-recovery
+distribution-search
+dna-assembly
+dna-insert
+extract-elf
+extract-moves-from-video
+feal-differential-cryptanalysis
+filter-js-from-html
+financial-document-processor
+fix-code-vulnerability
+fix-git
+fix-ocaml-gc
+gcode-to-text
+git-leak-recovery
+git-multibranch
+headless-terminal
+hf-model-inference
+install-windows-3.11
+kv-store-grpc
+large-scale-text-editing
+largest-eigenval
+llm-inference-batching-scheduler
+log-summary-date-ranges
+mailman
+make-mips-interpreter
+mcmc-sampling-stan
+merge-diff-arc-agi-task
+modernize-scientific-stack
+mteb-leaderboard
+mteb-retrieve
+multi-source-data-merger
+nginx-request-logging
+openssl-selfsigned-cert
+overfull-hbox
+password-recovery
+path-tracing
+path-tracing-reverse
+polyglot-c-py
+polyglot-rust-c
+portfolio-optimization
+protein-assembly
+prove-plus-comm
+pypi-server
+pytorch-model-cli
+pytorch-model-recovery
+qemu-alpine-ssh
+qemu-startup
+query-optimize
+raman-fitting
+regex-chess
+regex-log
+reshard-c4-data
+rstan-to-pystan
+sam-cell-seg
+sanitize-git-repo
+schemelike-metacircular-eval
+sqlite-db-truncate
+sqlite-with-gcov
+torch-pipeline-parallelism
+torch-tensor-parallelism
+train-fasttext
+tune-mjcf
+video-processing
+vulnerable-secret
+winning-avg-corewars

@@ -42,6 +42,34 @@ toolkits:
     vendored: true
     dest: toolkits/demo-kit
 
+  # -------------------------------------------------------------------
+  # The two methodologies this branch compares, pinned at exactly the
+  # commits the prog16 run used, so the suite-wide run and prog16 measure
+  # the same artefacts. Both are private repositories: `optional: true`
+  # keeps `hmb setup` usable for a colleague without access, who can then
+  # still run the baseline condition.
+  # -------------------------------------------------------------------
+  - id: sdd
+    description: >-
+      SDD agent kit — specification-driven development, 7 skills. The
+      `sdd` condition, deployed as shipped.
+    repo: git@github.com:ChristophMM2108/sdd-agent-kit.git
+    ref: dc4b09e730f6e38a43ba85b44991bb6de890b6d9
+    branch: main
+    dest: toolkits/sdd
+    optional: true
+
+  - id: codezen
+    description: >-
+      CodeZen agent kit. Two conditions are declared from this one
+      snapshot: `codezen-full` as shipped, and `codezen-viable`, the
+      subset whose skills can run inside a benchmark container.
+    repo: git@github.com:ChristophMM2108/codezen-agent-kit.git
+    ref: cc50eba852ca516fa5e3a2334aff6873acc30226
+    branch: main
+    dest: toolkits/codezen
+    optional: true
+
   # ---------------------------------------------------------------------
   # Your own conditions go here. A "toolkit" is any repository whose agent
   # configuration you want to measure: a team's CLAUDE.md and skills, a

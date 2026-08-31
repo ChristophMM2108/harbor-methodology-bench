@@ -42,6 +42,7 @@ against the repository root rather than your shell's working directory — set
 | `hmb experiment list` | list the experiment configurations in this checkout |
 | `hmb matrix-plan [--config PATH]` | print the configured cells as `id⇥variant⇥agent⇥model` |
 | `hmb smoke-plan --task-id ID` | print the Harbor invocations without executing them |
+| `hmb screen [SELECTION] [--stage solvability\|baseline\|all\|report] [--job-prefix NAME] [--attempts N] [--out FILE] [--dry-run]` | decide which tasks can discriminate: `oracle` and `nop` prove the task, then one baseline trial per task drops the ones the bare agent already passes |
 | `hmb plan-job [SELECTION] [--job-prefix NAME] [--attempts N] [--n-concurrent N] [--n-concurrent-agents N] [--max-retries N] [--out-dir D]` | emit one Harbor job config per agent, spanning every condition in task-major order. Prints unless `--out-dir` is given; executes nothing |
 | `./scripts/run-pilot-experiment.sh [SELECTION] [OPTIONS]` | run a task group across the matrix |
 | `./scripts/run-smoke-experiment.sh [--task ID]` | the same runner pinned to one task, with the `smoke` job prefix |

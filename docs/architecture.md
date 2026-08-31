@@ -206,6 +206,7 @@ with `docker image prune`.
 | `validate.py` | reproducibility and isolation validator |
 | `preflight.py` | image build, in-container probe, assertions |
 | `jobplan.py` | Harbor job configs: one job per agent, task-major datasets, retry allowlist |
+| `screen.py` | task screening: solvability, self-passing, and the bare-agent ceiling |
 | `resume.py` | trial classification and the bounded resume filter |
 | `report.py` | cell-level aggregation and adherence |
 | `analysis.py` | trial-level tables from raw job output |

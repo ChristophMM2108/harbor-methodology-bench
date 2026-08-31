@@ -17,6 +17,12 @@ __pycache__/
 !/generated/.gitkeep
 !/jobs/.gitkeep
 
+# Toolkit snapshots are materialised at a pin by `hmb setup`, so committing one
+# would duplicate a repository this one already pins — and several are private.
+# The vendored demo-kit is the exception: a clone must be runnable immediately.
+/toolkits/*
+!/toolkits/demo-kit/
+
 # Experiment outputs: reports, summaries, generated catalogues and analysis
 # notebooks all belong to a run, not to the framework. Keep them on the branch
 # that produced them, or archive them outside the repository.

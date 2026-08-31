@@ -43,6 +43,7 @@ hmb doctor                           # what is still missing, and the command th
 | [docs/reference.md](docs/reference.md) | Every command, every flag, and the repository layout |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | Symptoms, causes, and the current limitations |
 | [docs/evaluation-pipeline.md](docs/evaluation-pipeline.md) | The evaluation process end to end: how a trial becomes a reward, a duration and a cost, and the measurement hazards in each |
+| [docs/experiment-codezen-vs-sdd-suite.md](docs/experiment-codezen-vs-sdd-suite.md) | This branch's experiment: CodeZen vs SDD across the screened suite, and what it changed after prog16 |
 
 External: [Harbor framework](https://github.com/harbor-framework/terminal-bench) ·
 [Terminal-Bench 2.0 tasks](https://github.com/harbor-framework/terminal-bench-2) ·

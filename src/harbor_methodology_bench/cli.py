@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import datetime
 import os
 import shutil
 import subprocess
 from pathlib import Path
 
 import typer
+import yaml
 
 from .analysis import extract_all, write_csvs
 from .catalogue import build_catalogue, render_json, render_markdown, suite_names
@@ -29,6 +31,17 @@ from .preflight import (
     preflight_tasks,
 )
 from .report import write_report
+from .screen import (
+    BASELINE_SUFFIX,
+    INCLUDE,
+    SOLVABILITY_SUFFIX,
+    UNKNOWN,
+    ScreenError,
+    baseline_job,
+    read_screen,
+    render_task_file,
+    solvability_job,
+)
 from .resume import (
     NO_RESULT,
     UNREADABLE,
@@ -566,6 +579,158 @@ def sources_status(sources: Path = SOURCES_OPTION) -> None:
             f"{source.state():9s} {source.kind:11s} {source.id:16s} {pin:13s} "
             f"{_show(source.dest)}{'  [' + flags + ']' if flags else ''}"
         )
+
+
+SCREEN_STAGES = ("solvability", "baseline", "all", "report")
+
+
+def _run_harbor(config_path: Path, env_file: Path | None) -> int:
+    command = ["harbor", "run", "-c", str(config_path)]
+    environment = dict(os.environ)
+    if env_file is not None and env_file.is_file():
+        command += ["--env-file", str(env_file)]
+        environment.update(read_env_file(env_file))
+    typer.echo("$ " + " ".join(command))
+    return subprocess.run(command, env=environment).returncode
+
+
+@app.command("screen")
+def screen_command(
+    config: Path = CONFIG_OPTION,
+    task: list[str] = TASK_OPTION,
+    suite: list[str] = SUITE_OPTION,
+    tasks_file: Path | None = TASKS_FILE_OPTION,
+    category: list[str] = CATEGORY_OPTION,
+    difficulty: list[str] = DIFFICULTY_OPTION,
+    limit: int | None = LIMIT_OPTION,
+    stage: str = typer.Option(
+        "all", help=f"Which stage to run: {', '.join(SCREEN_STAGES)}. `report` runs nothing."
+    ),
+    job_prefix: str = typer.Option("screen", help="Job name prefix for the screen's own jobs."),
+    jobs_dir: Path = typer.Option(Path("jobs"), help="Where Harbor writes the screen's jobs."),
+    attempts: int = typer.Option(1, min=1, help="Baseline trials per task."),
+    n_concurrent: int = typer.Option(DEFAULT_N_CONCURRENT_TRIALS, min=1),
+    n_concurrent_agents: int = typer.Option(DEFAULT_N_CONCURRENT_AGENTS, min=1),
+    env_file: Path = typer.Option(Path("config/local.env"), help="Credentials for the baseline stage."),
+    out: Path | None = typer.Option(None, help="Write the surviving task list here."),
+    dry_run: bool = typer.Option(False, help="Write the job configs and print the commands only."),
+) -> None:
+    """Decide which tasks can discriminate, before spending a matrix on them.
+
+    Two stages. `solvability` runs `oracle` and `nop` over each task's baseline
+    variant and spends no tokens: the oracle must score 1.0, or the task or its
+    verifier is broken, and `nop` must score 0.0, or the task passes without any
+    work. `baseline` then spends one bare-agent trial per task and drops the
+    tasks it already passes — a task every condition passes carries no
+    information about the comparison and still costs a full trial in every cell.
+    """
+    if stage not in SCREEN_STAGES:
+        raise typer.BadParameter(f"stage must be one of {', '.join(SCREEN_STAGES)}")
+    settings = _config(config)
+    tasks = [
+        path.name
+        for path in _selected_tasks(
+            settings, _selection(task, suite, tasks_file, category, difficulty, limit)
+        )
+    ]
+    missing = [name for name in tasks if not (settings.generated_root / "baseline" / name).is_dir()]
+    if missing:
+        raise typer.BadParameter(
+            f"generate the baseline variants first, e.g. {missing[0]}: "
+            f"hmb generate --config {_show(_at_root(config))} ..."
+        )
+
+    agents = sorted({cell["agent"] for cell in settings.matrix})
+    if len(agents) != 1:
+        raise typer.BadParameter(
+            "the screen spends its baseline trials on one agent; this matrix declares "
+            f"{', '.join(agents)}. Screen with a single-agent configuration."
+        )
+    agent = agents[0]
+    jobs_root = _at_root(jobs_dir)
+    plan_dir = jobs_root / f"{job_prefix}-plan"
+    plan_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        planned: list[tuple[str, dict]] = []
+        if stage in ("solvability", "all"):
+            planned.append(
+                (
+                    SOLVABILITY_SUFFIX,
+                    solvability_job(
+                        tasks,
+                        job_name=f"{job_prefix}-{SOLVABILITY_SUFFIX}",
+                        jobs_dir=jobs_dir,
+                        n_concurrent_trials=n_concurrent,
+                    ),
+                )
+            )
+        if stage in ("baseline", "all"):
+            planned.append(
+                (
+                    BASELINE_SUFFIX,
+                    baseline_job(
+                        tasks,
+                        job_name=f"{job_prefix}-{BASELINE_SUFFIX}",
+                        jobs_dir=jobs_dir,
+                        agent=agent,
+                        model=settings.models[agent],
+                        n_concurrent_trials=n_concurrent,
+                        n_concurrent_agents=n_concurrent_agents,
+                        n_attempts=attempts,
+                    ),
+                )
+            )
+    except ScreenError as error:
+        raise typer.BadParameter(str(error)) from error
+
+    for suffix, job in planned:
+        path = plan_dir / f"{job_prefix}-{suffix}.yaml"
+        path.write_text(yaml.safe_dump(job, sort_keys=False), encoding="utf-8")
+        typer.echo(f"{_show(path)}  {len(tasks)} task(s)")
+        if dry_run:
+            continue
+        if (jobs_root / f"{job_prefix}-{suffix}").is_dir():
+            typer.echo(f"--> {job_prefix}-{suffix} exists; leaving it in place. "
+                       f"Resume it with `hmb resume {_show(jobs_root / f'{job_prefix}-{suffix}')}`.")
+            continue
+        # The token-free stage needs no credentials; the baseline stage does.
+        code = _run_harbor(path, _at_root(env_file) if suffix == BASELINE_SUFFIX else None)
+        if code != 0:
+            typer.echo(f"warn  {job_prefix}-{suffix} exited {code}; the verdicts below may be partial.")
+
+    if dry_run:
+        return
+
+    screens = read_screen(jobs_root, tasks, job_prefix=job_prefix, baseline_agent=agent)
+    kept = 0
+    for entry in screens:
+        verdict, reason = entry.verdict()
+        kept += verdict == INCLUDE
+        oracle = "-" if entry.oracle is None else f"{entry.oracle:.2f}"
+        nop = "-" if entry.nop is None else f"{entry.nop:.2f}"
+        base = (
+            "-"
+            if not entry.baseline_rewards
+            else f"{entry.baseline_passes}/{len(entry.baseline_rewards)}"
+        )
+        typer.echo(f"  {verdict:8s} {entry.task:34s} oracle={oracle} nop={nop} baseline={base}  {reason}")
+    undecided = sum(1 for entry in screens if entry.verdict()[0] == UNKNOWN)
+    typer.echo(f"{kept} of {len(screens)} task(s) can discriminate; {undecided} undecided.")
+
+    if out is not None:
+        destination = _at_root(out)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(
+            render_task_file(
+                screens,
+                config_name=_show(_at_root(config)),
+                job_prefix=job_prefix,
+                generated_at=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d"),
+            ),
+            encoding="utf-8",
+        )
+        typer.echo(f"task set -> {_show(destination)}")
 
 
 @app.command("resume")

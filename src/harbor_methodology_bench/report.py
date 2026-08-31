@@ -21,8 +21,17 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .analysis import read_ctrf
+
 
 CONFIG_MARKERS = ("CLAUDE.md", "AGENTS.md")
+
+# A trial that ran out of clock produced no graded outcome: the agent was
+# stopped, not beaten. Counting it as a 0.0 reward states something the run
+# did not measure, so these are reported as censored and excluded from the
+# success denominator. Whether a budget overrun should count as a failure is a
+# question about the experiment's intent; this keeps both readings available.
+CENSORING_EXCEPTIONS = ("AgentTimeoutError", "VerifierTimeoutError", "TimeoutError")
 
 
 def registered_skills(task_path: Path) -> list[str]:
@@ -200,6 +209,13 @@ def parse_trial_result(result_path: Path, root: Path | None = None) -> dict[str,
         task_path = base / task_path
     adherence = parse_adherence(result_path.parent, task_path)
 
+    # Test-level detail from the verifier's own run. A binary reward throws away
+    # most of what the verifier measured: a trial that passes 11 of 12 tests and
+    # one that passes none are the same 0.0.
+    summary, _ = read_ctrf(result_path.parent)
+    tests_total = summary.get("tests")
+    tests_passed = summary.get("passed")
+
     return {
         "job_name": result_path.parent.parent.name,
         "trial_name": result_path.parent.name,
@@ -217,6 +233,10 @@ def parse_trial_result(result_path: Path, root: Path | None = None) -> dict[str,
         "cost_usd": cost_usd,
         "exception_type": exception_type,
         "exception_msg": exception_msg,
+        "censored": exception_type in CENSORING_EXCEPTIONS,
+        "tests_total": tests_total,
+        "tests_passed": tests_passed,
+        "partial_credit": (tests_passed / tests_total) if tests_total else None,
         "skills_available": bool(adherence["skills_available"]),
         "referenced_project_config": bool(adherence["config_markers_seen"]),
         "named_toolkit_skill": bool(adherence["skills_named"]),
@@ -310,8 +330,8 @@ def generate_markdown_report(
         *_concurrency_lines(job_settings or []),
         "## 1. Matrix Summary (By Agent & Methodology Condition)",
         "",
-        "| Agent | Model | Condition | Trials | Successes | Success Rate | Mean Reward | Avg Time (s) | Total Cost ($) | Skills Available | Skills Named | Skills Invoked | Config Referenced |",
-        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Agent | Model | Condition | Trials | Censored | Graded | Successes | Success Rate | Mean Reward | Partial Credit | Test Pass Rate | Avg Time (s) | Total Cost ($) | Skills Available | Skills Named | Skills Invoked | Config Referenced |",
+        "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
 
     # Aggregate by (agent, model, variant)
@@ -322,9 +342,18 @@ def generate_markdown_report(
 
     for (agent, model, variant), group in sorted(cells.items()):
         n_trials = len(group)
-        n_success = sum(1 for x in group if x["success"])
-        success_rate = (n_success / n_trials * 100.0) if n_trials > 0 else 0.0
-        mean_reward = sum(x["reward"] for x in group) / n_trials if n_trials > 0 else 0.0
+        censored = [x for x in group if x.get("censored")]
+        graded = [x for x in group if not x.get("censored")]
+        n_success = sum(1 for x in graded if x["success"])
+        # The denominator is the graded trials: a trial stopped by the clock
+        # produced no outcome to divide by.
+        success_rate = (n_success / len(graded) * 100.0) if graded else 0.0
+        mean_reward = (sum(x["reward"] for x in graded) / len(graded)) if graded else 0.0
+        credits = [x["partial_credit"] for x in graded if x.get("partial_credit") is not None]
+        partial = f"{sum(credits) / len(credits):.2f}" if credits else "-"
+        tests_total = sum(x["tests_total"] or 0 for x in graded)
+        tests_passed = sum(x["tests_passed"] or 0 for x in graded)
+        pass_rate = f"{tests_passed / tests_total * 100.0:.1f}%" if tests_total else "-"
         valid_durations = [x["duration_sec"] for x in group if x["duration_sec"] is not None]
         avg_dur = (sum(valid_durations) / len(valid_durations)) if valid_durations else 0.0
         total_cost = sum(x["cost_usd"] for x in group)
@@ -334,27 +363,45 @@ def generate_markdown_report(
         referenced = sum(1 for x in group if x.get("referenced_project_config"))
 
         lines.append(
-            f"| `{agent}` | `{model}` | **{variant.upper()}** | {n_trials} | {n_success} | "
-            f"{success_rate:.1f}% | {mean_reward:.2f} | {avg_dur:.1f}s | ${total_cost:.4f} | "
+            f"| `{agent}` | `{model}` | **{variant.upper()}** | {n_trials} | {len(censored)} | "
+            f"{len(graded)} | {n_success} | {success_rate:.1f}% | {mean_reward:.2f} | "
+            f"{partial} | {pass_rate} | {avg_dur:.1f}s | ${total_cost:.4f} | "
             f"{available}/{n_trials} | {named}/{n_trials} | {used_skill}/{n_trials} | "
             f"{referenced}/{n_trials} |"
         )
 
+    n_censored = sum(1 for t in trials if t.get("censored"))
     lines.extend([
+        "",
+        f"*{n_censored} of {len(trials)} trial(s) censored. "
+        "Success rate and mean reward are over the graded trials. A trial that hit its "
+        "wall-clock budget is reported as censored, not as a failure: the agent was "
+        "stopped rather than beaten, and treating the budget as part of the task is a "
+        "choice the reader should make explicitly. Partial credit is the mean fraction "
+        "of the verifier's own tests that passed; test pass rate pools those tests "
+        "across the cell.*",
         "",
         "## 2. Per-Task Breakdown",
         "",
-        "| Task | Condition | Agent | Reward | Success | Duration | Exception |",
-        "|---|---|---|---:|:---:|---:|---|",
+        "| Task | Condition | Agent | Reward | Outcome | Tests | Duration | Exception |",
+        "|---|---|---|---:|:---:|---:|---:|---|",
     ])
 
     for t in sorted(trials, key=lambda x: (x["task_name"], x["agent"], x["variant"])):
         dur_str = f"{t['duration_sec']:.1f}s" if t["duration_sec"] is not None else "N/A"
-        succ_str = "✓ PASS" if t["success"] else "✗ FAIL"
+        if t.get("censored"):
+            succ_str = "◌ CENSORED"
+        else:
+            succ_str = "✓ PASS" if t["success"] else "✗ FAIL"
+        tests = (
+            f"{t['tests_passed']}/{t['tests_total']}"
+            if t.get("tests_total")
+            else "-"
+        )
         exc_str = f"`{t['exception_type']}`" if t["exception_type"] else "-"
         lines.append(
             f"| `{t['task_name']}` | **{t['variant']}** | `{t['agent']}` | {t['reward']:.2f} | "
-            f"{succ_str} | {dur_str} | {exc_str} |"
+            f"{succ_str} | {tests} | {dur_str} | {exc_str} |"
         )
 
     methodology = [t for t in trials if t["variant"] not in ("baseline", "unknown")]

@@ -1,0 +1,66 @@
+# CodeZen vs SDD vs baseline, across the screened terminal-bench suite
+# ---------------------------------------------------------------------
+# This repeats the prog16 experiment (16 hand-picked programming tasks) over
+# every task in the suite that can discriminate between the conditions, with the
+# design changes prog16's own discussion asked for:
+#
+#   - the task set is screened, not hand-picked: `hmb screen` proves each task
+#     with `oracle` and `nop`, then spends one baseline trial on it and keeps
+#     only the tasks the bare agent does not already pass;
+#   - two attempts per cell, so every cell has a within-cell replicate — prog16
+#     had none, which is why nothing in it could be said about variance;
+#   - the report reads partial credit and test-level pass rate, and counts a
+#     timeout as censored rather than failed.
+#
+# Both toolkits are pinned at the commits prog16 used, so the two runs measure
+# the same artefacts and their results can be read together.
+
+source_root: source-tasks/terminal-bench
+generated_root: generated
+repetitions: 2                             # documentary; the runner takes the
+                                           # real count from --attempts
+
+models:
+  claude-code: claude-sonnet-5
+
+snapshot_excludes: [".git", ".venv", "venv", "node_modules", "__pycache__",
+                    ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store"]
+
+skill_sources: [".claude/skills", ".agents/skills", "skills"]
+
+toolkits:
+  - id: sdd
+    snapshot: toolkits/sdd/snapshot
+
+  - id: codezen-viable
+    snapshot: toolkits/codezen/snapshot
+    # `exclude` drops matching names at any depth, and each of these names
+    # resolves to exactly two paths in the snapshot — the skill's directory
+    # under .claude/skills and under .agents/skills.
+    #
+    # Dropped, and why each one cannot run in a benchmark container:
+    #   tdd, fix          launch a Docker sandbox; no daemon inside the container
+    #   setup             interactive credential manager
+    #   brainstorm        requires a human in the dialogue
+    #   agentic-e2e       drives a running system under test
+    #   sut-bootstrap     bootstraps a running system under test
+    #   to-notion         requires the Notion MCP server
+    #
+    # Kept: noc-tdd, noc-fix, code-review, security-review.
+    #
+    # This is the same subset prog16 measured. `codezen-full` is deliberately
+    # not declared here: pricing CodeZen's container-unusable skills is a
+    # separate question, and declaring it would generate and build a fourth
+    # variant of every task for a cell this matrix does not run.
+    exclude: [".git", ".venv", "venv", "node_modules", "__pycache__",
+              ".ruff_cache", ".pytest_cache", ".mypy_cache", ".tox", ".DS_Store",
+              "tdd", "fix", "setup", "brainstorm",
+              "agentic-e2e", "sut-bootstrap", "to-notion"]
+
+# Three cells. Claude Code only: every Codex trial in an earlier run failed with
+# ApiUsageLimitError before reaching the task, so the agent axis needs a working
+# quota before it is worth planning around.
+matrix:
+  - {id: claude-baseline,       agent: claude-code, toolkit: baseline}
+  - {id: claude-sdd,            agent: claude-code, toolkit: sdd}
+  - {id: claude-codezen-viable, agent: claude-code, toolkit: codezen-viable}
