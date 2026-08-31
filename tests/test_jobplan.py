@@ -231,3 +231,36 @@ def test_env_file_parsing(tmp_path: Path) -> None:
         "CODEX_FORCE_AUTH_JSON": "1",
         "QUOTED": "with spaces",
     }
+
+
+def test_resume_runs_even_when_no_trial_carries_a_failure(tmp_path: Path, monkeypatch) -> None:
+    """An interrupted job's missing trials have no result to classify.
+
+    Killing a run leaves planned trials that never started. They carry no
+    exception, so no filter names them — only Harbor's reconciliation finds
+    them. An early return here would leave the job permanently unfinished.
+    """
+    from typer.testing import CliRunner
+
+    from harbor_methodology_bench import cli
+
+    job_dir = _job_dir(tmp_path, {"a": None})
+    calls: list[list[str]] = []
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+
+        class Completed:
+            returncode = 0
+
+        return Completed()
+
+    monkeypatch.setattr(cli.subprocess, "run", fake_run)
+    monkeypatch.setattr(cli, "_root", lambda: tmp_path)
+
+    result = CliRunner().invoke(cli.app, ["resume", str(job_dir)])
+
+    assert result.exit_code == 0, result.output
+    assert calls, "resume must still ask Harbor to finish the trials that never ran"
+    assert calls[0][:3] == ["harbor", "job", "resume"]
+    assert "-f" not in calls[0]

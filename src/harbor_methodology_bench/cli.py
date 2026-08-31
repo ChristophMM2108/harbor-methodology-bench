@@ -773,8 +773,10 @@ def resume_command(
             "filter and is re-run beside it. Delete those directories by hand."
         )
     if not filters:
-        typer.echo("nothing to re-run.")
-        return
+        # Not the same as "nothing to do". An interrupted run leaves planned
+        # trials that never started and therefore have no result to classify;
+        # Harbor's reconciliation is what finds them, so the resume still runs.
+        typer.echo("no failed trial to re-run; resuming to finish the trials the job never ran.")
 
     command = ["harbor", "job", "resume", "-p", str(job_dir)]
     for name in filters:
