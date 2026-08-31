@@ -1,0 +1,98 @@
+# Screened task set — 16 of 83 candidates
+#
+# Written by `hmb screen --config config/experiments.codezen-vs-sdd.yaml --job-prefix screen`
+# on 2026-08-31. Do not hand-edit: re-run the screen instead, so the
+# set stays a derivation rather than an opinion.
+#
+# A task is kept when all three hold:
+#   oracle scores 1.0     the task and its verifier work
+#   nop scores 0.0        the task does not pass without doing the work
+#   the bare agent fails  the task can still discriminate between conditions
+#
+# Excluded: 64.  Undecided: 3.
+
+adaptive-rejection-sampler
+cancel-async-tasks
+configure-git-webserver
+extract-moves-from-video
+filter-js-from-html
+git-multibranch
+install-windows-3.11
+openssl-selfsigned-cert
+path-tracing
+polyglot-c-py
+polyglot-rust-c
+raman-fitting
+sam-cell-seg
+torch-tensor-parallelism
+train-fasttext
+video-processing
+
+# --- not measured -------------------------------------------------------
+# bn-fit-modify  (exclude: the bare agent already passes it, so no condition can discriminate)
+# build-cython-ext  (exclude: oracle scored 0.00: the task or its verifier is broken)
+# build-pmars  (exclude: oracle scored 0.00: the task or its verifier is broken)
+# build-pov-ray  (exclude: oracle scored 0.00: the task or its verifier is broken)
+# caffe-cifar-10  (exclude: oracle scored 0.00: the task or its verifier is broken)
+# chess-best-move  (exclude: the bare agent already passes it, so no condition can discriminate)
+# circuit-fibsqrt  (exclude: the bare agent already passes it, so no condition can discriminate)
+# cobol-modernization  (exclude: the bare agent already passes it, so no condition can discriminate)
+# code-from-image  (exclude: the bare agent already passes it, so no condition can discriminate)
+# compile-compcert  (exclude: the bare agent already passes it, so no condition can discriminate)
+# constraints-scheduling  (exclude: the bare agent already passes it, so no condition can discriminate)
+# count-dataset-tokens  (exclude: the bare agent already passes it, so no condition can discriminate)
+# crack-7z-hash  (exclude: the bare agent already passes it, so no condition can discriminate)
+# custom-memory-heap-crash  (exclude: the bare agent already passes it, so no condition can discriminate)
+# db-wal-recovery  (exclude: the bare agent already passes it, so no condition can discriminate)
+# distribution-search  (exclude: the bare agent already passes it, so no condition can discriminate)
+# dna-assembly  (exclude: the bare agent already passes it, so no condition can discriminate)
+# dna-insert  (exclude: the bare agent already passes it, so no condition can discriminate)
+# extract-elf  (exclude: the bare agent already passes it, so no condition can discriminate)
+# feal-differential-cryptanalysis  (exclude: the bare agent already passes it, so no condition can discriminate)
+# financial-document-processor  (exclude: the bare agent already passes it, so no condition can discriminate)
+# fix-code-vulnerability  (exclude: the bare agent already passes it, so no condition can discriminate)
+# fix-git  (exclude: the bare agent already passes it, so no condition can discriminate)
+# fix-ocaml-gc  (exclude: the bare agent already passes it, so no condition can discriminate)
+# gcode-to-text  (exclude: the bare agent already passes it, so no condition can discriminate)
+# git-leak-recovery  (exclude: the bare agent already passes it, so no condition can discriminate)
+# headless-terminal  (exclude: the bare agent already passes it, so no condition can discriminate)
+# hf-model-inference  (exclude: the bare agent already passes it, so no condition can discriminate)
+# kv-store-grpc  (exclude: the bare agent already passes it, so no condition can discriminate)
+# large-scale-text-editing  (exclude: the bare agent already passes it, so no condition can discriminate)
+# largest-eigenval  (exclude: the bare agent already passes it, so no condition can discriminate)
+# llm-inference-batching-scheduler  (exclude: the bare agent already passes it, so no condition can discriminate)
+# log-summary-date-ranges  (exclude: the bare agent already passes it, so no condition can discriminate)
+# mailman  (exclude: the bare agent already passes it, so no condition can discriminate)
+# make-mips-interpreter  (exclude: the bare agent already passes it, so no condition can discriminate)
+# mcmc-sampling-stan  (exclude: oracle scored 0.00: the task or its verifier is broken)
+# merge-diff-arc-agi-task  (exclude: the bare agent already passes it, so no condition can discriminate)
+# modernize-scientific-stack  (exclude: the bare agent already passes it, so no condition can discriminate)
+# mteb-leaderboard  (exclude: the bare agent already passes it, so no condition can discriminate)
+# mteb-retrieve  (exclude: the bare agent already passes it, so no condition can discriminate)
+# multi-source-data-merger  (exclude: the bare agent already passes it, so no condition can discriminate)
+# nginx-request-logging  (exclude: the bare agent already passes it, so no condition can discriminate)
+# overfull-hbox  (exclude: the bare agent already passes it, so no condition can discriminate)
+# password-recovery  (exclude: the bare agent already passes it, so no condition can discriminate)
+# path-tracing-reverse  (exclude: the bare agent already passes it, so no condition can discriminate)
+# portfolio-optimization  (exclude: the bare agent already passes it, so no condition can discriminate)
+# protein-assembly  (exclude: oracle scored 0.00: the task or its verifier is broken)
+# prove-plus-comm  (exclude: the bare agent already passes it, so no condition can discriminate)
+# pypi-server  (exclude: the bare agent already passes it, so no condition can discriminate)
+# pytorch-model-cli  (exclude: the bare agent already passes it, so no condition can discriminate)
+# pytorch-model-recovery  (exclude: the bare agent already passes it, so no condition can discriminate)
+# qemu-startup  (exclude: the bare agent already passes it, so no condition can discriminate)
+# query-optimize  (exclude: the bare agent already passes it, so no condition can discriminate)
+# regex-log  (exclude: the bare agent already passes it, so no condition can discriminate)
+# reshard-c4-data  (exclude: the bare agent already passes it, so no condition can discriminate)
+# rstan-to-pystan  (exclude: oracle scored 0.00: the task or its verifier is broken)
+# sanitize-git-repo  (exclude: the bare agent already passes it, so no condition can discriminate)
+# schemelike-metacircular-eval  (exclude: the bare agent already passes it, so no condition can discriminate)
+# sqlite-db-truncate  (exclude: the bare agent already passes it, so no condition can discriminate)
+# sqlite-with-gcov  (exclude: the bare agent already passes it, so no condition can discriminate)
+# torch-pipeline-parallelism  (exclude: the bare agent already passes it, so no condition can discriminate)
+# tune-mjcf  (exclude: the bare agent already passes it, so no condition can discriminate)
+# vulnerable-secret  (exclude: the bare agent already passes it, so no condition can discriminate)
+# winning-avg-corewars  (exclude: the bare agent already passes it, so no condition can discriminate)
+# break-filter-js-from-html  (unknown: baseline trial errored: AgentTimeoutError)
+# qemu-alpine-ssh  (unknown: baseline trial errored: AgentTimeoutError)
+# regex-chess  (unknown: baseline trial errored: AgentTimeoutError)

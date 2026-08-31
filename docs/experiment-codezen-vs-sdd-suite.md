@@ -97,6 +97,33 @@ Two of these — `build-cython-ext` and `build-pmars` — were in prog16's measu
 and was in fact a task that cannot be passed. That is three trials each, in
 prog16 and in any repeat, spent on a question the task cannot answer.
 
+### 3.2 What the baseline screen found
+
+83 baseline trials, run 2026-08-31. **16 tasks kept**, 64 excluded, 3 undecided.
+
+| Outcome | Count | Why |
+|---|---:|---|
+| Kept | 16 | solvable, not self-passing, and the bare agent failed it |
+| Excluded — bare agent already passes | 57 | every condition would pass; no comparison is possible |
+| Excluded — oracle fails | 7 | the task's own reference solution does not score 1.0 (§3.1) |
+| Undecided | 3 | the baseline trial hit its wall-clock budget, so it decided nothing |
+
+The measured set is in
+[`config/tasks-suite.txt`](../config/tasks-suite.txt), with every rejected task
+kept as a commented line and its reason.
+
+**57 of the 76 sound tasks are passed by the bare agent.** That is the prog16
+ceiling effect at suite scale: three quarters of the suite cannot separate these
+conditions with this model, and a run over "all reasonable tasks" would have
+spent three quarters of its budget learning nothing about the comparison. At 3
+conditions × 2 attempts that is 342 trials avoided, roughly $1,600.
+
+The three undecided tasks — `break-filter-js-from-html`, `qemu-alpine-ssh`,
+`regex-chess` — each timed out under the baseline. A timeout is censored, not a
+failure, so the screen refuses to guess: one more baseline trial each decides
+them, or they can be admitted deliberately on the grounds that a task the bare
+agent cannot finish in budget is unlikely to be a ceiling.
+
 ## 4. Running it
 
 Every command is safe to re-run. Nothing below re-pays for a trial that already
