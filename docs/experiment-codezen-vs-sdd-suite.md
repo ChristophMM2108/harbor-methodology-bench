@@ -68,6 +68,11 @@ with an inclusion criterion applied before it.
 as a commented line with its reason, so the selection stays a derivation rather
 than an opinion.
 
+The screen's own jobs must not share a prefix with the measurement. Its baseline
+stage is a real baseline trial, so a job named `suite-screen-baseline` would be
+folded into the `suite-*` report as extra baseline trials and quietly unbalance
+the cell. Keep them apart: `screen-*` for the screen, `suite-*` for the run.
+
 ## 4. Running it
 
 ```bash
@@ -82,8 +87,8 @@ hmb preflight --config $C --tasks-file $CAND --jobs 4
 
 # 2. Screen. The first stage spends no tokens; the second spends one baseline
 #    trial per task. Inspect the plan first with --dry-run.
-hmb screen --config $C --tasks-file $CAND --stage solvability --job-prefix suite-screen
-hmb screen --config $C --tasks-file $CAND --stage baseline    --job-prefix suite-screen \
+hmb screen --config $C --tasks-file $CAND --stage solvability --job-prefix screen
+hmb screen --config $C --tasks-file $CAND --stage baseline    --job-prefix screen \
     --out $SET
 
 # 3. The measurement.
