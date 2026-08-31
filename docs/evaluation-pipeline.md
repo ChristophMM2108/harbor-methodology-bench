@@ -820,9 +820,9 @@ payload file count, pass/fail).
 |---|---|
 | **Condition / variant** | One experimental treatment: `baseline` (task and nothing else, always generated) or a declared toolkit payload such as `sdd`. |
 | **Cell** | One `(agent, model, condition)` triple from the configured matrix, identified by its `id` and printed by `matrix-plan`. |
-| **Job** | One `harbor run`: one cell applied to one task, named `<prefix>-<cell_id>-<task>`. |
+| **Job** | One `harbor run`. The runner emits one job per agent, named `<prefix>-<agent>`, spanning every condition and task; a job's trial directories carry a random suffix and record their condition under `config.task.path`. |
 | **Trial** | One repetition inside a job. The atomic unit of measurement: one reward, one duration, one token account, one cost. |
-| **Attempt / repetition** | `harbor -n N`, surfaced as `--attempts N`. Multiple trials per job. |
+| **Attempt / repetition** | `harbor -k N` / `--n-attempts N`, surfaced as `--attempts N`. Multiple trials per cell. Harbor's `-n` is `--n-concurrent`, a different setting. |
 | **Payload** | The frozen toolkit snapshot staged into the image and deployed into the agent's working directory at build time. |
 | **Preflight** | The in-container proof that a condition is what it declares. Persisted per variant; the runner's licence to execute a cell. |
 | **Adherence** | Evidence from the agent's own logs and trajectory that it registered and used the methodology, as opposed to merely having it available. |

@@ -246,7 +246,60 @@ def find_all_trials(
     return trials
 
 
-def generate_markdown_report(trials: list[dict[str, Any]]) -> str:
+def collect_job_settings(jobs_dir: Path, pattern: str = "*") -> list[dict[str, Any]]:
+    """The execution settings each matching job recorded in its `config.json`.
+
+    Concurrency belongs in the report because it is a property of the run, not
+    of the code: trials that ran alongside each other absorb host contention
+    into `duration_sec`, so a reader has to know how many ran at once before
+    comparing a duration with anything.
+    """
+    settings: list[dict[str, Any]] = []
+    for job_path in sorted(jobs_dir.glob(pattern)):
+        config_path = job_path / "config.json"
+        if not job_path.is_dir() or not config_path.is_file():
+            continue
+        try:
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        agents = config.get("agents") or []
+        settings.append(
+            {
+                "job": job_path.name,
+                # A job config omits a key it left at its default, so fall back to
+                # Harbor's own defaults rather than reporting a blank.
+                "n_concurrent_trials": config.get("n_concurrent_trials", 4),
+                "n_concurrent_agents": [agent.get("n_concurrent") for agent in agents],
+                "n_attempts": config.get("n_attempts", 1),
+            }
+        )
+    return settings
+
+
+def _concurrency_lines(settings: list[dict[str, Any]]) -> list[str]:
+    if not settings:
+        return []
+    lines = ["**Execution**:", ""]
+    for entry in settings:
+        caps = [str(cap) for cap in entry["n_concurrent_agents"] if cap is not None]
+        agent_cap = ", ".join(caps) if caps else "unset"
+        lines.append(
+            f"- `{entry['job']}`: {entry['n_concurrent_trials']} concurrent trial(s), "
+            f"agent phase cap {agent_cap}, {entry['n_attempts']} attempt(s)"
+        )
+    if any((entry["n_concurrent_trials"] or 1) > 1 for entry in settings):
+        lines.append(
+            "- Trials ran concurrently, so `duration_sec` carries host contention and is "
+            "not comparable with serially-run numbers. Cost and token metrics are unaffected."
+        )
+    lines.append("")
+    return lines
+
+
+def generate_markdown_report(
+    trials: list[dict[str, Any]], job_settings: list[dict[str, Any]] | None = None
+) -> str:
     if not trials:
         return "# Benchmark Results Report\n\nNo trial results found."
 
@@ -254,6 +307,7 @@ def generate_markdown_report(trials: list[dict[str, Any]]) -> str:
         "# Harbor Methodology Bench — Results Report",
         f"\n**Total Trials Collected**: {len(trials)}",
         f"**Generated At**: {datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n",
+        *_concurrency_lines(job_settings or []),
         "## 1. Matrix Summary (By Agent & Methodology Condition)",
         "",
         "| Agent | Model | Condition | Trials | Successes | Success Rate | Mean Reward | Avg Time (s) | Total Cost ($) | Skills Available | Skills Named | Skills Invoked | Config Referenced |",
@@ -356,7 +410,8 @@ def write_report(
     if not jobs_dir.is_dir():
         raise FileNotFoundError(f"jobs directory {jobs_dir} does not exist")
     trials = find_all_trials(jobs_dir, pattern=pattern, root=jobs_dir.parent)
-    markdown = generate_markdown_report(trials)
+    job_settings = collect_job_settings(jobs_dir, pattern=pattern)
+    markdown = generate_markdown_report(trials, job_settings)
     if md_out:
         md_out.parent.mkdir(parents=True, exist_ok=True)
         md_out.write_text(markdown, encoding="utf-8")
@@ -365,6 +420,7 @@ def write_report(
         payload = {
             "total_trials": len(trials),
             "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "jobs": job_settings,
             "trials": trials,
         }
         json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")

@@ -6,6 +6,13 @@ set -euo pipefail
 # Runs the matrix declared in the experiment configuration across a selected
 # group of tasks. Both the task list and the matrix cells come from the CLI, so
 # this script never needs editing to change either.
+#
+# One Harbor job per agent holds every condition. Harbor gives each trial a
+# random directory suffix and records its condition under `config.task.path`,
+# so conditions cannot collide and `hmb report` still separates them. Within a
+# job the dataset list is task-major, which is what makes the conditions of one
+# task run side by side instead of one whole condition after another — paired
+# execution keeps host contention symmetric across conditions.
 
 # Every path below is relative to the repository root, so run from anywhere.
 REPO_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
@@ -24,24 +31,35 @@ Task selection (same flags as generate/validate/preflight; combinable):
 
 Options:
   --config PATH       Experiment configuration (default config/experiments.yaml)
-  --job-prefix NAME   Job name prefix (default 'pilot')
-  --attempts N        Repetitions per cell, passed to harbor -n (default 1)
+  --job-prefix NAME   Job name prefix (default 'pilot'); jobs are '<prefix>-<agent>'
+  --attempts N        Repetitions per cell (Harbor's --n-attempts, default 1)
+  --concurrent N      Concurrent trials per job, whole lifecycle (default 9)
+  --concurrent-agents N
+                      Concurrent agent phases per job (default 6, must be <= --concurrent)
+  --preflight-jobs N  Parallel image builds in the preflight gate (default 4)
   --timeout-multiplier F
                       Scale every task timeout by F (harbor --timeout-multiplier).
                       Applied to every cell, so a comparison stays fair; record
                       the value with the result, since it changes the budget the
                       benchmark declares.
-  --force             Re-run cells that already have results
-  --dry-run           Print the harbor invocations without executing them
+  --force             Delete and re-run jobs that already have results
+  --dry-run           Print the job configs and the harbor invocations only
   --skip-preflight    Skip the validate/preflight gate (debugging only)
 
 With no selection flags the run defaults to '--limit 5'.
+
+An interrupted job is resumed, never silently accepted: use
+`hmb resume jobs/<prefix>-<agent>`, which classifies the failures first and
+re-runs only those unrelated to the task.
 EOF
 )
 
 CONFIG="config/experiments.yaml"
 JOB_PREFIX="pilot"
 ATTEMPTS=1
+CONCURRENT=9
+CONCURRENT_AGENTS=6
+PREFLIGHT_JOBS=4
 TIMEOUT_MULTIPLIER=""
 FORCE=false
 DRY_RUN=false
@@ -64,6 +82,18 @@ while [[ $# -gt 0 ]]; do
             ;;
         --attempts)
             ATTEMPTS="$2"
+            shift 2
+            ;;
+        --concurrent)
+            CONCURRENT="$2"
+            shift 2
+            ;;
+        --concurrent-agents)
+            CONCURRENT_AGENTS="$2"
+            shift 2
+            ;;
+        --preflight-jobs)
+            PREFLIGHT_JOBS="$2"
             shift 2
             ;;
         --timeout-multiplier)
@@ -104,8 +134,15 @@ fi
 echo "=== 1. Checking Environment Prerequisites ==="
 if [ "$DRY_RUN" = false ]; then
     if ! docker run --rm hello-world >/dev/null 2>&1; then
-        echo "❌ Docker network interface issue detected."
-        echo "Please run: sudo modprobe veth && sudo systemctl restart docker"
+        echo "❌ Docker cannot start a container."
+        echo "If container networking fails with 'failed to add the host (veth...) <=> sandbox"
+        echo "(veth...) pair interfaces: operation not supported', compare the running kernel"
+        echo "with the installed module tree first:"
+        echo "    uname -r && ls /lib/modules/"
+        echo "  - They differ: the kernel was upgraded without a reboot. No module can load"
+        echo "    for the running kernel, so modprobe cannot help. Reboot."
+        echo "  - They match: the module is merely unloaded. Run"
+        echo "    sudo modprobe veth && sudo systemctl restart docker"
         exit 1
     fi
     echo "✓ Docker is running cleanly."
@@ -151,8 +188,8 @@ if [ -n "$TIMEOUT_MULTIPLIER" ]; then
     echo "Task timeouts scaled by ${TIMEOUT_MULTIPLIER}× for every cell in this run."
 fi
 
-TOTAL_RUNS=$((${#TASKS[@]} * ${#CELLS[@]}))
-echo "✓ Selected ${#TASKS[@]} task(s) × ${#CELLS[@]} cell(s) = $TOTAL_RUNS trial(s)"
+TOTAL_RUNS=$((${#TASKS[@]} * ${#CELLS[@]} * ATTEMPTS))
+echo "✓ Selected ${#TASKS[@]} task(s) × ${#CELLS[@]} cell(s) × $ATTEMPTS attempt(s) = $TOTAL_RUNS trial(s)"
 for task in "${TASKS[@]}"; do
     echo "   - $task"
 done
@@ -176,13 +213,17 @@ if [ ${#MISSING[@]} -gt 0 ]; then
     echo ""
 fi
 
+# The gate is mandatory for a second reason under parallel execution: it builds
+# every image up front, so the run's own builds are cache hits. `docker build`
+# runs on the daemon, outside any container's cpu allowance, and is the one part
+# of a trial that concurrency can genuinely contend over.
 if [ "$DRY_RUN" = false ] && [ "$SKIP_PREFLIGHT" = false ]; then
     echo "=== 2. In-Container Preflight (methodology must reach the agent workdir) ==="
     "${HMB[@]}" validate --config "$CONFIG" "${SELECTION[@]}"
-    "${HMB[@]}" preflight --config "$CONFIG" "${SELECTION[@]}"
+    "${HMB[@]}" preflight --config "$CONFIG" "${SELECTION[@]}" --jobs "$PREFLIGHT_JOBS"
 fi
 
-# Fail closed per cell: a trial may only run against a variant whose container
+# Fail closed per variant: a trial may only run against a variant whose container
 # was proven to carry (or, for the baseline, to lack) the methodology payload.
 assert_preflight_passed() {
     local task_path="$1"
@@ -200,9 +241,9 @@ if not data.get("passed"):
 PY
 }
 
-# A `result.json` alone does not mean a cell produced data: an interrupted run
+# A `result.json` alone does not mean a job produced data: an interrupted run
 # leaves one behind with `finished_at: null` and its trials cancelled. Skipping
-# such a directory would silently drop the cell from the matrix.
+# such a directory would silently drop those cells from the matrix.
 job_finished() {
     local job_dir="$1"
     [ -f "$job_dir/result.json" ] || return 1
@@ -222,68 +263,96 @@ raise SystemExit(0 if finished and not cancelled else 1)
 PY
 }
 
-echo "=== 3. Starting Matrix ($TOTAL_RUNS total runs) ==="
+if [ "$SKIP_PREFLIGHT" = false ] && [ "$DRY_RUN" = false ]; then
+    for task in "${TASKS[@]}"; do
+        for cell in "${CELLS[@]}"; do
+            IFS=$'\t' read -r _ variant _ _ <<< "$cell"
+            assert_preflight_passed "generated/${variant}/${task}"
+        done
+    done
+fi
 
-RUN_IDX=0
-PASSED_RUNS=0
-FAILED_RUNS=0
-
+# One job config per agent, written where the run can be reproduced from it.
+PLAN_DIR="jobs/${JOB_PREFIX}-plan"
+TASK_ARGS=()
 for task in "${TASKS[@]}"; do
-    for cell in "${CELLS[@]}"; do
-        IFS=$'\t' read -r cell_id variant agent model <<< "$cell"
-        RUN_IDX=$((RUN_IDX + 1))
-        JOB_NAME="${JOB_PREFIX}-${cell_id}-${task}"
-        TASK_PATH="generated/${variant}/${task}"
+    TASK_ARGS+=(--task "$task")
+done
 
-        echo "----------------------------------------------------"
-        echo "[$RUN_IDX/$TOTAL_RUNS] Job: $JOB_NAME"
-        echo "       Task: $task ($variant)"
-        echo "       Agent: $agent ($model)"
+echo "=== 3. Planning Jobs ==="
+"${HMB[@]}" plan-job \
+    --config "$CONFIG" \
+    "${TASK_ARGS[@]}" \
+    --job-prefix "$JOB_PREFIX" \
+    --attempts "$ATTEMPTS" \
+    --n-concurrent "$CONCURRENT" \
+    --n-concurrent-agents "$CONCURRENT_AGENTS" \
+    --out-dir "$PLAN_DIR"
 
-        if [ "$DRY_RUN" = true ]; then
-            echo "   [DRY RUN] harbor run -p $TASK_PATH -a $agent -m $model -n $ATTEMPTS ${HARBOR_EXTRA[*]:-} --env-file config/local.env --job-name $JOB_NAME"
+mapfile -t PLANS < <(ls "$PLAN_DIR"/*.yaml)
+
+if [ "$DRY_RUN" = true ]; then
+    for plan in "${PLANS[@]}"; do
+        job_name="$(basename "$plan" .yaml)"
+        echo "   [DRY RUN] harbor run -c $plan ${HARBOR_EXTRA[*]:-} --env-file config/local.env"
+        echo "             -> jobs/$job_name, log jobs/${job_name}.log"
+    done
+    echo ""
+    echo "✓ Dry run completed for ${#PLANS[@]} job(s), $TOTAL_RUNS trial(s)."
+    exit 0
+fi
+
+echo ""
+echo "=== 4. Running ${#PLANS[@]} job(s), $TOTAL_RUNS trial(s), $CONCURRENT concurrent ==="
+
+# Each job writes to its own log: parallel jobs must never interleave on the
+# terminal, or neither log can be read afterwards.
+PIDS=()
+NAMES=()
+for plan in "${PLANS[@]}"; do
+    job_name="$(basename "$plan" .yaml)"
+    job_dir="jobs/$job_name"
+    log="jobs/${job_name}.log"
+
+    if [ -d "$job_dir" ]; then
+        if [ "$FORCE" = true ]; then
+            echo "--> Removing previous job directory: $job_dir"
+            rm -rf "$job_dir"
+        elif job_finished "$job_dir"; then
+            echo "--> $job_name already completed. Skipping. (Use --force to re-run)"
+            continue
+        else
+            echo "--> $job_name exists but did not finish."
+            echo "    Resume it instead of re-running: hmb resume $job_dir"
+            echo "    A bare re-run would discard the trials it already paid for."
             continue
         fi
+    fi
 
-        if [ "$SKIP_PREFLIGHT" = false ]; then
-            assert_preflight_passed "$TASK_PATH"
-        fi
+    echo "--> $job_name  (log: $log)"
+    harbor run -c "$plan" \
+        ${HARBOR_EXTRA[@]+"${HARBOR_EXTRA[@]}"} \
+        --env-file config/local.env >"$log" 2>&1 &
+    PIDS+=("$!")
+    NAMES+=("$job_name")
+done
 
-        if [ -d "jobs/$JOB_NAME" ]; then
-            if [ "$FORCE" = true ]; then
-                echo "--> Removing previous job directory: jobs/$JOB_NAME"
-                rm -rf "jobs/$JOB_NAME"
-            else
-                echo "--> Job directory jobs/$JOB_NAME exists. Checking result..."
-                if job_finished "jobs/$JOB_NAME"; then
-                    echo "--> Already completed. Skipping. (Use --force to re-run)"
-                    PASSED_RUNS=$((PASSED_RUNS + 1))
-                    continue
-                else
-                    echo "--> Incomplete job found. Cleaning and re-running..."
-                    rm -rf "jobs/$JOB_NAME"
-                fi
-            fi
-        fi
-
-        # Execute trial and allow loop to continue even if individual trial errors
-        if harbor run -p "$TASK_PATH" -a "$agent" -m "$model" -n "$ATTEMPTS" \
-            ${HARBOR_EXTRA[@]+"${HARBOR_EXTRA[@]}"} \
-            --env-file config/local.env --job-name "$JOB_NAME"; then
-            echo "✓ Job completed: $JOB_NAME"
-            PASSED_RUNS=$((PASSED_RUNS + 1))
-        else
-            echo "⚠️ Job exited with non-zero status: $JOB_NAME"
-            FAILED_RUNS=$((FAILED_RUNS + 1))
-        fi
-    done
+PASSED_JOBS=0
+FAILED_JOBS=0
+for index in "${!PIDS[@]}"; do
+    if wait "${PIDS[$index]}"; then
+        echo "✓ Job completed: ${NAMES[$index]}"
+        PASSED_JOBS=$((PASSED_JOBS + 1))
+    else
+        echo "⚠️ Job exited with non-zero status: ${NAMES[$index]} (see jobs/${NAMES[$index]}.log)"
+        FAILED_JOBS=$((FAILED_JOBS + 1))
+    fi
 done
 
 echo "===================================================="
-if [ "$DRY_RUN" = true ]; then
-    echo "✓ Dry run completed for $TOTAL_RUNS trial invocations."
-else
-    echo "Execution finished: $PASSED_RUNS completed / $FAILED_RUNS errored (out of $TOTAL_RUNS total)."
-    echo "To generate the report, run:"
-    echo "   hmb report --pattern \"${JOB_PREFIX}-*\" --md-out results/${JOB_PREFIX}_report.md"
-fi
+echo "Execution finished: $PASSED_JOBS completed / $FAILED_JOBS errored (out of ${#PIDS[@]} job(s))."
+echo "Trials ran up to $CONCURRENT at a time, so duration_sec carries host contention"
+echo "and is not comparable with the serial numbers in results/. Cost and token"
+echo "metrics are unaffected."
+echo "To generate the report, run:"
+echo "   hmb report --pattern \"${JOB_PREFIX}-*\" --md-out results/${JOB_PREFIX}_report.md"

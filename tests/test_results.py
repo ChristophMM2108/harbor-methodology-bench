@@ -195,6 +195,31 @@ def test_report_aggregates_cells_and_writes_both_forms(tmp_path: Path) -> None:
     assert {t["used_toolkit_skill"] for t in payload["trials"]} == {True, False}
 
 
+def test_report_records_the_concurrency_each_job_ran_at(tmp_path: Path) -> None:
+    """A duration measured under concurrency is not comparable with a serial one.
+
+    The reader can only know which they are looking at if the report says so.
+    """
+    make_variant(tmp_path, "kit", "task-a")
+    make_trial(tmp_path, "run-claude-code", "task-a", "kit", steps=[step(1)])
+    write_json(
+        tmp_path / "jobs" / "run-claude-code" / "config.json",
+        {
+            "job_name": "run-claude-code",
+            "n_attempts": 3,
+            "n_concurrent_trials": 9,
+            "agents": [{"name": "claude-code", "n_concurrent": 6}],
+        },
+    )
+
+    markdown, _ = write_report(tmp_path / "jobs", "run-*", None, tmp_path / "out.json")
+
+    assert "9 concurrent trial(s), agent phase cap 6, 3 attempt(s)" in markdown
+    assert "duration_sec` carries host contention" in markdown
+    payload = json.loads((tmp_path / "out.json").read_text())
+    assert payload["jobs"][0]["n_concurrent_trials"] == 9
+
+
 def test_pattern_selects_jobs(tmp_path: Path) -> None:
     make_variant(tmp_path, "kit", "task-a")
     make_trial(tmp_path, "keep-claude-kit-task-a", "task-a", "kit", steps=[step(1)])

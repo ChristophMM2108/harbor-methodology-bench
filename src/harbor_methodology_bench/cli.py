@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 import shutil
+import subprocess
 from pathlib import Path
 
 import typer
@@ -11,9 +13,32 @@ from .config import ExperimentConfig, load_config
 from .doctor import in_container, run_checks, worst
 from .environment import build_environment
 from .inject import copy_task
+from .jobplan import (
+    DEFAULT_MAX_RETRIES,
+    DEFAULT_N_CONCURRENT_AGENTS,
+    DEFAULT_N_CONCURRENT_TRIALS,
+    JobPlanError,
+    plan_jobs,
+    write_job_configs,
+)
 from .manifest import tree_manifest, write_manifest
-from .preflight import DEFAULT_MAX_PROBE_FILES, PreflightError, preflight_task
+from .preflight import (
+    DEFAULT_MAX_PROBE_FILES,
+    DEFAULT_PREFLIGHT_JOBS,
+    PreflightError,
+    preflight_tasks,
+)
 from .report import write_report
+from .resume import (
+    NO_RESULT,
+    UNREADABLE,
+    ResumeError,
+    breakdown,
+    check_job_dir,
+    classify_trials,
+    read_env_file,
+    resume_filters,
+)
 from .repo import RootNotFound, find_root
 from .scaffold import ScaffoldError, credentials_template, new_analysis, new_experiment
 from .source import TaskSelection, discover_tasks, read_task_ids, select_tasks
@@ -229,6 +254,9 @@ def preflight(
     max_probe_files: int = typer.Option(DEFAULT_MAX_PROBE_FILES, min=100),
     build_timeout_sec: int = typer.Option(1800, min=60),
     run_timeout_sec: int = typer.Option(300, min=10),
+    jobs: int = typer.Option(
+        DEFAULT_PREFLIGHT_JOBS, min=1, help="Image builds and probes to run at once."
+    ),
 ) -> None:
     """Build every variant image and assert the toolkit reached the container.
 
@@ -236,6 +264,9 @@ def preflight(
     generated environment, probes the resulting container from the inside, and
     fails when a toolkit variant lacks project instructions or skills, or when
     any variant altered the benchmark's own files.
+
+    Builds run `--jobs` at a time. Results are still reported task by task in
+    selection order, so a parallel preflight reads exactly like a serial one.
     """
     settings = _config(config)
     tasks = _selected_tasks(
@@ -243,21 +274,20 @@ def preflight(
     )
     toolkits = {toolkit.id: toolkit.spec for toolkit in settings.toolkits.values()}
     failures: list[str] = []
-    for task_dir in tasks:
-        typer.echo(f"preflight {task_dir.name} ...")
-        try:
-            checks = preflight_task(
-                task_dir,
-                settings.generated_root,
-                toolkits,
-                max_probe_files,
-                build_timeout_sec,
-                run_timeout_sec,
-            )
-        except PreflightError as error:
-            failures.append(f"{task_dir.name}: {error}")
+    for task_dir, outcome in preflight_tasks(
+        tasks,
+        settings.generated_root,
+        toolkits,
+        max_probe_files,
+        build_timeout_sec,
+        run_timeout_sec,
+        jobs,
+    ):
+        typer.echo(f"preflight {task_dir.name}")
+        if isinstance(outcome, PreflightError):
+            failures.append(f"{task_dir.name}: {outcome}")
             continue
-        for check in checks:
+        for check in outcome:
             for warning in check.warnings:
                 typer.echo(f"  warn  {check.variant}: {warning}")
             if check.errors:
@@ -373,6 +403,70 @@ def smoke_plan(config: Path = CONFIG_OPTION, task_id: str = typer.Option(...)) -
         typer.echo(f"{cell['id']}: harbor run -p {task_path} -a {cell['agent']} -m {model}")
 
 
+@app.command("plan-job")
+def plan_job(
+    config: Path = CONFIG_OPTION,
+    task: list[str] = TASK_OPTION,
+    suite: list[str] = SUITE_OPTION,
+    tasks_file: Path | None = TASKS_FILE_OPTION,
+    category: list[str] = CATEGORY_OPTION,
+    difficulty: list[str] = DIFFICULTY_OPTION,
+    limit: int | None = LIMIT_OPTION,
+    job_prefix: str = typer.Option("pilot", help="Job name prefix; each job is '<prefix>-<agent>'."),
+    attempts: int = typer.Option(1, min=1, help="Repetitions per cell (Harbor's n_attempts)."),
+    jobs_dir: Path = typer.Option(Path("jobs"), help="Where Harbor should write its job output."),
+    n_concurrent: int = typer.Option(
+        DEFAULT_N_CONCURRENT_TRIALS, min=1, help="Concurrent trials over the whole lifecycle."
+    ),
+    n_concurrent_agents: int = typer.Option(
+        DEFAULT_N_CONCURRENT_AGENTS, min=1, help="Concurrent agent phases; must not exceed --n-concurrent."
+    ),
+    max_retries: int = typer.Option(
+        DEFAULT_MAX_RETRIES, min=0, help="Retries per trial, for transient API errors only."
+    ),
+    out_dir: Path | None = typer.Option(
+        None, help="Write one job config per agent here instead of printing them."
+    ),
+) -> None:
+    """Emit a Harbor job configuration per agent; it never executes anything.
+
+    One job spans every condition, with one dataset entry per (condition, task)
+    in task-major order, so conditions of the same task run paired instead of
+    one whole condition after another. Output is a pure function of the
+    experiment file and the selection, so a job config is reproducible.
+    """
+    settings = _config(config)
+    tasks = _selected_tasks(settings, _selection(task, suite, tasks_file, category, difficulty, limit))
+    try:
+        plans = plan_jobs(
+            settings,
+            [path.name for path in tasks],
+            job_prefix=job_prefix,
+            attempts=attempts,
+            jobs_dir=jobs_dir,
+            n_concurrent_trials=n_concurrent,
+            n_concurrent_agents=n_concurrent_agents,
+            max_retries=max_retries,
+        )
+    except JobPlanError as error:
+        raise typer.BadParameter(str(error)) from error
+
+    if out_dir is None:
+        for index, plan in enumerate(plans):
+            if index:
+                typer.echo("---")
+            typer.echo(plan.to_yaml().rstrip())
+        return
+
+    for plan, path in zip(plans, write_job_configs(plans, _at_root(out_dir))):
+        typer.echo(
+            f"{_show(path)}  {plan.agent} ({plan.model})  "
+            f"{len(plan.variants)} condition(s) x {len(plan.tasks)} task(s) "
+            f"x {plan.config['n_attempts']} attempt(s) = "
+            f"{plan.n_cells * plan.config['n_attempts']} trial(s)"
+        )
+
+
 # ---------------------------------------------------------------------------
 # Environment and setup
 # ---------------------------------------------------------------------------
@@ -472,6 +566,67 @@ def sources_status(sources: Path = SOURCES_OPTION) -> None:
             f"{source.state():9s} {source.kind:11s} {source.id:16s} {pin:13s} "
             f"{_show(source.dest)}{'  [' + flags + ']' if flags else ''}"
         )
+
+
+@app.command("resume")
+def resume_command(
+    job_dir: Path = typer.Argument(..., help="The Harbor job directory to resume, in place."),
+    recharged: bool = typer.Option(
+        False, help="Also re-run ApiUsageLimitError trials; say this after recharging the account."
+    ),
+    filter_type: list[str] = typer.Option(
+        None, "--filter", help="Additional exception type to re-run; must be infrastructure or transient."
+    ),
+    env_file: Path = typer.Option(
+        Path("config/local.env"), help="Credentials to export; `harbor job resume` has no --env-file."
+    ),
+    dry_run: bool = typer.Option(False, help="Print the classification and the harbor command only."),
+) -> None:
+    """Re-run only the trials that failed for reasons unrelated to the task.
+
+    A bare `harbor job resume` accepts a failed trial as a result, so a
+    rate-limited trial keeps a permanent 0.0 reward that reads like a finding.
+    This classifies every trial first, then passes an explicit, bounded filter:
+    a genuine task failure can never be laundered into a retry.
+    """
+    job_dir = _at_root(job_dir)
+    try:
+        check_job_dir(job_dir)
+        states = classify_trials(job_dir)
+        filters = resume_filters(states, extra=tuple(filter_type or ()), recharged=recharged)
+    except ResumeError as error:
+        raise typer.BadParameter(str(error)) from error
+
+    counts = breakdown(states)
+    typer.echo(f"{len(states)} trial(s) in {_show(job_dir)}")
+    for name, count in counts.items():
+        mark = "re-run" if name in filters else "keep  "
+        typer.echo(f"  {mark}  {name:28s} {count:>3}")
+    if counts.get(UNREADABLE) or counts.get(NO_RESULT):
+        typer.echo(
+            "note  Harbor skips a trial it cannot read: the directory survives every "
+            "filter and is re-run beside it. Delete those directories by hand."
+        )
+    if not filters:
+        typer.echo("nothing to re-run.")
+        return
+
+    command = ["harbor", "job", "resume", "-p", str(job_dir)]
+    for name in filters:
+        command += ["-f", name]
+    typer.echo("$ " + " ".join(command))
+    if dry_run:
+        return
+
+    environment = dict(os.environ)
+    env_path = _at_root(env_file)
+    if env_path.is_file():
+        environment.update(read_env_file(env_path))
+    else:
+        typer.echo(f"warn  {_show(env_path)} not found; resuming with the ambient environment.")
+
+    completed = subprocess.run(command, env=environment)
+    raise typer.Exit(completed.returncode)
 
 
 # ---------------------------------------------------------------------------

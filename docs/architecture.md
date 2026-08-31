@@ -205,6 +205,8 @@ with `docker image prune`.
 | `manifest.py` | variant manifest generator |
 | `validate.py` | reproducibility and isolation validator |
 | `preflight.py` | image build, in-container probe, assertions |
+| `jobplan.py` | Harbor job configs: one job per agent, task-major datasets, retry allowlist |
+| `resume.py` | trial classification and the bounded resume filter |
 | `report.py` | cell-level aggregation and adherence |
 | `analysis.py` | trial-level tables from raw job output |
 | `scaffold.py` | experiment and analysis scaffolding from templates |

@@ -32,7 +32,7 @@ against the repository root rather than your shell's working directory — set
 |---|---|
 | `hmb generate [SELECTION] [--force]` | build the task variants, one per condition |
 | `hmb validate [SELECTION]` | host-side reproducibility and benchmark-integrity check |
-| `hmb preflight [SELECTION] [--max-probe-files N] [--build-timeout-sec N] [--run-timeout-sec N]` | build every image and assert the conditions from inside the containers |
+| `hmb preflight [SELECTION] [--jobs N] [--max-probe-files N] [--build-timeout-sec N] [--run-timeout-sec N]` | build every image and assert the conditions from inside the containers; `--jobs` builds several at once (default 4) |
 
 ## Experiments
 
@@ -42,6 +42,7 @@ against the repository root rather than your shell's working directory — set
 | `hmb experiment list` | list the experiment configurations in this checkout |
 | `hmb matrix-plan [--config PATH]` | print the configured cells as `id⇥variant⇥agent⇥model` |
 | `hmb smoke-plan --task-id ID` | print the Harbor invocations without executing them |
+| `hmb plan-job [SELECTION] [--job-prefix NAME] [--attempts N] [--n-concurrent N] [--n-concurrent-agents N] [--max-retries N] [--out-dir D]` | emit one Harbor job config per agent, spanning every condition in task-major order. Prints unless `--out-dir` is given; executes nothing |
 | `./scripts/run-pilot-experiment.sh [SELECTION] [OPTIONS]` | run a task group across the matrix |
 | `./scripts/run-smoke-experiment.sh [--task ID]` | the same runner pinned to one task, with the `smoke` job prefix |
 
@@ -49,7 +50,8 @@ against the repository root rather than your shell's working directory — set
 
 | Command | Purpose |
 |---|---|
-| `hmb report [--jobs-dir D] [--pattern GLOB] [--md-out F] [--json-out F]` | aggregate trial results into a comparison table and a JSON summary |
+| `hmb resume JOB_DIR [--recharged] [--filter TYPE] [--env-file PATH] [--dry-run]` | classify a job's failed trials, then re-run only those unrelated to the task |
+| `hmb report [--jobs-dir D] [--pattern GLOB] [--md-out F] [--json-out F]` | aggregate trial results into a comparison table and a JSON summary; records each job's concurrency |
 | `hmb analysis init NAME --pattern GLOB [--no-extract] [--force]` | scaffold an analysis notebook and derive its tables |
 | `hmb analysis extract --pattern GLOB [--jobs-dir D] [--out-dir D] [--catalogue-json F]` | derive the per-trial, per-test, per-step and per-tool-call tables |
 
@@ -61,8 +63,11 @@ described in [tasks.md](tasks.md#4-selecting-tasks).
 
 | Command | Purpose |
 |---|---|
-| `harbor run -p <task> -a oracle -n 1` | run a task's reference solution; must score 1.0 |
-| `harbor run -p <task> -a nop -n 1` | do nothing; must score 0.0 |
+| `harbor run -p <task> -a oracle` | run a task's reference solution; must score 1.0 |
+| `harbor run -p <task> -a nop` | do nothing; must score 0.0 |
+
+Harbor's `-n` is `--n-concurrent`, not an attempt count; repetitions are `-k` /
+`--n-attempts`.
 
 ---
 

@@ -24,7 +24,7 @@ everything it finds.
 | `missing preflight report` when a runner starts a cell | run `hmb preflight` for that task set |
 | `ApiUsageLimitError` on every trial of one agent | that account's quota is exhausted; the trial never reached the task. Canary one cheap cell before committing to a run |
 | `compose-defined environments are not supported yet` | the task ships `environment/docker-compose.yaml`; the payload layer only patches Dockerfile-defined tasks |
-| Docker network errors on Linux | `sudo modprobe veth && sudo systemctl restart docker` |
+| Docker network errors on Linux (`failed to add the host (veth...) <=> sandbox (veth...) pair interfaces: operation not supported`) | Compare `uname -r` with `ls /lib/modules/` first. **They differ**: the kernel was upgraded without a reboot, no module can load for the running kernel, and `modprobe` cannot help — reboot. **They match**: the module is merely unloaded — `sudo modprobe veth && sudo systemctl restart docker` |
 | Disk fills during a multi-task run | `docker image prune` — preflight leaves one thin tagged layer per variant |
 | A report shows every condition performing identically | check `hmb preflight` output for that task set. If `markers=-` on a toolkit condition, the payload never arrived and you measured the baseline several times |
 
@@ -62,6 +62,25 @@ cannot run in a benchmark container — they need a Docker daemon, a human, a
 running system under test, or an MCP server — then the condition you measured is
 the runnable subset, not the toolkit. Say which skills were dropped and why.
 
+**`duration_sec` is contention-affected under parallel execution.** The runner
+runs up to `--concurrent` trials at once, and although Docker's `auto` resource
+mode gives each container hard cpu and memory limits, `docker build` runs on the
+daemon outside any container's allowance. A duration measured under concurrency
+is therefore not comparable with one measured serially — including the numbers
+already in `results/`. Cost and token metrics are unaffected, and every report
+records the concurrency its jobs used. Comparisons *within* one run stay fair,
+because the task-major dataset order runs the conditions of a task side by side.
+
+**A bare `harbor job resume` accepts a failure as a result.** Without a filter,
+a trial that died of a rate limit keeps a permanent 0.0 reward, which reads like
+a finding. Resume through `hmb resume <job-dir>`, which classifies the failures
+first and re-runs only the ones unrelated to the task. Two Harbor properties
+make this sharp: a job directory is not relocatable — the stored `config.json`
+pins `jobs_dir` and `job_name`, so resuming a *copy* silently operates on the
+original — and a trial whose `result.json` cannot be parsed is skipped by both
+the filter and the reconciliation, leaving an orphan directory beside a re-run
+of the same trial. `hmb resume` refuses the first and reports the second.
+
 **Adherence detection is textual.** It reads the agent's trajectory and startup
 log. It cannot see a `CLAUDE.md` that a CLI loads silently, and a skill name in
 prose is not an invocation — see [analysis.md](analysis.md#2-reading-adherence).
@@ -86,5 +105,6 @@ result that depends on a suite's exact composition.
 - **`hmb generate --force` replaces only the selected variants.** Directories
   under `generated/` from an earlier selection are left in place. They cannot join
   a run, but `rm -rf generated/` is the way to start clean.
-- **The runner's cells come from the configuration, its concurrency does not.**
-  Trials run serially; parallelism is Harbor's `-n` within a cell only.
+- **A job's concurrency is fixed at creation.** Harbor refuses to resume a job
+  whose stored `config.json` differs, so changing `--concurrent` means a new job,
+  not a resume.

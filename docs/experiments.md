@@ -245,15 +245,64 @@ generator, so leftover directories under `generated/` from an earlier selection
 can never join a run. It refuses to start if a selected variant has not been
 generated, and names the command that would fix it.
 
+It runs **one Harbor job per agent**, holding every condition and every task.
+Harbor gives each trial a random directory suffix and records its condition
+under `config.task.path`, so conditions cannot collide and `hmb report` still
+separates them. Within a job the dataset list is task-major — every condition of
+one task, then the next task — so conditions run side by side instead of one
+whole condition after another. That keeps host contention symmetric across
+conditions, which `duration_sec` would otherwise absorb. `hmb plan-job` writes
+those job configs and can be inspected on its own:
+
+```bash
+hmb plan-job --config $C --tasks-file $T --job-prefix my-run --attempts 3
+```
+
+Because trials run concurrently, `duration_sec` is contention-affected and is
+not comparable with the serially-run numbers already in `results/`. Cost and
+token metrics are unaffected. Every report records the concurrency the run used.
+
+### Choosing a concurrency
+
+Docker's `auto` resource mode resolves to hard limits, so each trial container is
+capped at the `cpus` and `memory_mb` its task declares regardless of its
+neighbours. Concurrency is therefore bounded by the host, not by the risk of one
+trial starving another: sum the declarations of the tasks you selected and keep
+the total inside the machine. In the terminal-bench suite 84 of 89 tasks declare
+`cpus = 1` and 69 declare `memory_mb = 2048`, so nine concurrent trials is about
+nine cores and, worst case, some 49 GB.
+
+Two things the sum does not cover:
+
+- **`docker build` runs on the daemon**, outside every container's cpu
+  allowance. The preflight gate is what keeps it out of the run: it builds every
+  image first, so the run's own builds are cache hits.
+- **The agent's credential is shared.** `agents[].n_concurrent` caps the agent
+  phase below the trial concurrency, so builds and verifiers keep using the
+  machine while agent runs wait on the provider. Harbor pools agent configs that
+  are byte-identical under one limit automatically, so every condition running
+  the same agent shares one throttle.
+
+A job's concurrency is fixed for its whole life: Harbor refuses to resume a job
+whose stored `config.json` differs from the one it was created with. Choose it at
+creation; changing it means a new job.
+
 | Flag | Effect |
 |---|---|
 | `--config PATH` | the experiment configuration |
 | `--job-prefix NAME` | job name prefix, and the `hmb report --pattern` to use afterwards |
-| `--attempts N` | repetitions per cell, passed to `harbor -n` |
+| `--attempts N` | repetitions per cell, passed to `harbor --n-attempts` (`-k`) |
+| `--concurrent N` | concurrent trials per job over the whole lifecycle — build, agent, verify (default 9) |
+| `--concurrent-agents N` | concurrent agent phases per job (default 6, must not exceed `--concurrent`) |
+| `--preflight-jobs N` | parallel image builds in the preflight gate (default 4) |
 | `--timeout-multiplier F` | scale every task timeout by `F`, for every cell in the run. Record the value with the result: it changes the budget the benchmark declares, and only a run-wide value keeps conditions comparable |
-| `--force` | re-run cells that already have results |
-| `--dry-run` | print the Harbor invocations without executing them |
+| `--force` | delete and re-run jobs that already have results |
+| `--dry-run` | print the job configs and the Harbor invocations without executing them |
 | `--skip-preflight` | skip the validate/preflight gate — debugging only |
+
+`--attempts` is Harbor's `-k` / `--n-attempts`. Harbor's `-n` is
+`--n-concurrent`, a different setting: passing an attempt count to `-n` runs
+**one** trial per cell at that concurrency.
 
 `./scripts/run-smoke-experiment.sh [--task ID]` is the same runner pinned to a
 single task with the `smoke` job prefix.
@@ -263,7 +312,7 @@ To reproduce one cell by hand:
 ```bash
 harbor run \
   -p generated/my-kit/sqlite-db-truncate \
-  -a claude-code -m claude-sonnet-5 -n 3 \
+  -a claude-code -m claude-sonnet-5 -k 3 \
   --env-file config/local.env \
   --job-name manual-my-kit-sqlite-db-truncate
 ```

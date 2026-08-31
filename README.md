@@ -133,7 +133,7 @@ Step 3 is the one that matters. It builds every image, probes each container
 from the inside, and fails closed:
 
 ```text
-preflight sqlite-db-truncate ...
+preflight sqlite-db-truncate
   ok    baseline: workdir=/app markers=- skills=0 payload_files=0
   ok    demo-kit: workdir=/app markers=CLAUDE.md,AGENTS.md skills=1 payload_files=4
 preflight passed for 1 tasks
@@ -155,7 +155,9 @@ adherence before reading the outcome.
 A trial is one (task × condition × attempt). Multiply: `tasks × cells ×
 attempts`. A measured example — 16 hard programming tasks × 3 conditions × 1
 attempt with Claude Code — was 48 trials, $75 and about 12 hours of serial
-wall-clock.
+wall-clock. The runner now executes up to 9 trials at once, so wall-clock falls
+roughly with concurrency while cost does not change at all; a duration measured
+that way is not comparable with a serial one.
 
 Two lessons from that run, both in [docs/tasks.md](docs/tasks.md#1-choosing-tasks-that-can-discriminate)
 and worth knowing before you spend anything:

@@ -5,6 +5,49 @@ active development and does not yet publish versioned releases.
 
 ## Unreleased
 
+### Added — parallel experiment execution
+
+A matrix run no longer executes one trial at a time.
+
+- `hmb plan-job` emits one Harbor job configuration per agent, spanning every
+  condition and task. Harbor names each trial directory with a random suffix and
+  records its condition under `config.task.path`, so one job can hold every
+  condition without collision and `hmb report` still separates them. Datasets are
+  emitted **task-major** — every condition of one task, then the next task — which
+  makes the conditions of a task run side by side rather than one whole condition
+  after another, keeping host contention symmetric across conditions. Output is a
+  pure function of the experiment file and the selection.
+- `scripts/run-pilot-experiment.sh` runs those jobs, up to 9 trials concurrently
+  with an agent-phase cap of 6, each job logging to its own file so parallel jobs
+  never interleave on the terminal. New flags: `--concurrent`,
+  `--concurrent-agents`, `--preflight-jobs`.
+- `hmb preflight --jobs N` builds and probes several variants at once. The gate
+  stays mandatory: it is also what turns the run's own image builds into cache
+  hits, and `docker build` is the one part of a trial that runs on the daemon
+  outside any container's cpu allowance.
+- `hmb resume <job-dir>` classifies a finished job's trials by exception type,
+  prints the breakdown, and re-runs only the failures unrelated to the task.
+  `--recharged` adds `ApiUsageLimitError` after an account is topped up. Filtering
+  anything outside the infrastructure/transient allowlist is refused, so a task
+  failure can never be laundered into a retry. It also refuses a copied job
+  directory, because Harbor resumes the `jobs_dir` / `job_name` recorded in
+  `config.json` rather than the path given on the command line.
+- `hmb report` records each job's concurrency, attempt count and agent-phase cap
+  in the report header, and states that `duration_sec` is contention-affected.
+
+### Fixed
+
+- The runner passed `--attempts` to `harbor -n`, which is `--n-concurrent`, not
+  the attempt count (`-k` / `--n-attempts`). Every earlier run claiming attempts
+  greater than one in fact ran **one** trial per cell at that concurrency. The
+  same wrong mapping was documented in `docs/experiments.md` and
+  `docs/evaluation-pipeline.md`.
+- The Docker networking advice (`sudo modprobe veth && sudo systemctl restart
+  docker`) was given for every `veth` failure. It is right for an unloaded module
+  and wrong for a kernel upgraded without a reboot: with the running kernel absent
+  from `/lib/modules/`, no module can load at all and only a reboot fixes it. The
+  runner and `docs/troubleshooting.md` now separate the two cases.
+
 ### Added — one-command setup, and pinned external sources
 
 A colleague can now go from a clone to a runnable experiment without following a

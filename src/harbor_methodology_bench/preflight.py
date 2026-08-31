@@ -4,6 +4,7 @@ import json
 import re
 import shlex
 import subprocess
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -411,6 +412,86 @@ def preflight_task(
         _write_report(generated_task, check)
     return checks
 
+
+
+DEFAULT_PREFLIGHT_JOBS = 4
+
+
+def preflight_tasks(
+    sources: list[Path],
+    generated_root: Path,
+    toolkits: dict[str, PayloadSpec],
+    max_files: int = DEFAULT_MAX_PROBE_FILES,
+    build_timeout_sec: int = 1800,
+    run_timeout_sec: int = 300,
+    jobs: int = DEFAULT_PREFLIGHT_JOBS,
+):
+    """Preflight several tasks at once, yielding `(source, checks_or_error)` in order.
+
+    Every image build and probe here is host-side work Harbor never sees, and a
+    build occupies the Docker daemon rather than a container's cpu allowance, so
+    running the suite serially left most of the machine idle. Each task's
+    baseline must be probed before its toolkit variants, because a toolkit check
+    is a comparison against the baseline container; everything else is
+    independent.
+
+    Results are yielded in the order of `sources`, not the order they finish, so
+    the output of a parallel preflight reads the same as a serial one.
+    """
+    with ThreadPoolExecutor(max_workers=max(1, jobs)) as pool:
+        baselines = {
+            source: pool.submit(
+                check_baseline,
+                source,
+                generated_root / "baseline" / source.name,
+                max_files,
+                build_timeout_sec,
+                run_timeout_sec,
+            )
+            for source in sources
+        }
+        pending: dict[Path, list[tuple[Path, Future]]] = {}
+
+        for source in sources:
+            try:
+                baseline_check, baseline_probe = baselines[source].result()
+            except PreflightError:
+                continue
+            _write_report(generated_root / "baseline" / source.name, baseline_check)
+            pending[source] = [
+                (
+                    generated_root / variant / source.name,
+                    pool.submit(
+                        check_toolkit,
+                        source,
+                        generated_root / variant / source.name,
+                        variant,
+                        spec,
+                        baseline_probe,
+                        max_files,
+                        build_timeout_sec,
+                        run_timeout_sec,
+                    ),
+                )
+                for variant, spec in toolkits.items()
+            ]
+
+        for source in sources:
+            try:
+                baseline_check, _ = baselines[source].result()
+            except PreflightError as error:
+                yield source, error
+                continue
+            checks = [baseline_check]
+            try:
+                for generated_task, future in pending[source]:
+                    check = future.result()
+                    _write_report(generated_task, check)
+                    checks.append(check)
+            except PreflightError as error:
+                yield source, error
+                continue
+            yield source, checks
 
 def _write_report(generated_task: Path, check: VariantCheck) -> None:
     path = generated_task / ".methodology-bench-preflight.json"
