@@ -716,7 +716,12 @@ def screen_command(
         )
         typer.echo(f"  {verdict:8s} {entry.task:34s} oracle={oracle} nop={nop} baseline={base}  {reason}")
     undecided = sum(1 for entry in screens if entry.verdict()[0] == UNKNOWN)
-    typer.echo(f"{kept} of {len(screens)} task(s) can discriminate; {undecided} undecided.")
+    excluded = len(screens) - kept - undecided
+    typer.echo(f"{len(screens)} candidate(s): {kept} kept, {excluded} excluded, {undecided} undecided.")
+    if undecided:
+        # Saying "0 can discriminate" after the token-free stage would read as a
+        # verdict on the tasks rather than on how much of the screen has run.
+        typer.echo("the undecided tasks need the paid stage: --stage baseline")
 
     if out is not None:
         destination = _at_root(out)

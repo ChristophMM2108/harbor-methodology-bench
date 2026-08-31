@@ -73,6 +73,30 @@ stage is a real baseline trial, so a job named `suite-screen-baseline` would be
 folded into the `suite-*` report as extra baseline trials and quietly unbalance
 the cell. Keep them apart: `screen-*` for the screen, `suite-*` for the run.
 
+### 3.1 What the solvability screen found
+
+Run on 2026-08-31 over the 83 candidates, 166 trials, no tokens. **76 tasks
+passed both checks**; 7 were excluded because the task's own reference solution
+does not score 1.0 against its own verifier:
+
+| Task | Oracle's own test result | Reading |
+|---|---|---|
+| `build-cython-ext` | 10 of 11 tests pass | one over-strict test (`test_pyknotid_repository_tests`) floors the reward for everyone |
+| `build-pmars` | 0 of 4 | the reference solution does not satisfy the verifier |
+| `build-pov-ray` | 0 of 3 | as above |
+| `caffe-cifar-10` | 3 of 6, and the oracle itself hit the agent budget | not solvable inside its own budget |
+| `mcmc-sampling-stan` | 2 of 6 | reference solution does not satisfy the verifier |
+| `protein-assembly` | 0 of 1 | as above |
+| `rstan-to-pystan` | 1 of 6 | as above |
+
+`nop` scored 0.0 on every candidate, so no task in the suite passes without
+work.
+
+Two of these — `build-cython-ext` and `build-pmars` — were in prog16's measured
+16. Every condition scored 0 on them there, which looked like a shared failure
+and was in fact a task that cannot be passed. That is three trials each, in
+prog16 and in any repeat, spent on a question the task cannot answer.
+
 ## 4. Running it
 
 Every command is safe to re-run. Nothing below re-pays for a trial that already
