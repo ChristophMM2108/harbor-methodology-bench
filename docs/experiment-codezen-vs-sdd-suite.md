@@ -173,11 +173,15 @@ exist and points at `hmb resume` for the one that did not finish.
 ### Step 3 — the measurement (~$9.4 per surviving task)
 
 ```bash
-./scripts/run-pilot-experiment.sh --config $C --tasks-file $SET \
-    --job-prefix suite --attempts 2 --dry-run     # inspect the plan, spends nothing
+  ./scripts/run-pilot-experiment.sh \
+      --config config/experiments.codezen-vs-sdd.yaml \
+      --tasks-file config/tasks-suite.txt \
+      --job-prefix suite --attempts 2 --dry-run     # plan only
 
-./scripts/run-pilot-experiment.sh --config $C --tasks-file $SET \
-    --job-prefix suite --attempts 2
+  ./scripts/run-pilot-experiment.sh \
+      --config config/experiments.codezen-vs-sdd.yaml \
+      --tasks-file config/tasks-suite.txt \
+      --job-prefix suite --attempts 2
 ```
 
 One job, `jobs/suite-claude-code`, holding every condition and task, up to 9
@@ -228,6 +232,7 @@ hmb resume jobs/suite-claude-code --dry-run     # per-exception breakdown
 hmb report --pattern "suite-*"                  # the results so far
 ```
 
+
 ### Step 5 — results
 
 ```bash
@@ -238,6 +243,35 @@ hmb analysis init suite --pattern "suite-*"
 
 Keep the pattern as `suite-*`: it must not match the `screen-*` jobs, whose
 baseline stage would otherwise be folded in as extra baseline trials.
+
+### Step 6 — the ceiling probe
+
+A secondary run over ten code tasks the screen rejected because the bare agent
+already passes them. It is not part of the measurement, so it gets its own job
+prefix and its own report pattern: `ceiling-*` must not match `suite-*`, for the
+same reason `screen-*` must not.
+
+Run it only after Step 4's job has finished, never beside it. Both build images
+on the same docker daemon, and `duration_sec` already carries host contention.
+
+```bash
+./scripts/run-pilot-experiment.sh \
+    --config config/experiments.codezen-vs-sdd.yaml \
+    --tasks-file config/tasks-ceiling-code.txt \
+    --job-prefix ceiling --attempts 2
+```
+
+Ten tasks × 3 cells × 2 attempts = 60 trials, in `jobs/ceiling-claude-code`.
+
+```bash
+hmb report --pattern "ceiling-*" --md-out results/ceiling_report.md
+```
+
+What it can show: not success rate, since every cell sits at ceiling, but what a
+methodology *costs* where it cannot help — extra tokens, extra wall-clock, and
+any task a methodology turns from a pass into a fail. The task list and the
+selection rule are in
+[`config/tasks-ceiling-code.txt`](../config/tasks-ceiling-code.txt).
 
 ## 5. What it costs
 

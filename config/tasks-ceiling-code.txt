@@ -1,0 +1,53 @@
+# Ceiling-excluded code tasks — a secondary probe, NOT part of the measurement
+#
+# Every task below was dropped from config/tasks-suite.txt by `hmb screen`
+# because the bare agent already passes it. No condition can discriminate on a
+# task that is already at ceiling, so these trials are not evidence about
+# CodeZen vs SDD and must never be folded into the `suite-*` report.
+#
+# Run them under their own job prefix and report them under their own pattern:
+#
+#   ./scripts/run-pilot-experiment.sh \
+#       --config config/experiments.codezen-vs-sdd.yaml \
+#       --tasks-file config/tasks-ceiling-code.txt \
+#       --job-prefix ceiling --attempts 2
+#   hmb report --pattern "ceiling-*" --md-out results/ceiling_report.md
+#
+# What they can still show: whether a methodology *costs* something where it
+# cannot help — extra tokens, extra wall-clock, or a regression that turns a
+# task the bare agent passes into one a methodology fails. That is a real
+# finding, but it is a cost/regression finding, not a success-rate finding.
+#
+# Selection: category software-engineering or debugging, ranked by expert
+# estimate divided by agent budget. A high ratio means the task is hard
+# relative to its budget, so the ceiling that excluded it is the shallowest
+# and a condition has the most room to separate. Tasks at 32x or more are
+# excluded here for the same reason config/tasks-suite-candidates.txt excludes
+# them: nothing solves them in budget, so every condition floors at 0.
+#
+# task                          category              expert/budget
+# ---------------------------------------------------------------------
+# fix-ocaml-gc                  software-engineering      24.0x
+# circuit-fibsqrt               software-engineering      16.0x
+# make-mips-interpreter         software-engineering      16.0x
+# torch-pipeline-parallelism    software-engineering      16.0x
+# headless-terminal             software-engineering       8.0x
+# schemelike-metacircular-eval  software-engineering       7.5x
+# overfull-hbox                 debugging                  4.8x
+# path-tracing-reverse          software-engineering       4.0x
+# pypi-server                   software-engineering       4.0x
+# sqlite-db-truncate            debugging                  4.0x
+#
+# Caveat on path-tracing-reverse: `path-tracing` is in the measured suite, so
+# the two are correlated. Read them together, not as independent samples.
+
+fix-ocaml-gc
+circuit-fibsqrt
+make-mips-interpreter
+torch-pipeline-parallelism
+headless-terminal
+schemelike-metacircular-eval
+overfull-hbox
+path-tracing-reverse
+pypi-server
+sqlite-db-truncate
