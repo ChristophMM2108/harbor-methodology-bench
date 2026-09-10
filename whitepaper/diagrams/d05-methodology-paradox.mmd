@@ -1,0 +1,14 @@
+flowchart TD
+    A["<b>the belief</b> — structure should help more as tasks get longer<br/>SDD invokes its specification chain <b>2.2× more often</b> on long-horizon tasks<br/>2.30 vs 1.06 Skill calls per task (p = 0.093) · rho = +0.379 vs log expert time (p = 0.056)"]
+    B["<b>what the chain then does</b> — budget and context go into authoring markdown specifications;<br/><b>zero</b> recognised verification commands across 20 ceiling trials"]
+    C["<b>what it costs</b> — the largest partial-credit deficit anywhere in the data:<br/><b>−0.182</b> against baseline on long-horizon tasks, versus −0.080 on short ones"]
+    D["<b>the paradox</b> — the agent acts on the length hypothesis exactly where the hypothesis<br/>predicts a payoff, and that is where it does worst"]
+
+    A --> B --> C --> D
+
+    classDef belief fill:#f4f6fb,stroke:#2a78d6;
+    classDef act fill:#fdf1ea,stroke:#eb6834;
+    classDef res fill:#fdecec,stroke:#d03b3b,stroke-width:2px;
+    class A belief;
+    class B act;
+    class C,D res;

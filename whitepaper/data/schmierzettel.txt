@@ -1,0 +1,583 @@
+﻿1. The literature themes that fit your paper best
+I would organize the related work around six themes:
+Theme
+	Why it matters to your experiment
+	Priority
+	Evaluation of coding agents
+	Establishes the research context for Terminal-Bench, autonomous coding, agent interfaces and long-horizon tasks
+	★★★★★
+	Process overhead / cost-aware agents
+	Directly supports your central finding that process can consume scarce time/compute without improving outcomes
+	★★★★★
+	TDD and verification
+	Provides the established software-engineering expectation that testing improves quality, while also showing that productivity effects are mixed
+	★★★★★
+	Code review and review latency
+	Lets you position CodeZen's review stage against empirical evidence about review benefits and costs
+	★★★★☆
+	Requirements/specification ambiguity
+	Extremely important for your claim that Terminal-Bench may be the wrong population for evaluating specification processes
+	★★★★★
+	Repeated sampling / pass@k / stochasticity
+	Directly supports your “just retry more” investigation and its caveat about independence
+	★★★★★
+	There are also two particularly recent papers that strengthen the novelty of your work: one on randomness in agent evaluations and one on the “tool-use tax” in LLM agents.
+________________
+
+
+2. Terminal-Bench and the nature of your experimental population
+Merrill et al., Terminal-Bench: Benchmarking Agents on Hard, Realistic Tasks in Command Line Interfaces
+This is the most obvious foundational citation because your experiments use Terminal-Bench 2.0.
+The benchmark paper says that Terminal-Bench 2.0 consists of difficult terminal-environment tasks inspired by real workflows, with human-written solutions and comprehensive tests. (arXiv)
+A particularly useful passage is:
+“Each task features a unique environment, human-written solution, and comprehensive tests for verification.”
+That is useful immediately before you explain why the benchmark has a verifier-centered notion of success.
+Where I would cite it
+Your report currently says:
+“The reward is a verifier, not a judge. No model grades style or process, so a methodology can only score by changing the artefact on disk.”
+Put the Terminal-Bench citation directly after the description of the benchmark, e.g.:
+Terminal-Bench 2.0 evaluates agents in terminal environments using task-specific tests to determine whether the requested work was completed (Merrill et al., 2026).
+This establishes that your evaluation is not an arbitrary custom harness.
+Why it improves the paper: It turns what currently looks like your own characterization of the benchmark into a documented methodological property.
+Terminal-Bench paper
+________________
+
+
+3. Your strongest external connection: agent time horizons
+METR — Task-Completion Time Horizons of Frontier AI Models
+This is exceptionally relevant to your Sections 3, 4 and 6.
+METR defines a task-completion time horizon using human expert completion time and agent success probability. Their current methodology fits success as a function of human task duration. (Metr)
+Their definition is particularly useful:
+“The task-completion time horizon is the task duration … at which an AI agent is predicted to succeed with a given level of reliability.”
+They also explicitly use tasks that are self-contained, well-specified and automatically evaluated. (Metr)
+This is important for one of your most interesting findings
+Your report finds:
+* expert task length correlates strongly with absolute cost;
+* the CodeZen cost multiplier is essentially flat with task length;
+* yet you question whether your task population actually represents the regime where specification processes should help.
+METR provides excellent vocabulary for distinguishing:
+task difficulty measured in human time
+from
+agent wall-clock consumption
+from
+autonomous capability horizon.
+Where I would cite it
+At the beginning of Section 6, after:
+“The hypothesis that motivated pooling the two runs was that structure should become more valuable as tasks grow longer.”
+You could cite METR there to establish that human-completion time is already being used in modern agent evaluation as a meaningful measure of task difficulty/horizon.
+More importantly, your caveat at lines 629–634 is excellent:
+“these tasks top out at a day of expert time in a single autonomous session with a fully specified instruction, while the hypothesis concerns multi-session work with ambiguous requirements and a human in the loop.”
+That should become a central literature-backed argument, not a minor limitation.
+METR Time Horizons methodology
+________________
+
+
+4. Specification processes and the ambiguity problem
+This may be the most important literature for your argument about SDD.
+Femmer et al. / Empirical Requirements Engineering literature
+The review Addressing the challenges of requirements ambiguity establishes that ambiguity in natural-language requirements is a longstanding requirements-engineering problem. Their systematic review identified 174 studies, although relatively few had empirical evaluation. (DOI)
+A useful passage is:
+“Ambiguity in natural language requirements has long been recognized as an inevitable challenge in requirements engineering.”
+Where to cite it
+Your Section 8 says:
+“Terminal-Bench tasks are single-session, self-contained and fully specified — the regime where a specification process has least to add.”
+That is a very important claim. Cite the requirements literature after explaining what SDD is supposed to solve:
+Specification-oriented development processes are motivated in part by the difficulty of translating natural-language requirements into an unambiguous, shared understanding of system behavior (citation).
+Then contrast that with your benchmark:
+The Terminal-Bench tasks used here deliberately provide self-contained instructions and automatically testable success criteria, potentially reducing the class of ambiguity that specification processes are designed to resolve.
+That gives your null result a theoretically grounded explanation rather than simply saying “maybe the benchmark was not suitable.”
+________________
+
+
+5. An unusually relevant paper: ambiguity may not always be worth resolving
+Ribeiro & Berry, 2020
+The prevalence and severity of persistent ambiguity in software requirements specifications: Is a special effort needed to find them?
+This is an excellent counterpoint to simplistic claims that “more specification = better software.”
+The paper reports empirical investigations in which persistent ambiguities did not produce the expected downstream damage, and asks whether the cost of aggressively identifying every ambiguity is justified. (ScienceDirect)
+The paper's abstract contains an exceptionally relevant sentence:
+“Maybe searching for these ambiguities is not very cost effective and useful.”
+That is almost tailor-made for your argument, although I would not quote it directly in the paper; paraphrase it.
+Where I would use it
+Immediately after your argument:
+“Tasks are self-contained and fully specified. This is precisely the regime in which a specification process has least to add.”
+You can construct the theoretical contrast:
+Your experiment: specification has little obvious uncertainty to resolve.
+Requirements literature: ambiguity matters, but detecting/removing ambiguity itself has a cost and its benefit is context-dependent.
+Your conclusion: evaluating a specification process requires deliberately creating/selecting tasks where ambiguity and coordination are genuine sources of difficulty.
+That is a much stronger research contribution.
+________________
+
+
+6. Software-process tailoring: perhaps the best theoretical framework for your conclusion
+Xu & Ramesh, Software Process Tailoring: An Empirical Investigation
+This work argues that software processes should be adapted to project context rather than blindly applied as a fixed process. Their empirical work identifies process tailoring as a mechanism for dealing with project-specific challenges. (JMIS)
+The key passage is:
+“Software process tailoring refers to the activity of tuning a standardized process to meet the needs of a specific project.”
+This connects beautifully to your final recommendation that process should be gated based on task state and remaining time.
+Where to cite it
+Your Section 9 recommends:
+“Gate procedural skills on state and on time remaining.”
+This is more than an ad-hoc engineering recommendation. It can be framed as an agent-specific form of process tailoring.
+Your argument becomes:
+Traditional software-process research recognizes that processes should be adapted to project context. Our results suggest that autonomous coding agents require a still more dynamic form of tailoring, in which process invocation depends not only on task characteristics but also on observed execution state and remaining computational budget.
+That would be a very good conceptual contribution.
+________________
+
+
+7. TDD: your results should NOT be framed as “TDD doesn't work”
+This is where you should be especially careful.
+Munir et al., 2016 — systematic review
+The effects of test driven development on internal quality, external quality and productivity: A systematic review
+This review examined 1,107 publications and analyzed 27 studies in depth. It found that TDD was frequently associated with quality improvements, but productivity effects differed substantially by setting. (ScienceDirect)
+The key finding is:
+“TDD yields more benefits than TLD for internal and external software quality, but it results in lower developer productivity than TLD.”
+That's directly relevant to your observations about CodeZen.
+Why this matters
+Your result isn't:
+“Testing is bad.”
+It is closer to:
+Adding procedural testing/review behavior to an autonomous agent does not guarantee better external task outcomes, and the additional process consumes resources that may become operationally significant under a hard deadline.
+That's a much more defensible statement.
+Where to cite it
+Your Section 5 says:
+“CodeZen verifies far more, and it does not help.”
+Put the TDD literature before this empirical observation, so the reader sees that testing has established potential benefits:
+Traditional software-engineering research has often associated TDD with improved software quality, while evidence concerning productivity is mixed (Munir et al., 2016). The present experiment therefore does not interpret the increased testing behavior as intrinsically harmful; rather, it asks whether such process behavior improves outcomes under an autonomous agent's fixed execution budget.
+Then your result becomes much more interesting.
+________________
+
+
+8. An even better TDD citation for your particular argument
+Erdogmus et al./controlled TDD experiments
+The controlled experiment Impact of test-driven development on productivity, code and tests found no statistically significant differences between TDD and iterative test-last development across several outcome measures, while explicitly raising the possibility that benefits commonly attributed to TDD may instead derive from short development cycles. (ScienceDirect)
+The most relevant passage is:
+“It is not clear whether the supposed benefits come from writing tests before code or maybe from high iterativity/short development cycles.”
+This is highly compatible with your methodology.
+Your CodeZen result effectively raises a related question:
+Does the agent need the entire procedural apparatus, or merely the useful parts of it?
+Where to cite it
+Around your discussion of CodeZen's sequence:
+“CodeZen implements first and reviews after.”
+This literature gives you support for distinguishing a development principle from the particular process used to implement it.
+Controlled TDD experiment
+________________
+
+
+9. Code review: the literature actually supports your nuance
+Your report should avoid implying that the result invalidates code review as an engineering practice.
+Kudrjavets & Rastogi, 2024 — code review speed
+This empirical study of practitioners finds that review speed matters and that time-to-merge is a particularly important metric. (Springer Link)
+The abstract states:
+“The efficiency of the code review process significantly impacts how fast the code gets merged into the final product and reaches the customers.”
+That gives you a direct external basis for your observation that review consumes operational time.
+Where to cite it
+Your Section 4 currently argues:
+“The architectural lesson … An autonomous agent under a real time or compute budget needs an explicit exit condition.”
+This is where I'd cite the code-review literature.
+Your contribution then becomes:
+Human software engineering recognizes review as valuable but also recognizes review latency as an important process cost. Autonomous agents make this trade-off sharper because the review consumes the same bounded execution budget required to produce the artifact.
+That's a considerably stronger framing.
+________________
+
+
+10. Code review can find defects—but that's exactly why your finding is interesting
+Another useful study found that introducing code reviews can shift fault detection earlier in the development process. (ScienceDirect)
+The relevant passage is:
+“Many of the faults that normally are found in later test phases or operation are instead found in code reviews.”
+This is excellent background for your CodeZen findings.
+Your report observes that CodeZen substantially increased verification activity without increasing measured correctness.
+That creates an interesting research question:
+Why does a practice that can improve defect detection in human development not necessarily improve autonomous coding-agent outcomes?
+Your report's explanation—self-generated tests can encode the agent's own misunderstanding—is one of the more interesting ideas in the paper.
+That deserves more emphasis.
+________________
+
+
+11. Agent interfaces matter: SWE-agent
+Yang et al., SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering
+SWE-agent is foundational agentic software-engineering research. The authors argue that LLM agents have different needs from human developers and show that a dedicated agent-computer interface can substantially influence performance. (arXiv)
+The abstract says:
+“We posit that LM agents represent a new category of end users with their own needs and abilities.”
+That's very relevant to your argument.
+Where to cite it
+Your paper is implicitly making the stronger claim that software-engineering methodology cannot simply be transferred to an autonomous LLM agent unchanged.
+Put SWE-agent near the introduction of your conceptual argument:
+Coding agents are not merely human developers operating faster; their interaction with repositories, tools, tests and context introduces a distinct execution regime (Yang et al., 2024).
+Then your experiments become an empirical investigation of what happens when human-oriented process structures are placed into that regime.
+SWE-agent paper
+________________
+
+
+12. Agentless is almost tailor-made for your comparison
+Xia et al., Agentless: Demystifying LLM-based Software Engineering Agents
+Agentless deliberately investigates whether complicated agent architectures are necessary. Its pipeline is comparatively simple: localization → repair → validation. (GitHub)
+That is extremely relevant to your “process vs useful work” argument.
+The project describes its approach as:
+“a simple three phase process: localization, repair, and patch validation.”
+Why this matters
+Your work is not alone in questioning whether more elaborate agent structures necessarily buy more capability.
+Agentless gives you a related research direction:
+simple pipeline vs. complex agent scaffolding.
+Your experiments contribute something different: you measure the cost and deadline effects of such process structures under controlled paired trials.
+________________
+
+
+13. The “tool-use tax” paper is probably your most directly aligned recent citation
+Zhang et al., 2026 — Are Tools All We Need? Unveiling the Tool-Use Tax in LLM Agents
+This paper is unusually relevant to your findings.
+It reports that tool-augmented reasoning does not always improve performance and explicitly separates:
+1. prompt-formatting costs,
+2. tool-calling protocol overhead,
+3. actual benefit from tool execution. (arXiv)
+Its central concept is a “tool-use tax.”
+This is conceptually very close to what your report is observing with process scaffolding.
+Where I would cite it
+Your Section 3 begins:
+“Cost is a continuous per-trial quantity rather than a rare binary event…”
+This is an ideal location.
+You could frame your work as an empirical software-engineering analogue of the broader idea that additional agent machinery has a measurable cost that must be justified by a corresponding performance benefit.
+The important distinction should be explicit:
+Zhang et al. study tool-use overhead; our experiment studies repository-level process scaffolding and procedural skills.
+That avoids overstating equivalence.
+________________
+
+
+14. Multi-agent systems: another direct connection
+A 2026 mixed-method study of LLM-based multi-agent systems in software engineering reports challenges involving technology selection, coordination rules and agent roles. It also notes that empirical performance differences can be difficult to establish. (arXiv)
+This aligns with your observation that CodeZen's major cost signature is delegation:
+2.55–2.62 sub-agents per trial versus essentially zero for the other conditions.
+Your results therefore fit into a broader research question:
+When does decomposition into multiple agents actually create useful additional capability, rather than simply additional inference and coordination overhead?
+That is an excellent future-work direction.
+________________
+
+
+15. AgentBench supports your emphasis on behavioral mechanisms
+AgentBench argues that evaluating LLMs as agents requires interactive environments rather than simply static NLP evaluations, and identifies poor long-term reasoning, decision making, and instruction following as important failure modes. (ICLR Proceedings)
+This supports your choice to measure not only pass/fail but:
+* sub-agent spawning,
+* tool calls,
+* verification commands,
+* agent steps,
+* errors,
+* budget consumption.
+Your report explicitly describes these as “behavioural measures that carry a mechanism.”
+That's a methodological strength that should be emphasized more strongly in the paper.
+________________
+
+
+16. Your benchmark-validity argument is strongly supported by 2026 research
+This is one of the areas where recent literature is particularly valuable.
+OpenAI, 2026 — Separating signal from noise in coding evaluations
+This is extremely relevant to your discussion of benchmark/task validity.
+OpenAI's July 2026 audit of SWE-Bench Pro reports that roughly 30% of tasks had significant evaluation problems, including:
+* overly strict tests,
+* underspecified prompts,
+* insufficient test coverage,
+* misleading prompts. (OpenAI)
+The paper states:
+“When evaluations have flaws that affect results, they can give a false understanding of capabilities.”
+That directly supports the general principle behind your Sections 2.1 and 8.
+Even more interestingly, they state:
+“We find evidence of breaking issues in a significant portion of the dataset.”
+Why this strengthens your paper
+Your report is concerned with:
+* selecting tasks that discriminate between conditions;
+* floor and ceiling effects;
+* task specification;
+* verifier resolution;
+* timeout handling;
+* whether the benchmark represents the target population.
+This recent literature demonstrates that these are not peripheral concerns—they are currently recognized as central problems in coding-agent evaluation.
+OpenAI — Separating signal from noise in coding evaluations
+________________
+
+
+17. Your “one-trial screen” argument connects to a broader evaluation problem
+Your report's analysis here is particularly strong:
+“one trial cannot distinguish always fails … from sometimes fails, the only kind of task that discriminates.”
+Recent research on agent evaluation stochasticity provides unusually direct support.
+Bjarnason, Silva & Monperrus, On Randomness in Agentic Evals
+This 2026 study collected 60,000 SWE-Bench-Verified agent trajectories and reports substantial variation between runs; even at temperature 0, performance estimates can vary. (Hugging Face)
+The central claim is:
+“significant variance in single-run performance estimates”
+This is directly relevant to your insistence that a single baseline trial is inadequate for selecting experimental tasks.
+Where I would cite it
+I would cite it right after:
+“one trial cannot distinguish ‘always fails’ from ‘sometimes fails’…”
+This may become one of your strongest literature-supported methodological arguments.
+It also provides an excellent justification for why your two-attempt design is useful but still insufficient.
+On Randomness in Agentic Evals
+________________
+
+
+18. Your “just retry more” section has very strong prior literature
+You derive:
+P(at least one pass)=1−(1−p)kP(\text{at least one pass}) = 1-(1-p)^k
+and then correctly question its assumptions.
+There are two relevant research traditions here.
+Chen et al., 2021 — code generation and repeated sampling
+The Codex paper Evaluating Large Language Models Trained on Code found that repeated sampling improves functional correctness. (Hugging Face)
+That gives direct historical precedent for your retry hypothesis.
+Wang et al., 2022 — Self-Consistency
+Self-consistency explicitly improves reasoning by sampling multiple reasoning paths and aggregating them. (arXiv)
+The passage to cite is:
+“It first samples a diverse set of reasoning paths instead of only taking the greedy one.”
+Where to cite these
+At the start of Section 7:
+Repeated sampling is an established mechanism for improving LLM performance, including code generation and reasoning (Chen et al., 2021; Wang et al., 2022).
+Then make your contribution explicit:
+However, those results do not imply that independent coding-agent attempts are exchangeable Bernoulli draws. Our paired two-attempt design directly tests that assumption at the task level.
+That is a much stronger positioning of your Section 7.
+________________
+
+
+19. Test-time compute gives you an even stronger theoretical framing
+Snell et al., 2024 — Scaling LLM Test-Time Compute Optimally
+This paper studies how fixed additional inference-time computation should be allocated and finds that its usefulness depends strongly on problem difficulty. (arXiv)
+The crucial passage is:
+“the effectiveness of different approaches to scaling test-time computation critically varies depending on the difficulty of the prompt.”
+That fits your experiment almost perfectly.
+Your fundamental resource allocation problem is:
+Given a fixed budget, should the agent spend it on:
+* another attempt,
+* specification,
+* testing,
+* review,
+* delegation,
+* repair loops,
+* exploration?
+This is essentially test-time compute allocation viewed through a software-engineering process lens.
+Where I would cite it
+This deserves a citation both in Section 7 and in the Introduction/Discussion.
+It can turn “retry versus methodology” from an interesting engineering observation into part of the emerging literature on inference-time compute allocation.
+________________
+
+
+20. CostBench gives you a new 2026 vocabulary for your contribution
+The ACL 2026 paper CostBench: Evaluating Multi-Turn Cost-Optimal Planning and Adaptation in Dynamic Environments for LLM Tool-Use Agents explicitly argues that existing agent evaluations tend to emphasize task completion while neglecting resource efficiency. (ACL Anthology)
+This is extremely close to the philosophy of your study.
+The paper says:
+“Current evaluations of Large Language Model (LLM) agents primarily emphasize task completion, often overlooking resource efficiency and adaptability.”
+This should influence your Introduction
+One of your strongest conceptual claims could become:
+Existing coding-agent benchmarks generally emphasize whether the task is solved. Our experiment treats cost, wall-clock budget consumption, process invocation, and verification behavior as first-class dependent variables.
+Your report already does this empirically:
+* cost,
+* wall-clock,
+* budget consumed,
+* tokens,
+* steps,
+* sub-agents,
+* verification,
+* partial credit.
+CostBench gives you a contemporary literature foundation for why that is scientifically important.
+________________
+
+
+21. One of your strongest methodological arguments: timeouts should not simply disappear
+You treat timeout observations as censored and perform alternative analyses.
+The general statistical literature strongly supports the idea that censoring is informative rather than something that can simply be ignored.
+A 2024 review explains:
+“The presence of censored observations has important consequences for the statistical analysis.”
+and notes that simply using ordinary statistics can produce biased results. (ScienceDirect)
+The literature on survival analysis also emphasizes that right-censored observations contain information about the event time and should be handled explicitly. (PubMed Central (PMC))
+Where I would cite it
+At the start of Section 4.1:
+“Across both runs 23 trials were killed…”
+Then explain that termination at the wall-clock limit provides a lower/upper-bound observation about completion time, rather than simply being equivalent to an ordinary failed trial.
+That gives your recommendation—
+“Grade the workspace at the moment of the kill”
+—a much stronger methodological foundation.
+An important nuance
+I would not claim that your problem literally is standard survival analysis. The censoring mechanism here is potentially informative, because the agent's behavior determines whether it reaches the deadline. The literature is useful for the general principle that censoring carries information, not as a drop-in analysis method.
+That distinction should be made explicitly.
+________________
+
+
+22. What I think your literature review should argue
+I would not write a conventional review that says:
+“TDD is good; code review is good; SDD is good; therefore…”
+That would actually weaken the paper.
+Your literature review should build this sequence:
+A. Software engineering has long used process to improve quality
+TDD and code review literature establishes that process can improve defect detection and quality.
+B. Process also has measurable productivity/latency costs
+TDD productivity findings are mixed, and code review latency is itself an important engineering concern. (ScienceDirect)
+C. Autonomous agents operate under a different resource regime
+Agent research treats LLMs as autonomous interactive systems with distinct interfaces and constraints. (arXiv)
+D. Additional agent machinery therefore consumes a scarce inference-time resource
+The “tool-use tax” and test-time-compute literature support this framing. (arXiv)
+E. Whether specification helps depends on what the task requires
+Requirements-engineering literature emphasizes ambiguity and contextual requirements quality, while process-tailoring literature emphasizes adapting process to project context. (DOI)
+F. Therefore a benchmark of fully specified, single-session tasks may systematically under-test the value of specification processes
+This is your own contribution, supported by the preceding literature.
+That is a much more compelling theoretical chain.
+________________
+
+
+23. Where I would add citations to your actual report
+Here is my recommended citation map.
+Your report
+	Citation I would add
+	Reason
+	§1.1 Terminal-Bench description
+	Merrill et al. 2026
+	Benchmark provenance
+	§1.1 “reward is a verifier”
+	Merrill et al. 2026
+	Execution-based evaluation
+	§1.1 fully specified tasks
+	requirements-quality literature + METR
+	Establishes importance of task specification
+	§2.1 one-trial screening flaw
+	On Randomness in Agentic Evals
+	Single-run estimates are noisy
+	§3 cost of process
+	CostBench + test-time compute
+	Resource efficiency as an evaluation dimension
+	§4 clock as binding constraint
+	METR + code-review latency
+	Time horizon / process latency
+	§4.1 censoring
+	survival-analysis literature
+	Censoring contains information
+	§4.2 post-completion trap
+	tool-use tax + process tailoring
+	Additional process can become wasteful
+	§5 TDD/testing
+	Munir et al. + controlled TDD study
+	Established quality/productivity tradeoff
+	§5 code review
+	code-review empirical studies
+	Review can help quality but has latency
+	§5 agent's own tests
+	AgentBench / SWE-agent literature
+	Agent behavior differs from conventional development
+	§6 task length
+	METR
+	Human task duration as difficulty/horizon
+	§7 retries
+	Chen et al.; Wang et al.; Snell et al.
+	Repeated sampling/test-time compute
+	§7 independence caveat
+	On Randomness in Agentic Evals
+	Repeated agent attempts aren't necessarily identical draws
+	§8 benchmark limitation
+	OpenAI 2026 audit + requirements literature
+	Benchmark validity and task specification
+	§8 process tailoring
+	Xu & Ramesh
+	Process should adapt to context
+	§9 recommendations
+	Xu & Ramesh + CostBench
+	Dynamic/resource-aware process selection
+	________________
+
+
+24. The five citations I would consider essential
+If you don't want the paper to become overloaded with references, these are the five I would prioritize:
+1. Merrill et al. (2026), Terminal-Bench 2.0
+Establishes the benchmark and evaluation regime. (arXiv)
+2. Munir et al. (2016), TDD systematic review
+Provides the strongest conventional-SE comparison for your process-vs-productivity argument. (ScienceDirect)
+3. Yang et al. (2024), SWE-agent
+Supports treating coding agents as a distinct software-engineering execution regime. (arXiv)
+4. Bjarnason, Silva & Monperrus (2026), On Randomness in Agentic Evals
+Directly supports your repeated-trial/task-screening arguments. (alphaXiv)
+5. Zhang et al. (2026), Tool-Use Tax
+Provides almost exactly the theoretical concept your cost findings need. (arXiv)
+I would then add METR, Xu & Ramesh, Ribeiro & Berry, and Snell et al. because together they make the specification/time-horizon/resource-allocation argument substantially stronger.
+________________
+
+
+25. The most important passages to quote or paraphrase
+I would prioritize these rather than filling the paper with quotations.
+Source
+	Passage
+	Use
+	Merrill et al.
+	“Each task features a unique environment, human-written solution, and comprehensive tests for verification.”
+	Explain benchmark
+	METR
+	“The task-completion time horizon is the task duration … at which an AI agent is predicted to succeed with a given level of reliability.”
+	Define task horizon
+	Requirements ambiguity review
+	“Ambiguity in natural language requirements has long been recognized as an inevitable challenge…”
+	Establish motivation for specification
+	Ribeiro & Berry
+	“Maybe searching for these ambiguities is not very cost effective and useful.”
+	Challenge assumption that more specification is always better
+	Munir et al.
+	“TDD yields more benefits than TLD for internal and external software quality, but it results in lower developer productivity…”
+	Process/quality tradeoff
+	TDD controlled experiment
+	“It is not clear whether the supposed benefits come from writing tests before code…”
+	Separate mechanism from ceremony
+	SWE-agent
+	“LM agents represent a new category of end users with their own needs and abilities.”
+	Distinct agent regime
+	Tool-use tax
+	“Tool-augmented reasoning does not necessarily outperform native CoT.”
+	Additional machinery isn't automatically beneficial
+	CostBench
+	“Current evaluations … primarily emphasize task completion, often overlooking resource efficiency…”
+	Motivate your multi-dimensional metrics
+	Randomness in agentic evals
+	“significant variance in single-run performance estimates”
+	Justify repeated trials
+	Snell et al.
+	effectiveness of test-time computation “critically varies depending on the difficulty of the prompt”
+	Retry/compute allocation
+	Process tailoring
+	“tuning a standardized process to meet the needs of a specific project”
+	Theoretical basis for conditional/gated methodology
+	I would generally paraphrase these passages rather than quote them verbatim, particularly in the main body. The direct quotations are useful while drafting because they show exactly what proposition each source can legitimately support.
+________________
+
+
+26. One especially strong new framing for your paper
+Your report currently concludes:
+“Gate procedural skills on state and on time remaining.”
+I think the literature allows you to elevate this into the conceptual idea that may ultimately be the most interesting part of the paper:
+Autonomous coding methodology should be treated as an adaptive resource-allocation policy rather than a universally beneficial fixed process.
+That connects four previously rather separate literatures:
+software-process tailoring → agent scaffolding → inference-time compute allocation → cost-aware agent evaluation.
+Your empirical results then provide a concrete example:
+a process that is beneficial in one execution state can become harmful after the artifact is already correct, because continued process consumes the same bounded resource needed to terminate successfully.
+That is much more interesting academically than “CodeZen cost 1.71×.”
+It also fits your particularly strong empirical observation that some agents were killed after the verifier was already passing, meaning the process converted a completed task into a censored observation.
+And it aligns with the broader 2026 literature emphasizing that agent evaluation should account for resource efficiency rather than task completion alone. (ACL Anthology)
+________________
+
+
+27. One caution I would definitely incorporate
+There are several statements in your report that should remain explicitly your experimental observations, rather than being presented as established facts from the literature.
+For example:
+“In an autonomous benchmark the verifier is an external oracle the agent cannot see. When an agent writes its own tests it tests against its own reading of the problem…”
+This is a very plausible mechanism, but I would present it as:
+“We hypothesize that…”
+or
+“One possible mechanism is…”
+unless you add a dedicated source establishing the phenomenon.
+Similarly, your claim that the “clock, not the money” is the binding constraint is your experimental result, not something the literature should be used to assert beforehand. The literature should establish why this is an important thing to measure; your data establishes that it occurred in your experiment.
+That distinction will significantly improve the scientific tone of the paper.
+________________
+
+
+Recommended literature set
+I would build your bibliography around approximately these 12 works:
+1. Merrill et al. (2026). Terminal-Bench: Benchmarking Agents on Hard, Realistic Tasks in Command Line Interfaces. (arXiv)
+2. Yang et al. (2024). SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering. (arXiv)
+3. Xia et al. (2024). Agentless: Demystifying LLM-based Software Engineering Agents. (GitHub)
+4. Liu et al. (2024). AgentBench: Evaluating LLMs as Agents. (ICLR Proceedings)
+5. Munir et al. (2016). The effects of test driven development on internal quality, external quality and productivity: A systematic review. (ScienceDirect)
+6. Tosun et al. (2017). An industry experiment on the effects of test-driven development on external quality and productivity. (Monash University)
+7. Xu & Ramesh (2007). Software Process Tailoring: An Empirical Investigation. (JMIS)
+8. Ribeiro & Berry (2020). The prevalence and severity of persistent ambiguity in software requirements specifications. (ScienceDirect)
+9. Snell et al. (2024). Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters. (arXiv)
+10. Bjarnason, Silva & Monperrus (2026). On Randomness in Agentic Evals. (alphaXiv)
+11. Zhang et al. (2026). Are Tools All We Need? Unveiling the Tool-Use Tax in LLM Agents. (arXiv)
+12. Liu et al. (2026). CostBench: Evaluating Multi-Turn Cost-Optimal Planning and Adaptation in Dynamic Environments for LLM Tool-Use Agents. (ACL Anthology)
+And I would add the recent OpenAI benchmark-audit work as a methodology/validity reference, not as evidence about your substantive findings. (OpenAI)
+The next useful step is to turn this into a section-by-section annotated bibliography against your 19-page report, with each recommendation containing the exact paragraph/sentence in your report, the proposed citation placement, the relevant passage from the paper, and a ready-to-use APA/IEEE/BibTeX reference.

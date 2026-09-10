@@ -1,0 +1,20 @@
+
+\begin{tabular}{@{}lrcrrcr@{}}
+\toprule
+ & \multicolumn{3}{c}{CodeZen vs baseline} & \multicolumn{3}{c}{SDD vs baseline} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+metric & ratio & higher on & \multicolumn{1}{c}{$p$} & ratio & higher on & \multicolumn{1}{c}{$p$} \\
+\midrule
+cost (\$) & 1.708 & 10/10 & \textbf{0.002} & 1.097 & 7/10 & 0.275 \\
+budget consumed & 1.903 & 10/10 & \textbf{0.002} & 1.134 & 6/10 & 0.375 \\
+agent wall-clock & 1.635 & 10/10 & \textbf{0.002} & 1.206 & 6/10 & 0.322 \\
+output tokens & 1.925 & 10/10 & \textbf{0.002} & 1.123 & 6/10 & 0.375 \\
+thinking tokens & 1.720 & 10/10 & \textbf{0.002} & 1.082 & 6/10 & 0.557 \\
+tool calls & 1.757 & 8/10 & \textbf{0.016} & 1.157 & 6/10 & 0.272 \\
+agent steps & 1.650 & 8/10 & \textbf{0.019} & 1.087 & 7/10 & 0.272 \\
+sub-agents spawned & 51.000 & 4/10 & 0.125 & 1.000 & 0/10 & 1.000 \\
+verification commands & 5.500 & 4/10 & 0.125 & 0.000 & 0/10 & 0.250 \\
+cache hit ratio & 0.998 & 4/10 & 0.695 & 1.002 & 5/10 & 0.695 \\
+partial credit & 0.982 & 1/10 & 0.750 & 0.818 & 1/10 & 0.125 \\
+\bottomrule
+\end{tabular}

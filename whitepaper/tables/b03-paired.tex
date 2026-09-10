@@ -1,0 +1,16 @@
+
+\begin{tabular}{@{}lrcrrcrrcrrcr@{}}
+\toprule
+ & \multicolumn{6}{c}{\textbf{suite} ($n = 16$ tasks)} & \multicolumn{6}{c}{\textbf{ceiling} ($n = 10$ tasks)} \\
+\cmidrule(lr){2-7}\cmidrule(lr){8-13}
+ & \multicolumn{3}{c}{CodeZen} & \multicolumn{3}{c}{SDD} & \multicolumn{3}{c}{CodeZen} & \multicolumn{3}{c}{SDD} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(lr){11-13}
+vs baseline & ratio & on & $p$ & ratio & on & $p$ & ratio & on & $p$ & ratio & on & $p$ \\
+\midrule
+cost & 3.11$\times$ & 12/16 & \textbf{0.009} & 1.14$\times$ & 9/16 & 0.821 & 1.71$\times$ & 10/10 & \textbf{0.002} & 1.10$\times$ & 7/10 & 0.275 \\
+budget consumed & 1.55$\times$ & 10/16 & 0.093 & 1.09$\times$ & 6/16 & 0.782 & 1.90$\times$ & 10/10 & \textbf{0.002} & 1.13$\times$ & 6/10 & 0.375 \\
+output tokens & 3.00$\times$ & 12/16 & \textbf{0.015} & 1.08$\times$ & 10/16 & 0.668 & 1.93$\times$ & 10/10 & \textbf{0.002} & 1.12$\times$ & 6/10 & 0.375 \\
+sub-agents spawned & 84.00$\times$ & 6/16 & \textbf{0.027} & 0.00$\times$ & 0/16 & 0.317 & 51.00$\times$ & 4/10 & 0.125 & 1.00$\times$ & 0/10 & 1.000 \\
+partial credit & 0.96$\times$ & 6/16 & 1.000 & 0.83$\times$ & 4/16 & 0.440 & 0.98$\times$ & 1/10 & 0.750 & 0.82$\times$ & 1/10 & 0.125 \\
+\bottomrule
+\end{tabular}

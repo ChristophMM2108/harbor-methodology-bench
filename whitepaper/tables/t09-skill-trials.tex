@@ -1,0 +1,37 @@
+
+\begin{tabular}{@{}llllrrrrl@{}}
+\toprule
+run & task & condition & skills invoked, in order & sub & reward & budget & cost & outcome \\
+\midrule
+suite & adaptive-rejection-sampler & CodeZen & \texttt{\footnotesize noc-tdd, code-review, noc-fix} & 6 & 1.0 & 100\% & \$2.87 & pass, censored \\
+suite & adaptive-rejection-sampler & CodeZen & \texttt{\footnotesize noc-tdd, code-review} & 6 & 0.0 & 100\% & \$2.75 & fail, censored \\
+suite & cancel-async-tasks & CodeZen & \texttt{\footnotesize noc-tdd} & 0 & 1.0 & 11\% & \$0.24 & pass \\
+suite & cancel-async-tasks & CodeZen & \texttt{\footnotesize noc-tdd, code-review} & 6 & 1.0 & 78\% & \$2.48 & pass \\
+suite & filter-js-from-html & CodeZen & \texttt{\footnotesize noc-tdd, code-review, security-review} & 9 & 0.0 & 100\% & \$6.74 & fail, censored \\
+suite & filter-js-from-html & CodeZen & \texttt{\footnotesize noc-tdd, code-review, security-review} & 9 & 0.0 & 100\% & \$6.30 & fail, censored \\
+suite & sam-cell-seg & CodeZen & \texttt{\footnotesize code-review, security-review} & 9 & 0.0 & 27\% & \$6.11 & fail \\
+suite & sam-cell-seg & CodeZen & \texttt{\footnotesize code-review, security-review} & 9 & 0.0 & 31\% & \$6.84 & fail \\
+suite & torch-tensor-parallelism & CodeZen & \texttt{\footnotesize noc-tdd, code-review, security-review} & 9 & 0.0 & 87\% & \$3.14 & fail \\
+suite & torch-tensor-parallelism & CodeZen & \texttt{\footnotesize noc-tdd, code-review} & 6 & 1.0 & 100\% & \$2.62 & pass, censored \\
+suite & video-processing & CodeZen & \texttt{\footnotesize noc-tdd, code-review} & 6 & 0.0 & 29\% & \$4.23 & fail \\
+suite & video-processing & CodeZen & \texttt{\footnotesize noc-tdd, code-review, security-review} & 9 & 0.0 & 56\% & \$7.61 & fail \\
+suite & adaptive-rejection-sampler & SDD & \texttt{\footnotesize sdd-specify, sdd-plan, sdd-tasks, sdd-analyze, sdd-implement, sdd-verify} & 0 & 0.0 & 91\% & \$1.72 & fail \\
+suite & adaptive-rejection-sampler & SDD & \texttt{\footnotesize sdd-specify, sdd-clarify, sdd-plan, sdd-tasks, sdd-analyze, sdd-implement, sdd-verify} & 0 & 1.0 & 91\% & \$1.79 & pass \\
+suite & filter-js-from-html & SDD & \texttt{\footnotesize sdd-specify, sdd-clarify} & 0 & 0.0 & 5\% & \$0.19 & fail \\
+suite & sam-cell-seg & SDD & \texttt{\footnotesize sdd-specify, sdd-clarify} & 0 & 0.0 & 2\% & \$0.28 & fail \\
+suite & sam-cell-seg & SDD & \texttt{\footnotesize sdd-specify, sdd-clarify, sdd-plan, sdd-tasks, sdd-analyze, sdd-implement, sdd-verify} & 0 & 0.0 & 9\% & \$1.96 & fail \\
+suite & video-processing & SDD & \texttt{\footnotesize sdd-specify} & 0 & 0.0 & 23\% & \$1.50 & fail \\
+suite & video-processing & SDD & \texttt{\footnotesize sdd-specify, sdd-clarify} & 0 & 0.0 & 3\% & \$0.25 & fail \\
+ceiling & headless-terminal & CodeZen & \texttt{\footnotesize noc-tdd, code-review, noc-fix, security-review} & 9 & 1.0 & 100\% & \$2.21 & pass, censored \\
+ceiling & headless-terminal & CodeZen & \texttt{\footnotesize noc-tdd, code-review, security-review} & 9 & 1.0 & 100\% & \$2.79 & pass, censored \\
+ceiling & make-mips-interpreter & CodeZen & \texttt{\footnotesize code-review, noc-fix} & 6 & 0.0 & 100\% & \$5.85 & fail, censored \\
+ceiling & make-mips-interpreter & CodeZen & \texttt{\footnotesize noc-tdd, code-review} & 6 & 1.0 & 100\% & \$4.42 & pass, censored \\
+ceiling & pypi-server & CodeZen & \texttt{\footnotesize noc-tdd, code-review, security-review} & 9 & 1.0 & 50\% & \$1.80 & pass \\
+ceiling & torch-pipeline-parallelism & CodeZen & \texttt{\footnotesize code-review} & 6 & 0.0 & 100\% & \$1.63 & fail, censored \\
+ceiling & torch-pipeline-parallelism & CodeZen & \texttt{\footnotesize noc-tdd, code-review} & 6 & 0.0 & 100\% & \$1.65 & fail, censored \\
+ceiling & headless-terminal & SDD & \texttt{\footnotesize sdd-specify, sdd-clarify} & 0 & 0.0 & 11\% & \$0.21 & fail \\
+ceiling & make-mips-interpreter & SDD & \texttt{\footnotesize sdd-specify, sdd-analyze, sdd-verify} & 1 & 0.0 & 90\% & \$3.45 & fail \\
+ceiling & schemelike-metacircular-eval & SDD & \texttt{\footnotesize sdd-specify, sdd-plan, sdd-tasks, sdd-analyze, sdd-implement, sdd-verify} & 0 & 0.0 & 53\% & \$3.20 & fail \\
+ceiling & torch-pipeline-parallelism & SDD & \texttt{\footnotesize sdd-specify, sdd-clarify} & 0 & 0.0 & 17\% & \$0.28 & fail \\
+\bottomrule
+\end{tabular}

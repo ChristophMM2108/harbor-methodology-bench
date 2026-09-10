@@ -1,0 +1,23 @@
+flowchart TD
+    subgraph SRC["pinned inputs"]
+        TB["Terminal-Bench 2.0<br/>task suite @ 2fd12b88<br/><i>never modified</i>"]
+        TK["toolkit repository<br/>frozen at a Git SHA<br/>CLAUDE.md · AGENTS.md · skills"]
+    end
+    BUILD["<b>hmb build</b><br/>one Docker image per<br/>task × condition; methodology<br/>injected as a layer on the<br/>task's own base image"]
+    PRE["<b>hmb preflight</b><br/>assertion from <i>inside</i> the container:<br/>is the condition what was declared?<br/>baseline workdir byte-identical to base"]
+    RUN["<b>Harbor</b><br/>agent runs with a shell and the<br/>task's declared wall-clock budget"]
+    VER["<b>verifier</b><br/>the task's own test suite<br/><i>a verifier, not a judge</i>"]
+    ANA["<b>hmb analysis</b><br/>reward · partial credit · cost · tokens<br/>trajectory: steps, tools, sub-agents,<br/>Skill calls, shell buckets"]
+    OUT["trials · tests · steps · tool_calls<br/>adherence · condition summaries"]
+
+    TB --> BUILD
+    TK --> BUILD
+    BUILD --> PRE --> RUN --> VER --> ANA --> OUT
+    RUN -.->|"trajectory JSON"| ANA
+
+    classDef pin fill:#f7f7f5,stroke:#898781;
+    classDef step fill:#f4f6fb,stroke:#2a78d6;
+    classDef check fill:#eefaf4,stroke:#1baf7a,stroke-width:2px;
+    class TB,TK pin;
+    class BUILD,RUN,ANA,OUT step;
+    class PRE,VER check;

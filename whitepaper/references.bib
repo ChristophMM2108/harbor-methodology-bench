@@ -1,0 +1,271 @@
+% Bibliography for the Harbor Methodology Bench whitepaper and short report.
+%
+% Assembled from data/schmierzettel.txt (the literature review memo).
+%
+% VERIFICATION STATUS: an entry preceded by `% VERIFY <key>:` has
+% bibliographic details that could not be confirmed from first-hand knowledge
+% -- chiefly the 2026 works, which post-date the assistant's knowledge cutoff.
+% Entries without such a comment carry locators (arXiv id / volume / pages)
+% asserted with confidence. `% NOTE <key>:` marks an entry whose details are
+% confident but whose *selection* needs explaining -- typically a substitution
+% for a source the memo named but did not identify. The comments are deliberately kept out of the
+% rendered reference list; data/citation-map.md is the full audit, including
+% three places where the source memo's attribution appears to be wrong and
+% what was used instead.
+
+% ---------------------------------------------------------------- benchmark --
+% VERIFY merrill2026terminalbench:
+% Bibliographic details unverified: author list, arXiv identifier and exact
+% title to be confirmed against the published version
+@misc{merrill2026terminalbench,
+  author       = {Merrill, Mike A. and others},
+  title        = {Terminal-Bench: Benchmarking Agents on Hard, Realistic Tasks
+                  in Command Line Interfaces},
+  year         = {2026},
+  howpublished = {arXiv preprint}
+}
+
+% VERIFY openai2026signal:
+% Bibliographic details unverified: reports an audit of SWE-Bench Pro
+% finding evaluation defects in a substantial share of tasks
+@misc{openai2026signal,
+  author       = {{OpenAI}},
+  title        = {Separating Signal from Noise in Coding Evaluations},
+  year         = {2026},
+  howpublished = {Technical report}
+}
+
+% ----------------------------------------------------- agentic SE and scaffolding --
+@inproceedings{yang2024sweagent,
+  author    = {Yang, John and Jimenez, Carlos E. and Wettig, Alexander and
+               Lieret, Kilian and Yao, Shunyu and Narasimhan, Karthik and
+               Press, Ofir},
+  title     = {{SWE}-agent: Agent-Computer Interfaces Enable Automated
+               Software Engineering},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2024},
+  eprint    = {2405.15793},
+  archivePrefix = {arXiv}
+}
+
+@misc{xia2024agentless,
+  author        = {Xia, Chunqiu Steven and Deng, Yinlin and Dunn, Soren and
+                   Zhang, Lingming},
+  title         = {Agentless: Demystifying {LLM}-based Software Engineering
+                   Agents},
+  year          = {2024},
+  eprint        = {2407.01489},
+  archivePrefix = {arXiv},
+  howpublished  = {arXiv:2407.01489}
+}
+
+@inproceedings{liu2024agentbench,
+  author    = {Liu, Xiao and Yu, Hao and Zhang, Hanchen and Xu, Yifan and
+               Lei, Xuanyu and Lai, Hanyu and Gu, Yu and Ding, Hangliang and
+               Men, Kaiwen and Yang, Kejuan and Zhang, Shudan and Deng, Xiang
+               and Zeng, Aohan and Du, Zhengxiao and Zhang, Chenhui and
+               Shen, Sheng and Zhang, Tianjun and Su, Yu and Sun, Huan and
+               Huang, Minlie and Dong, Yuxiao and Tang, Jie},
+  title     = {{AgentBench}: Evaluating {LLMs} as Agents},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2024},
+  eprint    = {2308.03688},
+  archivePrefix = {arXiv}
+}
+
+% VERIFY zhang2026tooltax:
+% Bibliographic details unverified: author list and arXiv identifier to be
+% confirmed. Separates prompt-formatting cost, tool-protocol overhead and
+% tool-execution benefit
+@misc{zhang2026tooltax,
+  author       = {Zhang and others},
+  title        = {Are Tools All We Need? Unveiling the Tool-Use Tax in
+                  {LLM} Agents},
+  year         = {2026},
+  howpublished = {arXiv preprint}
+}
+
+
+% --------------------------------------------- cost-aware and test-time compute --
+% VERIFY liu2026costbench:
+% Bibliographic details unverified: author list, pages and volume to be
+% confirmed from the ACL Anthology
+@inproceedings{liu2026costbench,
+  author    = {Liu and others},
+  title     = {{CostBench}: Evaluating Multi-Turn Cost-Optimal Planning and
+               Adaptation in Dynamic Environments for {LLM} Tool-Use Agents},
+  booktitle = {Proceedings of the Annual Meeting of the Association for
+               Computational Linguistics (ACL)},
+  year      = {2026}
+}
+
+@misc{snell2024scaling,
+  author        = {Snell, Charlie and Lee, Jaehoon and Xu, Kelvin and
+                   Kumar, Aviral},
+  title         = {Scaling {LLM} Test-Time Compute Optimally can be More
+                   Effective than Scaling Model Parameters},
+  year          = {2024},
+  eprint        = {2408.03314},
+  archivePrefix = {arXiv},
+  howpublished  = {arXiv:2408.03314}
+}
+
+% ------------------------------------------- repeated sampling and stochasticity --
+@misc{chen2021codex,
+  author        = {Chen, Mark and Tworek, Jerry and Jun, Heewoo and
+                   Yuan, Qiming and Pinto, Henrique Ponde de Oliveira and
+                   Kaplan, Jared and Edwards, Harri and Burda, Yuri and
+                   Joseph, Nicholas and Brockman, Greg and others},
+  title         = {Evaluating Large Language Models Trained on Code},
+  year          = {2021},
+  eprint        = {2107.03374},
+  archivePrefix = {arXiv},
+  howpublished  = {arXiv:2107.03374}
+}
+
+@inproceedings{wang2023selfconsistency,
+  author    = {Wang, Xuezhi and Wei, Jason and Schuurmans, Dale and
+               Le, Quoc V. and Chi, Ed H. and Narang, Sharan and
+               Chowdhery, Aakanksha and Zhou, Denny},
+  title     = {Self-Consistency Improves Chain of Thought Reasoning in
+               Language Models},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2023},
+  eprint    = {2203.11171},
+  archivePrefix = {arXiv}
+}
+
+% VERIFY bjarnason2026randomness:
+% Bibliographic details unverified: author initials and identifier to be
+% confirmed. Reports substantial between-run variance over roughly 60{,}000
+% SWE-Bench-Verified trajectories, including at temperature zero
+@misc{bjarnason2026randomness,
+  author       = {Bjarnason, Elizabeth and Silva, Andr{\'e} and
+                  Monperrus, Martin},
+  title         = {On Randomness in Agentic Evals},
+  year          = {2026},
+  howpublished = {arXiv preprint}
+}
+
+% -------------------------------------------------------- agent time horizons --
+% VERIFY kwa2025horizons:
+% {METR}. The memo cites a later revision of the time-horizon methodology
+% published on metr.org; check
+@misc{kwa2025horizons,
+  author        = {Kwa, Thomas and West, Ben and Becker, Joel and
+                   Deng, Amy and Garcia, Katharyn and Hasin, Max and
+                   Jawhar, Sami and Kinniment, Megan and Rush, Nate and
+                   Von Arx, Sydney and others},
+  title         = {Measuring {AI} Ability to Complete Long Tasks},
+  year          = {2025},
+  eprint        = {2503.14499},
+  archivePrefix = {arXiv}
+                   which version the quoted definition belongs to},
+  howpublished  = {arXiv:2503.14499}
+}
+
+% ----------------------------------------- TDD, review and requirements quality --
+% VERIFY bissi2016tdd:
+% Authorship differs from the literature memo, which attributed this title
+% to ``Munir et al.''; the title, year and reported study counts match this
+% entry. Verify before publication
+@article{bissi2016tdd,
+  author  = {Bissi, Wilson and Serra Seca Neto, Adolfo Gustavo and
+             Emer, Maria Claudia Figueiredo Pereira},
+  title   = {The effects of test driven development on internal quality,
+             external quality and productivity: A systematic review},
+  journal = {Information and Software Technology},
+  volume  = {74},
+  pages   = {45--54},
+  year    = {2016}
+}
+
+@article{tosun2017industry,
+  author  = {Tosun, Ay{\c s}e and Dieste, Oscar and Fucci, Davide and
+             Vegas, Sira and Turhan, Burak and Erdogmus, Hakan and
+             Santos, Adri{\'a}n and Oivo, Markku and Toro, Kimmo and
+             J{\"a}rvinen, Janne and Juristo, Natalia},
+  title   = {An industry experiment on the effects of test-driven development
+             on external quality and productivity},
+  journal = {Empirical Software Engineering},
+  volume  = {22},
+  number  = {6},
+  pages   = {2763--2805},
+  year    = {2017}
+}
+
+% NOTE fucci2017dissection:
+% Used in place of the memo's unnamed ``controlled TDD experiment''; this is
+% the paper that separates the test-first ordering from short development
+% cycles
+@article{fucci2017dissection,
+  author  = {Fucci, Davide and Erdogmus, Hakan and Turhan, Burak and
+             Oivo, Markku and Juristo, Natalia},
+  title   = {A Dissection of the Test-Driven Development Process: Does It
+             Really Matter to Test-First or to Test-Last?},
+  journal = {IEEE Transactions on Software Engineering},
+  volume  = {43},
+  number  = {7},
+  pages   = {597--614},
+  year    = {2017}
+}
+
+% VERIFY kudrjavets2024review:
+% Bibliographic details unverified: exact title, volume and pages to be
+% confirmed. Cited for review latency as a first-class process cost
+@article{kudrjavets2024review,
+  author  = {Kudrjavets, Gunnar and Rastogi, Ayushi},
+  title   = {On the Speed of Modern Code Review},
+  journal = {Empirical Software Engineering},
+  year    = {2024}
+}
+
+% NOTE femmer2017smells:
+% Used in place of the memo's unnamed requirements-ambiguity review, whose
+% authorship could not be established
+@article{femmer2017smells,
+  author  = {Femmer, Henning and M{\'e}ndez Fern{\'a}ndez, Daniel and
+             Wagner, Stefan and Eder, Sebastian},
+  title   = {Rapid quality assurance with Requirements Smells},
+  journal = {Journal of Systems and Software},
+  volume  = {123},
+  pages   = {190--213},
+  year    = {2017}
+}
+
+% VERIFY ribeiro2020ambiguity:
+% Bibliographic details unverified: journal, volume and pages to be
+% confirmed
+@article{ribeiro2020ambiguity,
+  author  = {Ribeiro, Cristina and Berry, Daniel M.},
+  title   = {The prevalence and severity of persistent ambiguity in software
+             requirements specifications: Is a special effort needed to find
+             them?},
+  journal = {Science of Computer Programming},
+  year    = {2020}
+}
+
+% --------------------------------------------------------- process tailoring --
+@article{xu2007tailoring,
+  author  = {Xu, Peng and Ramesh, Balasubramaniam},
+  title   = {Software Process Tailoring: An Empirical Investigation},
+  journal = {Journal of Management Information Systems},
+  volume  = {24},
+  number  = {2},
+  pages   = {293--328},
+  year    = {2007}
+}
+
+% ------------------------------------------------------------------ censoring --
+% NOTE leung1997censoring:
+% Cited for the general principle that censored observations carry
+% information, not as a drop-in analysis method: the censoring mechanism
+% here is agent-determined and therefore potentially informative
+@article{leung1997censoring,
+  author  = {Leung, Kwan-Moon and Elashoff, Robert M. and Afifi, Abdelmonem A.},
+  title   = {Censoring issues in survival analysis},
+  journal = {Annual Review of Public Health},
+  volume  = {18},
+  pages   = {83--104},
+  year    = {1997}
+}

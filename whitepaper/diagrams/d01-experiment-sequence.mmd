@@ -1,0 +1,21 @@
+flowchart TD
+    P3["<b>probe3</b> · 2026-08-26<br/>3 tasks × 4 conditions × 1<br/>12 trials · $24.94<br/><i>gate: is adherence non-zero?</i>"]
+    PG["<b>prog16</b> · 2026-08-27<br/>16 expert-hard tasks × 3 × 1<br/>$75.49<br/><i>null on outcome; ceiling effect</i>"]
+    SC["<b>screen</b> · 2026-08-31<br/>83 candidates vs oracle, nop<br/>and one bare baseline trial<br/><i>16 kept · 64 excluded · 3 undecided</i>"]
+    SU["<b>suite</b> · 2026-08-31/09-01<br/>16 screened-in tasks × 3 × 2<br/>96 trials · $114.90<br/><i>floor effect: 7 of 16 all-fail</i>"]
+    CE["<b>ceiling</b> · 2026-09-01<br/>10 screened-out tasks × 3 × 2<br/>60 trials · $86.46<br/><i>ceiling by construction; cost probe</i>"]
+    JOINT["<b>this paper</b><br/>pooled: 156 trials · 26 tasks · $201.37"]
+
+    P3 -->|"gate opened"| PG
+    PG -->|"its §10: screen the tasks first"| SC
+    SC -->|"the 16 the bare agent failed"| SU
+    SC -->|"10 of the 57 it rejected"| CE
+    SU --> JOINT
+    CE --> JOINT
+
+    classDef gate fill:#eefaf4,stroke:#1baf7a,stroke-width:1px;
+    classDef defect fill:#fdf1ea,stroke:#eb6834,stroke-width:1px;
+    classDef out fill:#f4f6fb,stroke:#2a78d6,stroke-width:2px;
+    class P3,SC gate;
+    class PG,SU,CE defect;
+    class JOINT out;

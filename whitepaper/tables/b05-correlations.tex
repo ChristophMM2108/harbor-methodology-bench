@@ -1,0 +1,13 @@
+
+\begin{tabular}{@{}lrrl@{}}
+\toprule
+Spearman, pooled over 26 tasks & \multicolumn{1}{c}{$\rho$} & \multicolumn{1}{c}{$p$} & what it says \\
+\midrule
+baseline pass-at-2 vs log expert time & $-0.078$ & 0.704 & human difficulty does not predict agent difficulty \\
+baseline absolute cost vs log expert time & $+0.696$ & \textbf{$<$0.001} & longer tasks cost more, as expected \\
+CodeZen cost \emph{ratio} vs log expert time & $+0.001$ & 0.996 & the multiplier is flat over $288\times$ of length \\
+$\Delta$ pass-at-2, CodeZen, vs expert/budget & $+0.330$ & 0.099 & the only lean in the hypothesis' direction \\
+$\Delta$ partial credit, CodeZen, vs expert/budget & $-0.020$ & 0.923 & \dots and it is gone at 519 graded tests \\
+SDD toolkit skill calls vs log expert time & $+0.379$ & 0.056 & SDD gates itself on perceived task size \\
+\bottomrule
+\end{tabular}

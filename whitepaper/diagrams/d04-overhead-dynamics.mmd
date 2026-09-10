@@ -1,0 +1,23 @@
+flowchart LR
+    T["a task arrives"]
+    Q{"is it within the<br/>bare agent's reach?"}
+    Y["<b>ceiling population</b><br/>agent solves it quickly,<br/>then reviews what it solved"]
+    N["<b>floor population</b><br/>agent cannot solve it,<br/>process runs to the wall"]
+    RY["CodeZen <b>1.71×</b> cost<br/>p = 0.002, dearer on 10/10 tasks<br/>partial credit <b>0.98×</b>"]
+    RN["CodeZen <b>3.11×</b> cost<br/>p = 0.009, dearer on 12/16 tasks<br/>partial credit <b>0.96×</b>"]
+    K["the methodology cannot tell<br/>which branch it is on,<br/>so an operator pays the range"]
+
+    T --> Q
+    Q -->|"yes"| Y --> RY --> K
+    Q -->|"no"| N --> RN --> K
+
+    classDef q fill:#fff8e6,stroke:#eda100,stroke-width:2px;
+    classDef ceil fill:#eefaf4,stroke:#1baf7a;
+    classDef floor fill:#fdecec,stroke:#d03b3b;
+    classDef res fill:#fdf1ea,stroke:#eb6834;
+    classDef key fill:#f4f6fb,stroke:#2a78d6,stroke-width:2px;
+    class Q q;
+    class Y ceil;
+    class N floor;
+    class RY,RN res;
+    class K key;

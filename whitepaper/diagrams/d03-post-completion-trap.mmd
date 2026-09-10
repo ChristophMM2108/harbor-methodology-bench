@@ -1,0 +1,22 @@
+flowchart TD
+    A["<b>t = 0 s</b><br/>read instruction, inspect the<br/>terminal emulation code"]
+    B["<b>t ≈ 58–66 s</b><br/>run the test suite<br/><b>7 of 7 tests pass — reward 1.0</b><br/><i>the benchmark requirement is met</i>"]
+    C["read CLAUDE.md: post-implementation<br/>review and TDD cycles are recommended"]
+    D["invoke noc-tdd → code-review<br/>→ noc-fix → security-review"]
+    E["9 sub-agents · 64 steps<br/>docstrings, defensive assertions,<br/>stylistic tweaks applied"]
+    F["<b>t = 900 s</b> · AgentTimeoutError<br/>Harbor kills the container<br/><b>recorded as censored</b><br/>$2.21 and $2.79 · 8.1x and 14.1x baseline"]
+    G["baseline on the same task:<br/>144 s and 114 s, $0.27 and $0.20<br/><b>zero recognised test runs</b><br/><i>never verified, and was right anyway</i>"]
+
+    A --> B --> C --> D --> E
+    E -->|"no exit condition on<br/>'verification already passes'"| D
+    E --> F
+    B -.->|"contrast"| G
+
+    classDef done fill:#eefaf4,stroke:#1baf7a,stroke-width:2px;
+    classDef waste fill:#fdf1ea,stroke:#eb6834;
+    classDef kill fill:#fdecec,stroke:#d03b3b,stroke-width:2px;
+    classDef base fill:#f4f6fb,stroke:#2a78d6;
+    class B done;
+    class C,D,E waste;
+    class F kill;
+    class G base;

@@ -1,0 +1,1722 @@
+{
+ "runs": {
+  "suite": {
+   "n_trials": 96,
+   "n_tasks": 16,
+   "attempts": 2,
+   "spend": 114.9,
+   "agent_hours": 18.3,
+   "conditions": {
+    "baseline": {
+     "trials": 32,
+     "censored": 4,
+     "graded": 28,
+     "passed_graded": 7,
+     "passed_all": 8,
+     "success_rate_graded": 0.25,
+     "wilson_graded": [
+      0.1268,
+      0.4336
+     ],
+     "success_rate_timeout_fail": 0.2188,
+     "wilson_timeout_fail": [
+      0.1102,
+      0.3876
+     ],
+     "success_rate_kill_graded": 0.25,
+     "wilson_kill_graded": [
+      0.1325,
+      0.4211
+     ],
+     "censored_with_reward_1": 1,
+     "partial_credit": 0.5333,
+     "partial_credit_n": 31,
+     "partial_credit_missing": 1,
+     "partial_credit_missing_as_zero": 0.5167,
+     "tests_total": 117,
+     "tests_passed": 70,
+     "test_pass_rate": 0.5983,
+     "test_pass_rate_wilson_naive": [
+      0.5077,
+      0.6826
+     ],
+     "test_pass_rate_cluster_ci": [
+      0.3707,
+      0.7863
+     ],
+     "test_pass_rate_design_effect": 5.73,
+     "test_pass_rate_effective_n": 20.4,
+     "cost_total": 21.87,
+     "cost_per_trial": 0.6836,
+     "cost_per_pass_graded": 3.12,
+     "cost_per_passed_test": 0.3125,
+     "agent_sec": 597.9,
+     "budget_used": 0.3024,
+     "budget_used_median": 0.1544,
+     "over_75pct_budget": 5,
+     "output_tokens": 26921.2,
+     "thinking_tokens": 18701.9,
+     "steps": 21.88,
+     "tool_calls": 23.41,
+     "edits": 1.97,
+     "bash_test": 0.562,
+     "reads": 4.22,
+     "subagents": 0.031,
+     "error_rate": 0.1023,
+     "cache_hit_ratio": 0.948,
+     "thinking_share": 0.5951,
+     "agent_timeouts": 4,
+     "verifier_timeouts": 0,
+     "trials_invoking_skill": 0,
+     "toolkit_skill_calls": 0,
+     "wrote_test_file_share": 0.0938,
+     "named_instruction_file": 0,
+     "opened_instruction_file": 0,
+     "skills_shipped": 0,
+     "skills_registered": 0
+    },
+    "codezen-viable": {
+     "trials": 32,
+     "censored": 7,
+     "graded": 25,
+     "passed_graded": 9,
+     "passed_all": 11,
+     "success_rate_graded": 0.36,
+     "wilson_graded": [
+      0.2025,
+      0.5548
+     ],
+     "success_rate_timeout_fail": 0.2812,
+     "wilson_timeout_fail": [
+      0.1556,
+      0.4537
+     ],
+     "success_rate_kill_graded": 0.3438,
+     "wilson_kill_graded": [
+      0.2041,
+      0.5169
+     ],
+     "censored_with_reward_1": 2,
+     "partial_credit": 0.516,
+     "partial_credit_n": 32,
+     "partial_credit_missing": 0,
+     "partial_credit_missing_as_zero": 0.516,
+     "tests_total": 120,
+     "tests_passed": 72,
+     "test_pass_rate": 0.6,
+     "test_pass_rate_wilson_naive": [
+      0.5106,
+      0.6832
+     ],
+     "test_pass_rate_cluster_ci": [
+      0.3679,
+      0.7951
+     ],
+     "test_pass_rate_design_effect": 6.19,
+     "test_pass_rate_effective_n": 19.4,
+     "cost_total": 68.13,
+     "cost_per_trial": 2.1292,
+     "cost_per_pass_graded": 7.57,
+     "cost_per_passed_test": 0.9463,
+     "agent_sec": 865.7,
+     "budget_used": 0.4681,
+     "budget_used_median": 0.3667,
+     "over_75pct_budget": 9,
+     "output_tokens": 80644.8,
+     "thinking_tokens": 51668.2,
+     "steps": 48.03,
+     "tool_calls": 51.34,
+     "edits": 6.41,
+     "bash_test": 3.562,
+     "reads": 10.31,
+     "subagents": 2.625,
+     "error_rate": 0.1288,
+     "cache_hit_ratio": 0.9451,
+     "thinking_share": 0.5919,
+     "agent_timeouts": 7,
+     "verifier_timeouts": 0,
+     "trials_invoking_skill": 12,
+     "toolkit_skill_calls": 28,
+     "wrote_test_file_share": 0.3438,
+     "named_instruction_file": 14,
+     "opened_instruction_file": 10,
+     "skills_shipped": 4,
+     "skills_registered": 4
+    },
+    "sdd": {
+     "trials": 32,
+     "censored": 3,
+     "graded": 29,
+     "passed_graded": 7,
+     "passed_all": 7,
+     "success_rate_graded": 0.2414,
+     "wilson_graded": [
+      0.1222,
+      0.4211
+     ],
+     "success_rate_timeout_fail": 0.2188,
+     "wilson_timeout_fail": [
+      0.1102,
+      0.3876
+     ],
+     "success_rate_kill_graded": 0.2188,
+     "wilson_kill_graded": [
+      0.1102,
+      0.3876
+     ],
+     "censored_with_reward_1": 0,
+     "partial_credit": 0.4479,
+     "partial_credit_n": 32,
+     "partial_credit_missing": 0,
+     "partial_credit_missing_as_zero": 0.4479,
+     "tests_total": 120,
+     "tests_passed": 63,
+     "test_pass_rate": 0.525,
+     "test_pass_rate_wilson_naive": [
+      0.4363,
+      0.6122
+     ],
+     "test_pass_rate_cluster_ci": [
+      0.2734,
+      0.75
+     ],
+     "test_pass_rate_design_effect": 7.38,
+     "test_pass_rate_effective_n": 16.3,
+     "cost_total": 24.89,
+     "cost_per_trial": 0.778,
+     "cost_per_pass_graded": 3.56,
+     "cost_per_passed_test": 0.3952,
+     "agent_sec": 592.5,
+     "budget_used": 0.3308,
+     "budget_used_median": 0.1582,
+     "over_75pct_budget": 6,
+     "output_tokens": 29179.8,
+     "thinking_tokens": 19167.5,
+     "steps": 24.78,
+     "tool_calls": 24.97,
+     "edits": 3.44,
+     "bash_test": 0.656,
+     "reads": 3.66,
+     "subagents": 0.0,
+     "error_rate": 0.0969,
+     "cache_hit_ratio": 0.9344,
+     "thinking_share": 0.6068,
+     "agent_timeouts": 3,
+     "verifier_timeouts": 0,
+     "trials_invoking_skill": 7,
+     "toolkit_skill_calls": 27,
+     "wrote_test_file_share": 0.0312,
+     "named_instruction_file": 3,
+     "opened_instruction_file": 0,
+     "skills_shipped": 7,
+     "skills_registered": 7
+    }
+   },
+   "pass_at_2": {
+    "per_condition": {
+     "baseline": 6,
+     "codezen-viable": 8,
+     "sdd": 5
+    },
+    "all_pass": 3,
+    "all_fail": 7,
+    "split": 6,
+    "split_tasks": [
+     "adaptive-rejection-sampler",
+     "cancel-async-tasks",
+     "configure-git-webserver",
+     "path-tracing",
+     "polyglot-c-py",
+     "torch-tensor-parallelism"
+    ],
+    "all_fail_tasks": [
+     "extract-moves-from-video",
+     "filter-js-from-html",
+     "install-windows-3.11",
+     "raman-fitting",
+     "sam-cell-seg",
+     "train-fasttext",
+     "video-processing"
+    ],
+    "all_pass_tasks": [
+     "git-multibranch",
+     "openssl-selfsigned-cert",
+     "polyglot-rust-c"
+    ],
+    "mcnemar": {
+     "codezen-viable": {
+      "discordant": 4,
+      "only_baseline": 1,
+      "only_other": 3,
+      "p": 0.625
+     },
+     "sdd": {
+      "discordant": 5,
+      "only_baseline": 3,
+      "only_other": 2,
+      "p": 1.0
+     }
+    },
+    "regressions": {
+     "codezen-viable": [
+      "configure-git-webserver"
+     ],
+     "sdd": [
+      "configure-git-webserver",
+      "path-tracing",
+      "polyglot-c-py"
+     ]
+    },
+    "concordant_spend": 74.47
+   },
+   "pass_both": {
+    "per_condition": {
+     "baseline": 2,
+     "codezen-viable": 3,
+     "sdd": 2
+    },
+    "all_pass": 0,
+    "all_fail": 11,
+    "split": 5,
+    "split_tasks": [
+     "cancel-async-tasks",
+     "git-multibranch",
+     "openssl-selfsigned-cert",
+     "path-tracing",
+     "polyglot-rust-c"
+    ],
+    "all_fail_tasks": [
+     "adaptive-rejection-sampler",
+     "configure-git-webserver",
+     "extract-moves-from-video",
+     "filter-js-from-html",
+     "install-windows-3.11",
+     "polyglot-c-py",
+     "raman-fitting",
+     "sam-cell-seg",
+     "torch-tensor-parallelism",
+     "train-fasttext",
+     "video-processing"
+    ],
+    "all_pass_tasks": [],
+    "mcnemar": {
+     "codezen-viable": {
+      "discordant": 5,
+      "only_baseline": 2,
+      "only_other": 3,
+      "p": 1.0
+     },
+     "sdd": {
+      "discordant": 2,
+      "only_baseline": 1,
+      "only_other": 1,
+      "p": 1.0
+     }
+    },
+    "regressions": {
+     "codezen-viable": [
+      "git-multibranch",
+      "path-tracing"
+     ],
+     "sdd": [
+      "path-tracing"
+     ]
+    },
+    "concordant_spend": 88.1
+   },
+   "paired": {
+    "cost_usd": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 0.3414,
+      "mean_delta": 1.4456,
+      "ratio_of_totals": 3.1148,
+      "higher_on": 12,
+      "lower_on": 4,
+      "p": 0.0092
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": 0.0054,
+      "mean_delta": 0.0944,
+      "ratio_of_totals": 1.1381,
+      "higher_on": 9,
+      "lower_on": 7,
+      "p": 0.8209
+     }
+    },
+    "agent_sec": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 197.5538,
+      "mean_delta": 267.7769,
+      "ratio_of_totals": 1.4478,
+      "higher_on": 10,
+      "lower_on": 6,
+      "p": 0.1167
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": -12.8898,
+      "mean_delta": -5.4106,
+      "ratio_of_totals": 0.991,
+      "higher_on": 6,
+      "lower_on": 10,
+      "p": 0.6685
+     }
+    },
+    "output_tokens": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 16340.75,
+      "mean_delta": 53723.625,
+      "ratio_of_totals": 2.9956,
+      "higher_on": 12,
+      "lower_on": 4,
+      "p": 0.0155
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": 369.5,
+      "mean_delta": 2258.625,
+      "ratio_of_totals": 1.0839,
+      "higher_on": 10,
+      "lower_on": 6,
+      "p": 0.6685
+     }
+    },
+    "thinking_tokens": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 14794.5,
+      "mean_delta": 32966.2812,
+      "ratio_of_totals": 2.7627,
+      "higher_on": 12,
+      "lower_on": 4,
+      "p": 0.0155
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": 241.5,
+      "mean_delta": 465.5625,
+      "ratio_of_totals": 1.0249,
+      "higher_on": 9,
+      "lower_on": 7,
+      "p": 0.8603
+     }
+    },
+    "n_steps": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 5.5,
+      "mean_delta": 26.1562,
+      "ratio_of_totals": 2.1957,
+      "higher_on": 13,
+      "lower_on": 3,
+      "p": 0.013
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": 0.25,
+      "mean_delta": 2.9062,
+      "ratio_of_totals": 1.1329,
+      "higher_on": 8,
+      "lower_on": 7,
+      "p": 0.819
+     }
+    },
+    "n_tool_calls": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 6.5,
+      "mean_delta": 27.9375,
+      "ratio_of_totals": 2.1936,
+      "higher_on": 13,
+      "lower_on": 3,
+      "p": 0.0097
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": 0.25,
+      "mean_delta": 1.5625,
+      "ratio_of_totals": 1.0668,
+      "higher_on": 8,
+      "lower_on": 7,
+      "p": 0.8646
+     }
+    },
+    "budget_used": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 0.1713,
+      "mean_delta": 0.1657,
+      "ratio_of_totals": 1.5481,
+      "higher_on": 10,
+      "lower_on": 6,
+      "p": 0.0934
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": -0.0143,
+      "mean_delta": 0.0285,
+      "ratio_of_totals": 1.0941,
+      "higher_on": 6,
+      "lower_on": 10,
+      "p": 0.782
+     }
+    },
+    "partial_credit": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 0.0,
+      "mean_delta": -0.0215,
+      "ratio_of_totals": 0.9599,
+      "higher_on": 6,
+      "lower_on": 3,
+      "p": 1.0
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": 0.0,
+      "mean_delta": -0.0896,
+      "ratio_of_totals": 0.8333,
+      "higher_on": 4,
+      "lower_on": 5,
+      "p": 0.4397
+     }
+    },
+    "n_agent_spawns": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 0.0,
+      "mean_delta": 2.5938,
+      "ratio_of_totals": 84.0,
+      "higher_on": 6,
+      "lower_on": 0,
+      "p": 0.0273
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": 0.0,
+      "mean_delta": -0.0312,
+      "ratio_of_totals": 0.0,
+      "higher_on": 0,
+      "lower_on": 1,
+      "p": 0.3173
+     }
+    },
+    "cache_hit_ratio": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 0.0002,
+      "mean_delta": -0.003,
+      "ratio_of_totals": 0.9969,
+      "higher_on": 8,
+      "lower_on": 8,
+      "p": 0.8209
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": -0.0029,
+      "mean_delta": -0.0136,
+      "ratio_of_totals": 0.9856,
+      "higher_on": 5,
+      "lower_on": 11,
+      "p": 0.2979
+     }
+    },
+    "bash_test": {
+     "codezen-viable": {
+      "n_pairs": 16,
+      "median_delta": 0.0,
+      "mean_delta": 3.0,
+      "ratio_of_totals": 6.3333,
+      "higher_on": 5,
+      "lower_on": 1,
+      "p": 0.0464
+     },
+     "sdd": {
+      "n_pairs": 16,
+      "median_delta": 0.0,
+      "mean_delta": 0.0938,
+      "ratio_of_totals": 1.1667,
+      "higher_on": 3,
+      "lower_on": 2,
+      "p": 0.6831
+     }
+    }
+   },
+   "censored_trials": [
+    {
+     "task": "adaptive-rejection-sampler",
+     "condition": "codezen-viable",
+     "trial_name": "adaptive-rejection-sampler__KWhHbgi",
+     "reward": 1.0,
+     "success": 1,
+     "partial_credit": 1.0,
+     "budget_used": 1.0,
+     "cost_usd": 2.866,
+     "tests_passed": 9.0,
+     "tests_total": 9.0,
+     "skill_call_sequence": "noc-tdd;code-review;noc-fix"
+    },
+    {
+     "task": "adaptive-rejection-sampler",
+     "condition": "codezen-viable",
+     "trial_name": "adaptive-rejection-sampler__khopAH8",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.889,
+     "budget_used": 1.0,
+     "cost_usd": 2.745,
+     "tests_passed": 8.0,
+     "tests_total": 9.0,
+     "skill_call_sequence": "noc-tdd;code-review"
+    },
+    {
+     "task": "filter-js-from-html",
+     "condition": "codezen-viable",
+     "trial_name": "filter-js-from-html__GNBZ3ju",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 6.742,
+     "tests_passed": 0.0,
+     "tests_total": 2.0,
+     "skill_call_sequence": "noc-tdd;code-review;security-review"
+    },
+    {
+     "task": "filter-js-from-html",
+     "condition": "codezen-viable",
+     "trial_name": "filter-js-from-html__wvbpg75",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 6.303,
+     "tests_passed": 0.0,
+     "tests_total": 2.0,
+     "skill_call_sequence": "noc-tdd;code-review;security-review"
+    },
+    {
+     "task": "path-tracing",
+     "condition": "baseline",
+     "trial_name": "path-tracing__NFQpcMg",
+     "reward": 1.0,
+     "success": 1,
+     "partial_credit": 1.0,
+     "budget_used": 1.0,
+     "cost_usd": 3.223,
+     "tests_passed": 5.0,
+     "tests_total": 5.0,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "path-tracing",
+     "condition": "sdd",
+     "trial_name": "path-tracing__UWk5PXs",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 2.999,
+     "tests_passed": 0.0,
+     "tests_total": 5.0,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "path-tracing",
+     "condition": "codezen-viable",
+     "trial_name": "path-tracing__W6EeDDd",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 2.729,
+     "tests_passed": 0.0,
+     "tests_total": 5.0,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "path-tracing",
+     "condition": "sdd",
+     "trial_name": "path-tracing__ewjq9dW",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 2.531,
+     "tests_passed": 0.0,
+     "tests_total": 5.0,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "polyglot-rust-c",
+     "condition": "baseline",
+     "trial_name": "polyglot-rust-c__5vaieZQ",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 0.653,
+     "tests_passed": 0.0,
+     "tests_total": 1.0,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "polyglot-rust-c",
+     "condition": "sdd",
+     "trial_name": "polyglot-rust-c__9wXrBSV",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 0.446,
+     "tests_passed": 0.0,
+     "tests_total": 1.0,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "torch-tensor-parallelism",
+     "condition": "codezen-viable",
+     "trial_name": "torch-tensor-parallelism__sLYpPED",
+     "reward": 1.0,
+     "success": 1,
+     "partial_credit": 1.0,
+     "budget_used": 1.0,
+     "cost_usd": 2.624,
+     "tests_passed": 3.0,
+     "tests_total": 3.0,
+     "skill_call_sequence": "noc-tdd;code-review"
+    },
+    {
+     "task": "train-fasttext",
+     "condition": "baseline",
+     "trial_name": "train-fasttext__ELtjeMz",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 0.389,
+     "tests_passed": 0.0,
+     "tests_total": 2.0,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "train-fasttext",
+     "condition": "codezen-viable",
+     "trial_name": "train-fasttext__ckret3t",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.5,
+     "budget_used": 1.0,
+     "cost_usd": 1.215,
+     "tests_passed": 1.0,
+     "tests_total": 2.0,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "train-fasttext",
+     "condition": "baseline",
+     "trial_name": "train-fasttext__kCho3gQ",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 0.699,
+     "tests_passed": 0.0,
+     "tests_total": 2.0,
+     "skill_call_sequence": null
+    }
+   ],
+   "codezen_cost_ratio_per_task": {
+    "extract-moves-from-video": 0.057,
+    "path-tracing": 0.7,
+    "git-multibranch": 0.977,
+    "openssl-selfsigned-cert": 0.988,
+    "polyglot-rust-c": 1.114,
+    "configure-git-webserver": 1.588,
+    "train-fasttext": 1.706,
+    "raman-fitting": 1.721,
+    "polyglot-c-py": 2.148,
+    "install-windows-3.11": 2.578,
+    "adaptive-rejection-sampler": 4.283,
+    "video-processing": 4.673,
+    "sam-cell-seg": 6.123,
+    "cancel-async-tasks": 6.886,
+    "torch-tensor-parallelism": 7.822,
+    "filter-js-from-html": 15.996
+   }
+  },
+  "ceiling": {
+   "n_trials": 60,
+   "n_tasks": 10,
+   "attempts": 2,
+   "spend": 86.46,
+   "agent_hours": 11.8,
+   "conditions": {
+    "baseline": {
+     "trials": 20,
+     "censored": 1,
+     "graded": 19,
+     "passed_graded": 17,
+     "passed_all": 17,
+     "success_rate_graded": 0.8947,
+     "wilson_graded": [
+      0.6861,
+      0.9706
+     ],
+     "success_rate_timeout_fail": 0.85,
+     "wilson_timeout_fail": [
+      0.6396,
+      0.9476
+     ],
+     "success_rate_kill_graded": 0.85,
+     "wilson_kill_graded": [
+      0.6396,
+      0.9476
+     ],
+     "censored_with_reward_1": 0,
+     "partial_credit": 0.9167,
+     "partial_credit_n": 20,
+     "partial_credit_missing": 0,
+     "partial_credit_missing_as_zero": 0.9167,
+     "tests_total": 54,
+     "tests_passed": 49,
+     "test_pass_rate": 0.9074,
+     "test_pass_rate_wilson_naive": [
+      0.8009,
+      0.9598
+     ],
+     "test_pass_rate_cluster_ci": [
+      0.7292,
+      1.0
+     ],
+     "test_pass_rate_design_effect": 3.58,
+     "test_pass_rate_effective_n": 15.1,
+     "cost_total": 22.72,
+     "cost_per_trial": 1.1362,
+     "cost_per_pass_graded": 1.34,
+     "cost_per_passed_test": 0.4637,
+     "agent_sec": 554.8,
+     "budget_used": 0.3024,
+     "budget_used_median": 0.2745,
+     "over_75pct_budget": 1,
+     "output_tokens": 40664.5,
+     "thinking_tokens": 31953.0,
+     "steps": 26.0,
+     "tool_calls": 26.75,
+     "edits": 3.2,
+     "bash_test": 0.3,
+     "reads": 2.95,
+     "subagents": 0.05,
+     "error_rate": 0.1307,
+     "cache_hit_ratio": 0.96,
+     "thinking_share": 0.6723,
+     "agent_timeouts": 1,
+     "verifier_timeouts": 0,
+     "trials_invoking_skill": 0,
+     "toolkit_skill_calls": 0,
+     "wrote_test_file_share": 0.1,
+     "named_instruction_file": 0,
+     "opened_instruction_file": 0,
+     "skills_shipped": 0,
+     "skills_registered": 0
+    },
+    "codezen-viable": {
+     "trials": 20,
+     "censored": 6,
+     "graded": 14,
+     "passed_graded": 13,
+     "passed_all": 16,
+     "success_rate_graded": 0.9286,
+     "wilson_graded": [
+      0.6853,
+      0.9873
+     ],
+     "success_rate_timeout_fail": 0.65,
+     "wilson_timeout_fail": [
+      0.4329,
+      0.8188
+     ],
+     "success_rate_kill_graded": 0.8,
+     "wilson_kill_graded": [
+      0.584,
+      0.9193
+     ],
+     "censored_with_reward_1": 3,
+     "partial_credit": 0.9,
+     "partial_credit_n": 20,
+     "partial_credit_missing": 0,
+     "partial_credit_missing_as_zero": 0.9,
+     "tests_total": 54,
+     "tests_passed": 50,
+     "test_pass_rate": 0.9259,
+     "test_pass_rate_wilson_naive": [
+      0.8245,
+      0.9708
+     ],
+     "test_pass_rate_cluster_ci": [
+      0.8182,
+      1.0
+     ],
+     "test_pass_rate_design_effect": 1.61,
+     "test_pass_rate_effective_n": 33.6,
+     "cost_total": 38.8,
+     "cost_per_trial": 1.9402,
+     "cost_per_pass_graded": 2.98,
+     "cost_per_passed_test": 0.7761,
+     "agent_sec": 907.4,
+     "budget_used": 0.5754,
+     "budget_used_median": 0.5616,
+     "over_75pct_budget": 7,
+     "output_tokens": 78290.6,
+     "thinking_tokens": 54942.6,
+     "steps": 42.9,
+     "tool_calls": 47.0,
+     "edits": 4.75,
+     "bash_test": 1.65,
+     "reads": 6.85,
+     "subagents": 2.55,
+     "error_rate": 0.1685,
+     "cache_hit_ratio": 0.9579,
+     "thinking_share": 0.657,
+     "agent_timeouts": 6,
+     "verifier_timeouts": 0,
+     "trials_invoking_skill": 7,
+     "toolkit_skill_calls": 17,
+     "wrote_test_file_share": 0.25,
+     "named_instruction_file": 8,
+     "opened_instruction_file": 5,
+     "skills_shipped": 4,
+     "skills_registered": 4
+    },
+    "sdd": {
+     "trials": 20,
+     "censored": 2,
+     "graded": 18,
+     "passed_graded": 14,
+     "passed_all": 15,
+     "success_rate_graded": 0.7778,
+     "wilson_graded": [
+      0.5478,
+      0.91
+     ],
+     "success_rate_timeout_fail": 0.7,
+     "wilson_timeout_fail": [
+      0.481,
+      0.8545
+     ],
+     "success_rate_kill_graded": 0.75,
+     "wilson_kill_graded": [
+      0.5313,
+      0.8881
+     ],
+     "censored_with_reward_1": 1,
+     "partial_credit": 0.75,
+     "partial_credit_n": 20,
+     "partial_credit_missing": 0,
+     "partial_credit_missing_as_zero": 0.75,
+     "tests_total": 54,
+     "tests_passed": 37,
+     "test_pass_rate": 0.6852,
+     "test_pass_rate_wilson_naive": [
+      0.5526,
+      0.7932
+     ],
+     "test_pass_rate_cluster_ci": [
+      0.5441,
+      0.88
+     ],
+     "test_pass_rate_design_effect": 1.9,
+     "test_pass_rate_effective_n": 28.4,
+     "cost_total": 24.94,
+     "cost_per_trial": 1.2469,
+     "cost_per_pass_graded": 1.78,
+     "cost_per_passed_test": 0.674,
+     "agent_sec": 669.1,
+     "budget_used": 0.3428,
+     "budget_used_median": 0.2277,
+     "over_75pct_budget": 3,
+     "output_tokens": 45677.8,
+     "thinking_tokens": 34559.3,
+     "steps": 28.25,
+     "tool_calls": 30.95,
+     "edits": 4.3,
+     "bash_test": 0.0,
+     "reads": 4.4,
+     "subagents": 0.05,
+     "error_rate": 0.1087,
+     "cache_hit_ratio": 0.9614,
+     "thinking_share": 0.6544,
+     "agent_timeouts": 2,
+     "verifier_timeouts": 0,
+     "trials_invoking_skill": 4,
+     "toolkit_skill_calls": 13,
+     "wrote_test_file_share": 0.0,
+     "named_instruction_file": 7,
+     "opened_instruction_file": 4,
+     "skills_shipped": 7,
+     "skills_registered": 7
+    }
+   },
+   "pass_at_2": {
+    "per_condition": {
+     "baseline": 9,
+     "codezen-viable": 9,
+     "sdd": 10
+    },
+    "all_pass": 8,
+    "all_fail": 0,
+    "split": 2,
+    "split_tasks": [
+     "make-mips-interpreter",
+     "torch-pipeline-parallelism"
+    ],
+    "all_fail_tasks": [],
+    "all_pass_tasks": [
+     "circuit-fibsqrt",
+     "fix-ocaml-gc",
+     "headless-terminal",
+     "overfull-hbox",
+     "path-tracing-reverse",
+     "pypi-server",
+     "schemelike-metacircular-eval",
+     "sqlite-db-truncate"
+    ],
+    "mcnemar": {
+     "codezen-viable": {
+      "discordant": 2,
+      "only_baseline": 1,
+      "only_other": 1,
+      "p": 1.0
+     },
+     "sdd": {
+      "discordant": 1,
+      "only_baseline": 0,
+      "only_other": 1,
+      "p": 1.0
+     }
+    },
+    "regressions": {
+     "codezen-viable": [
+      "torch-pipeline-parallelism"
+     ],
+     "sdd": []
+    },
+    "concordant_spend": 54.46
+   },
+   "pass_both": {
+    "per_condition": {
+     "baseline": 8,
+     "codezen-viable": 7,
+     "sdd": 5
+    },
+    "all_pass": 5,
+    "all_fail": 2,
+    "split": 3,
+    "split_tasks": [
+     "headless-terminal",
+     "path-tracing-reverse",
+     "schemelike-metacircular-eval"
+    ],
+    "all_fail_tasks": [
+     "make-mips-interpreter",
+     "torch-pipeline-parallelism"
+    ],
+    "all_pass_tasks": [
+     "circuit-fibsqrt",
+     "fix-ocaml-gc",
+     "overfull-hbox",
+     "pypi-server",
+     "sqlite-db-truncate"
+    ],
+    "mcnemar": {
+     "codezen-viable": {
+      "discordant": 1,
+      "only_baseline": 1,
+      "only_other": 0,
+      "p": 1.0
+     },
+     "sdd": {
+      "discordant": 3,
+      "only_baseline": 3,
+      "only_other": 0,
+      "p": 0.25
+     }
+    },
+    "regressions": {
+     "codezen-viable": [
+      "schemelike-metacircular-eval"
+     ],
+     "sdd": [
+      "headless-terminal",
+      "path-tracing-reverse",
+      "schemelike-metacircular-eval"
+     ]
+    },
+    "concordant_spend": 53.69
+   },
+   "paired": {
+    "cost_usd": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 0.6426,
+      "mean_delta": 0.804,
+      "ratio_of_totals": 1.7076,
+      "higher_on": 10,
+      "lower_on": 0,
+      "p": 0.002
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 0.0553,
+      "mean_delta": 0.1107,
+      "ratio_of_totals": 1.0974,
+      "higher_on": 7,
+      "lower_on": 3,
+      "p": 0.2754
+     }
+    },
+    "agent_sec": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 332.0581,
+      "mean_delta": 352.5318,
+      "ratio_of_totals": 1.6354,
+      "higher_on": 10,
+      "lower_on": 0,
+      "p": 0.002
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 21.0428,
+      "mean_delta": 114.2693,
+      "ratio_of_totals": 1.2059,
+      "higher_on": 6,
+      "lower_on": 4,
+      "p": 0.3223
+     }
+    },
+    "output_tokens": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 24055.5,
+      "mean_delta": 37626.15,
+      "ratio_of_totals": 1.9253,
+      "higher_on": 10,
+      "lower_on": 0,
+      "p": 0.002
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 1729.5,
+      "mean_delta": 5013.25,
+      "ratio_of_totals": 1.1233,
+      "higher_on": 6,
+      "lower_on": 4,
+      "p": 0.375
+     }
+    },
+    "thinking_tokens": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 14378.75,
+      "mean_delta": 22989.55,
+      "ratio_of_totals": 1.7195,
+      "higher_on": 10,
+      "lower_on": 0,
+      "p": 0.002
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 1057.75,
+      "mean_delta": 2606.3,
+      "ratio_of_totals": 1.0816,
+      "higher_on": 6,
+      "lower_on": 4,
+      "p": 0.5566
+     }
+    },
+    "n_steps": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 15.75,
+      "mean_delta": 16.9,
+      "ratio_of_totals": 1.65,
+      "higher_on": 8,
+      "lower_on": 2,
+      "p": 0.0195
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 1.25,
+      "mean_delta": 2.25,
+      "ratio_of_totals": 1.0865,
+      "higher_on": 7,
+      "lower_on": 3,
+      "p": 0.2715
+     }
+    },
+    "n_tool_calls": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 18.75,
+      "mean_delta": 20.25,
+      "ratio_of_totals": 1.757,
+      "higher_on": 8,
+      "lower_on": 2,
+      "p": 0.0156
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 3.0,
+      "mean_delta": 4.2,
+      "ratio_of_totals": 1.157,
+      "higher_on": 6,
+      "lower_on": 4,
+      "p": 0.2715
+     }
+    },
+    "budget_used": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 0.1743,
+      "mean_delta": 0.273,
+      "ratio_of_totals": 1.9027,
+      "higher_on": 10,
+      "lower_on": 0,
+      "p": 0.002
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 0.0234,
+      "mean_delta": 0.0404,
+      "ratio_of_totals": 1.1336,
+      "higher_on": 6,
+      "lower_on": 4,
+      "p": 0.375
+     }
+    },
+    "partial_credit": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 0.0,
+      "mean_delta": -0.0167,
+      "ratio_of_totals": 0.9818,
+      "higher_on": 1,
+      "lower_on": 2,
+      "p": 0.75
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 0.0,
+      "mean_delta": -0.1667,
+      "ratio_of_totals": 0.8182,
+      "higher_on": 1,
+      "lower_on": 4,
+      "p": 0.125
+     }
+    },
+    "n_agent_spawns": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 0.0,
+      "mean_delta": 2.5,
+      "ratio_of_totals": 51.0,
+      "higher_on": 4,
+      "lower_on": 0,
+      "p": 0.125
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 0.0,
+      "mean_delta": 0.0,
+      "ratio_of_totals": 1.0,
+      "higher_on": 0,
+      "lower_on": 0,
+      "p": 1.0
+     }
+    },
+    "cache_hit_ratio": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": -0.0038,
+      "mean_delta": -0.002,
+      "ratio_of_totals": 0.9979,
+      "higher_on": 4,
+      "lower_on": 6,
+      "p": 0.6953
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": -0.0002,
+      "mean_delta": 0.0014,
+      "ratio_of_totals": 1.0015,
+      "higher_on": 5,
+      "lower_on": 5,
+      "p": 0.6953
+     }
+    },
+    "bash_test": {
+     "codezen-viable": {
+      "n_pairs": 10,
+      "median_delta": 0.0,
+      "mean_delta": 1.35,
+      "ratio_of_totals": 5.5,
+      "higher_on": 4,
+      "lower_on": 0,
+      "p": 0.125
+     },
+     "sdd": {
+      "n_pairs": 10,
+      "median_delta": 0.0,
+      "mean_delta": -0.3,
+      "ratio_of_totals": 0.0,
+      "higher_on": 0,
+      "lower_on": 3,
+      "p": 0.25
+     }
+    }
+   },
+   "censored_trials": [
+    {
+     "task": "headless-terminal",
+     "condition": "codezen-viable",
+     "trial_name": "headless-terminal__XRYqVjm",
+     "reward": 1.0,
+     "success": 1,
+     "partial_credit": 1.0,
+     "budget_used": 1.0,
+     "cost_usd": 2.207,
+     "tests_passed": 7,
+     "tests_total": 7,
+     "skill_call_sequence": "noc-tdd;code-review;noc-fix;security-review"
+    },
+    {
+     "task": "headless-terminal",
+     "condition": "codezen-viable",
+     "trial_name": "headless-terminal__cYo6FBF",
+     "reward": 1.0,
+     "success": 1,
+     "partial_credit": 1.0,
+     "budget_used": 1.0,
+     "cost_usd": 2.787,
+     "tests_passed": 7,
+     "tests_total": 7,
+     "skill_call_sequence": "noc-tdd;code-review;security-review"
+    },
+    {
+     "task": "make-mips-interpreter",
+     "condition": "codezen-viable",
+     "trial_name": "make-mips-interpreter__K8bLNsB",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.667,
+     "budget_used": 1.0,
+     "cost_usd": 5.851,
+     "tests_passed": 2,
+     "tests_total": 3,
+     "skill_call_sequence": "code-review;noc-fix"
+    },
+    {
+     "task": "make-mips-interpreter",
+     "condition": "baseline",
+     "trial_name": "make-mips-interpreter__KRTG4S6",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 4.936,
+     "tests_passed": 0,
+     "tests_total": 3,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "make-mips-interpreter",
+     "condition": "sdd",
+     "trial_name": "make-mips-interpreter__vP3GvAP",
+     "reward": 1.0,
+     "success": 1,
+     "partial_credit": 1.0,
+     "budget_used": 1.0,
+     "cost_usd": 5.053,
+     "tests_passed": 3,
+     "tests_total": 3,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "make-mips-interpreter",
+     "condition": "codezen-viable",
+     "trial_name": "make-mips-interpreter__vmMVvr9",
+     "reward": 1.0,
+     "success": 1,
+     "partial_credit": 1.0,
+     "budget_used": 1.0,
+     "cost_usd": 4.423,
+     "tests_passed": 3,
+     "tests_total": 3,
+     "skill_call_sequence": "noc-tdd;code-review"
+    },
+    {
+     "task": "path-tracing-reverse",
+     "condition": "sdd",
+     "trial_name": "path-tracing-reverse__7EswDaB",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.0,
+     "budget_used": 1.0,
+     "cost_usd": 2.418,
+     "tests_passed": 0,
+     "tests_total": 3,
+     "skill_call_sequence": null
+    },
+    {
+     "task": "torch-pipeline-parallelism",
+     "condition": "codezen-viable",
+     "trial_name": "torch-pipeline-parallelism__mkDirvE",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.667,
+     "budget_used": 1.0,
+     "cost_usd": 1.633,
+     "tests_passed": 2,
+     "tests_total": 3,
+     "skill_call_sequence": "code-review"
+    },
+    {
+     "task": "torch-pipeline-parallelism",
+     "condition": "codezen-viable",
+     "trial_name": "torch-pipeline-parallelism__yaZBjuT",
+     "reward": 0.0,
+     "success": 0,
+     "partial_credit": 0.667,
+     "budget_used": 1.0,
+     "cost_usd": 1.647,
+     "tests_passed": 2,
+     "tests_total": 3,
+     "skill_call_sequence": "noc-tdd;code-review"
+    }
+   ],
+   "codezen_cost_ratio_per_task": {
+    "sqlite-db-truncate": 1.01,
+    "make-mips-interpreter": 1.282,
+    "path-tracing-reverse": 1.318,
+    "schemelike-metacircular-eval": 1.364,
+    "circuit-fibsqrt": 1.366,
+    "overfull-hbox": 1.654,
+    "fix-ocaml-gc": 2.041,
+    "torch-pipeline-parallelism": 3.037,
+    "pypi-server": 7.768,
+    "headless-terminal": 10.583
+   }
+  }
+ },
+ "pooled": {
+  "n_trials": 156,
+  "n_tasks": 26,
+  "spend": 201.37,
+  "agent_hours": 30.1,
+  "conditions": {
+   "baseline": {
+    "cost_per_trial": 0.8576,
+    "timeouts": 5,
+    "timeout_share": 0.0962,
+    "trials": 52,
+    "subagents": 0.038
+   },
+   "codezen-viable": {
+    "cost_per_trial": 2.0565,
+    "timeouts": 13,
+    "timeout_share": 0.25,
+    "trials": 52,
+    "subagents": 2.596
+   },
+   "sdd": {
+    "cost_per_trial": 0.9583,
+    "timeouts": 5,
+    "timeout_share": 0.0962,
+    "trials": 52,
+    "subagents": 0.019
+   }
+  },
+  "correlations": {
+   "baseline_pass_vs_expert": {
+    "rho": -0.0781,
+    "p": 0.7044,
+    "n": 26
+   },
+   "baseline_cost_vs_expert": {
+    "rho": 0.6955,
+    "p": 0.0001,
+    "n": 26
+   },
+   "codezen_cost_ratio_vs_log_expert": {
+    "rho": 0.001,
+    "p": 0.996,
+    "n": 26
+   },
+   "codezen_cost_ratio_vs_budget_sec": {
+    "rho": -0.0055,
+    "p": 0.9786,
+    "n": 26
+   },
+   "codezen_cost_ratio_vs_instruction_words": {
+    "rho": 0.3244,
+    "p": 0.1059,
+    "n": 26
+   },
+   "codezen_cost_delta_vs_log_expert": {
+    "rho": 0.3366,
+    "p": 0.0927,
+    "n": 26
+   },
+   "codezen_timeouts_vs_expert_budget": {
+    "rho": 0.3038,
+    "p": 0.1314,
+    "n": 26
+   },
+   "codezen_skill_calls_vs_log_expert": {
+    "rho": 0.197,
+    "p": 0.3347,
+    "n": 26
+   },
+   "codezen_d_pass_any_vs_log_expert": {
+    "rho": 0.2224,
+    "p": 0.2748,
+    "n": 26
+   },
+   "codezen_d_pass_any_vs_expert_budget": {
+    "rho": 0.3303,
+    "p": 0.0993,
+    "n": 26
+   },
+   "codezen_d_pass_rate_vs_log_expert": {
+    "rho": -0.0277,
+    "p": 0.8931,
+    "n": 26
+   },
+   "codezen_d_pass_rate_vs_expert_budget": {
+    "rho": 0.1072,
+    "p": 0.6022,
+    "n": 26
+   },
+   "codezen_d_partial_credit_vs_log_expert": {
+    "rho": -0.0282,
+    "p": 0.891,
+    "n": 26
+   },
+   "codezen_d_partial_credit_vs_expert_budget": {
+    "rho": -0.0199,
+    "p": 0.9232,
+    "n": 26
+   },
+   "sdd_cost_ratio_vs_log_expert": {
+    "rho": 0.0611,
+    "p": 0.7669,
+    "n": 26
+   },
+   "sdd_cost_ratio_vs_budget_sec": {
+    "rho": 0.1293,
+    "p": 0.5291,
+    "n": 26
+   },
+   "sdd_cost_ratio_vs_instruction_words": {
+    "rho": 0.254,
+    "p": 0.2105,
+    "n": 26
+   },
+   "sdd_cost_delta_vs_log_expert": {
+    "rho": 0.1554,
+    "p": 0.4483,
+    "n": 26
+   },
+   "sdd_timeouts_vs_expert_budget": {
+    "rho": 0.2462,
+    "p": 0.2253,
+    "n": 26
+   },
+   "sdd_skill_calls_vs_log_expert": {
+    "rho": 0.3787,
+    "p": 0.0564,
+    "n": 26
+   },
+   "sdd_d_pass_any_vs_log_expert": {
+    "rho": 0.2464,
+    "p": 0.2249,
+    "n": 26
+   },
+   "sdd_d_pass_any_vs_expert_budget": {
+    "rho": 0.3489,
+    "p": 0.0806,
+    "n": 26
+   },
+   "sdd_d_pass_rate_vs_log_expert": {
+    "rho": 0.0737,
+    "p": 0.7204,
+    "n": 26
+   },
+   "sdd_d_pass_rate_vs_expert_budget": {
+    "rho": 0.181,
+    "p": 0.3763,
+    "n": 26
+   },
+   "sdd_d_partial_credit_vs_log_expert": {
+    "rho": -0.0955,
+    "p": 0.6424,
+    "n": 26
+   },
+   "sdd_d_partial_credit_vs_expert_budget": {
+    "rho": 0.0233,
+    "p": 0.9102,
+    "n": 26
+   }
+  },
+  "long_horizon": {
+   "n_long": 10,
+   "n_short": 16,
+   "splits": {
+    "codezen_d_pass_any": {
+     "long_mean": 0.1,
+     "short_mean": 0.0625,
+     "p": 0.8579
+    },
+    "codezen_d_pass_rate": {
+     "long_mean": -0.05,
+     "short_mean": 0.0938,
+     "p": 0.3913
+    },
+    "codezen_d_partial_credit": {
+     "long_mean": -0.0567,
+     "short_mean": 0.0035,
+     "p": 0.3887
+    },
+    "codezen_cost_ratio": {
+     "long_mean": 3.0985,
+     "short_mean": 3.7373,
+     "p": 0.6926
+    },
+    "codezen_skill_calls": {
+     "long_mean": 1.05,
+     "short_mean": 0.75,
+     "p": 0.4695
+    },
+    "sdd_d_pass_any": {
+     "long_mean": 0.0,
+     "short_mean": 0.0,
+     "p": 1.0
+    },
+    "sdd_d_pass_rate": {
+     "long_mean": -0.1,
+     "short_mean": -0.0312,
+     "p": 0.8321
+    },
+    "sdd_d_partial_credit": {
+     "long_mean": -0.1822,
+     "short_mean": -0.0799,
+     "p": 0.3028
+    },
+    "sdd_cost_ratio": {
+     "long_mean": 1.1537,
+     "short_mean": 1.1065,
+     "p": 0.7319
+    },
+    "sdd_skill_calls": {
+     "long_mean": 1.15,
+     "short_mean": 0.5312,
+     "p": 0.0934
+    }
+   }
+  },
+  "cost_delta_by_budget": {
+   "codezen": {
+    "short_budget_mean_delta": 0.7865,
+    "long_budget_mean_delta": 1.6798,
+    "n_short": 14,
+    "n_long": 12
+   },
+   "sdd": {
+    "short_budget_mean_delta": 0.0827,
+    "long_budget_mean_delta": 0.1216,
+    "n_short": 14,
+    "n_long": 12
+   }
+  },
+  "skill_use": {
+   "toolkit_trials": 104,
+   "invoking": 30,
+   "invoking_share_of_toolkit": 0.2885,
+   "invoking_pass_rate": 0.3,
+   "non_invoking_pass_rate": 0.5159,
+   "non_invoking_pass_rate_toolkit_only": 0.5405
+  },
+  "best_of_n": {
+   "suite_graded": {
+    "k": 3.115,
+    "p_base": 0.25,
+    "p_best_of_k": 0.5918,
+    "p_codezen": 0.36,
+    "delta_points": 23.2
+   },
+   "suite_kill_graded": {
+    "k": 3.115,
+    "p_base": 0.25,
+    "p_best_of_k": 0.5918,
+    "p_codezen": 0.3438,
+    "delta_points": 24.8
+   },
+   "suite_timeout_fail": {
+    "k": 3.115,
+    "p_base": 0.2188,
+    "p_best_of_k": 0.5366,
+    "p_codezen": 0.2812,
+    "delta_points": 25.5
+   },
+   "ceiling_graded": {
+    "k": 1.708,
+    "p_base": 0.8947,
+    "p_best_of_k": 0.9786,
+    "p_codezen": 0.9286,
+    "delta_points": 5.0
+   },
+   "ceiling_kill_graded": {
+    "k": 1.708,
+    "p_base": 0.85,
+    "p_best_of_k": 0.9608,
+    "p_codezen": 0.8,
+    "delta_points": 16.1
+   },
+   "ceiling_timeout_fail": {
+    "k": 1.708,
+    "p_base": 0.85,
+    "p_best_of_k": 0.9608,
+    "p_codezen": 0.65,
+    "delta_points": 31.1
+   }
+  },
+  "censored": {
+   "total": 23,
+   "with_reward_1": 7,
+   "by_condition": {
+    "baseline": {
+     "censored": 5,
+     "reward_1": 1
+    },
+    "codezen-viable": {
+     "censored": 13,
+     "reward_1": 5
+    },
+    "sdd": {
+     "censored": 5,
+     "reward_1": 1
+    }
+   }
+  },
+  "power": {
+   "min_detectable_rho_n10": 0.785,
+   "min_detectable_rho_n16": 0.651,
+   "min_detectable_rho_n26": 0.526
+  }
+ }
+}

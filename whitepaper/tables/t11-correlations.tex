@@ -1,0 +1,31 @@
+
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Spearman rank correlation, pooled over 26 tasks & \multicolumn{1}{c}{$\rho$} & \multicolumn{1}{c}{$p$} & \multicolumn{1}{c}{$n$} \\
+\midrule
+baseline pass-at-2 vs log expert time & $-0.078$ & 0.704 & 26 \\
+baseline absolute cost vs log expert time & $+0.696$ & \textbf{$<$0.001} & 26 \\
+CodeZen cost \emph{ratio} vs log expert time & $+0.001$ & 0.996 & 26 \\
+SDD cost \emph{ratio} vs log expert time & $+0.061$ & 0.767 & 26 \\
+CodeZen cost ratio vs declared budget & $-0.005$ & 0.979 & 26 \\
+CodeZen cost ratio vs instruction words & $+0.324$ & 0.106 & 26 \\
+CodeZen absolute overhead vs log expert time & $+0.337$ & 0.093 & 26 \\
+SDD absolute overhead vs log expert time & $+0.155$ & 0.448 & 26 \\
+CodeZen timeouts vs expert/budget ratio & $+0.304$ & 0.131 & 26 \\
+SDD timeouts vs expert/budget ratio & $+0.246$ & 0.225 & 26 \\
+CodeZen skill calls vs log expert time & $+0.197$ & 0.335 & 26 \\
+SDD skill calls vs log expert time & $+0.379$ & 0.056 & 26 \\
+$\Delta$ pass-at-2, CodeZen, vs log expert time & $+0.222$ & 0.275 & 26 \\
+$\Delta$ pass-at-2, SDD, vs log expert time & $+0.246$ & 0.225 & 26 \\
+$\Delta$ pass-at-2, CodeZen, vs expert/budget & $+0.330$ & 0.099 & 26 \\
+$\Delta$ pass-at-2, SDD, vs expert/budget & $+0.349$ & 0.081 & 26 \\
+$\Delta$ pass rate, CodeZen, vs log expert time & $-0.028$ & 0.893 & 26 \\
+$\Delta$ pass rate, SDD, vs log expert time & $+0.074$ & 0.720 & 26 \\
+$\Delta$ pass rate, CodeZen, vs expert/budget & $+0.107$ & 0.602 & 26 \\
+$\Delta$ pass rate, SDD, vs expert/budget & $+0.181$ & 0.376 & 26 \\
+$\Delta$ partial credit, CodeZen, vs log expert time & $-0.028$ & 0.891 & 26 \\
+$\Delta$ partial credit, SDD, vs log expert time & $-0.096$ & 0.642 & 26 \\
+$\Delta$ partial credit, CodeZen, vs expert/budget & $-0.020$ & 0.923 & 26 \\
+$\Delta$ partial credit, SDD, vs expert/budget & $+0.023$ & 0.910 & 26 \\
+\bottomrule
+\end{tabular}

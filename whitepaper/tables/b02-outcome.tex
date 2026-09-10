@@ -1,0 +1,20 @@
+
+\begin{tabular}{@{}llrrcrrrrr@{}}
+\toprule
+ & & & \multicolumn{2}{c}{\textbf{1.} censored} & \multicolumn{1}{c}{\textbf{2.} t/o} &
+ \multicolumn{1}{c}{\textbf{3.} graded} & & & \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-6}\cmidrule(lr){7-7}
+ & & \multicolumn{1}{c}{cens.} & \multicolumn{1}{c}{success} & \multicolumn{1}{c}{95\,\% Wilson} &
+ \multicolumn{1}{c}{$=$ fail} & \multicolumn{1}{c}{at kill} &
+ \multicolumn{1}{c}{part.\ credit} &
+ \multicolumn{1}{c}{test rate} & \multicolumn{1}{c}{spend} \\
+\midrule
+\multirow{3}{*}{\emph{suite}} & baseline & 4 & 25.0\,\% & [13, 43] & 21.9\,\% & 25.0\,\% & 0.533 & 59.8\,\% & \$21.87 \\
+ & CodeZen & 7 & 36.0\,\% & [20, 55] & 28.1\,\% & 34.4\,\% & 0.516 & 60.0\,\% & \$68.13 \\
+ & SDD & 3 & 24.1\,\% & [12, 42] & 21.9\,\% & 21.9\,\% & 0.448 & 52.5\,\% & \$24.89 \\
+\midrule
+\multirow{3}{*}{\emph{ceiling}} & baseline & 1 & 89.5\,\% & [69, 97] & 85.0\,\% & 85.0\,\% & 0.917 & 90.7\,\% & \$22.72 \\
+ & CodeZen & 6 & 92.9\,\% & [69, 99] & 65.0\,\% & 80.0\,\% & 0.900 & 92.6\,\% & \$38.80 \\
+ & SDD & 2 & 77.8\,\% & [55, 91] & 70.0\,\% & 75.0\,\% & 0.750 & 68.5\,\% & \$24.94 \\
+\bottomrule
+\end{tabular}

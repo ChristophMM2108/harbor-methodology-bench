@@ -1,0 +1,19 @@
+
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+ & \multicolumn{3}{c}{\textbf{suite}} & \multicolumn{3}{c}{\textbf{ceiling}} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+per-trial mean & baseline & CodeZen & SDD & baseline & CodeZen & SDD \\
+\midrule
+agent steps & 21.9 & 48.0 & 24.8 & 26.0 & 42.9 & 28.2 \\
+tool calls & 23.4 & 51.3 & 25.0 & 26.8 & 47.0 & 30.9 \\
+file edits / writes & 1.97 & 6.41 & 3.44 & 3.20 & 4.75 & 4.30 \\
+verification commands & 0.56 & 3.56 & 0.66 & 0.30 & 1.65 & 0.00 \\
+sub-agents spawned & 0.03 & 2.62 & 0.00 & 0.05 & 2.55 & 0.05 \\
+file reads & 4.22 & 10.31 & 3.66 & 2.95 & 6.85 & 4.40 \\
+wrote a test file & 9.4\% & 34.4\% & 3.1\% & 10.0\% & 25.0\% & 0.0\% \\
+tool results with an error & 10.2\% & 12.9\% & 9.7\% & 13.1\% & 16.9\% & 10.9\% \\
+cache hit ratio & 94.8\% & 94.5\% & 93.4\% & 96.0\% & 95.8\% & 96.1\% \\
+thinking share of output & 59.5\% & 59.2\% & 60.7\% & 67.2\% & 65.7\% & 65.4\% \\
+\bottomrule
+\end{tabular}

@@ -1,0 +1,25 @@
+flowchart TD
+    S["choosing a repository configuration<br/>for an autonomous coding agent"]
+    Q1{"does the bare agent<br/>already handle this<br/>class of work?"}
+    Q2{"is there a hard<br/>wall-clock or budget<br/>limit per attempt?"}
+    A1["<b>do not add process.</b><br/>ceiling run: 1.71× cost, 0.98× partial credit,<br/>6 of 20 trials censored against baseline's 1,<br/>one solved task turned unsolved"]
+    A2["<b>spend the budget on attempts, not ceremony</b><br/>— but the margin is estimator-dependent:<br/>at equal spend baseline retries reach 37–83 %<br/>against CodeZen's 50 % on the suite set"]
+    A3["<b>process is the larger risk here.</b><br/>CodeZen consumed 1.9× the declared budget<br/>and was killed on 25 % of its trials;<br/>7 of 23 kills discarded finished work"]
+    A4["<b>undetermined by this experiment.</b><br/>needs a discriminating task set, mandated<br/>invocation, and multi-session tasks with<br/>ambiguous requirements"]
+
+    S --> Q1
+    Q1 -->|"yes"| A1
+    Q1 -->|"no"| Q2
+    Q2 -->|"yes"| A3
+    Q2 -->|"no"| Q3{"is the work single-session<br/>and fully specified?"}
+    Q3 -->|"yes"| A2
+    Q3 -->|"no"| A4
+
+    classDef q fill:#fff8e6,stroke:#eda100;
+    classDef ans fill:#f4f6fb,stroke:#2a78d6;
+    classDef warn fill:#fdecec,stroke:#d03b3b;
+    classDef open fill:#f7f7f5,stroke:#898781,stroke-dasharray:4 3;
+    class Q1,Q2,Q3 q;
+    class A1,A2 ans;
+    class A3 warn;
+    class A4 open;

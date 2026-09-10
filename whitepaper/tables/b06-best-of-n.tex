@@ -1,0 +1,12 @@
+
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+ & \multicolumn{1}{c}{baseline $\bar p$} & \multicolumn{1}{c}{$k$ at equal} &
+ \multicolumn{3}{c}{baseline best-of-$k$, by estimator} & \multicolumn{1}{c}{CodeZen} \\
+\cmidrule(lr){4-6}
+ & per attempt & spend & homogeneous & beta-binomial & plug-in & pass-at-2 \\
+\midrule
+\emph{suite} & 0.25 & 6.2 & 83\,\% & 59\,\% & 37\,\% & \textbf{50\,\%} \\
+\emph{ceiling} & 0.85 & 3.4 & 100\,\% & 93\,\% & 89\,\% & \textbf{90\,\%} \\
+\bottomrule
+\end{tabular}

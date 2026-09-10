@@ -1,0 +1,31 @@
+flowchart TD
+    C["83 candidate tasks"]
+    O{"oracle = 1.0<br/>and nop = 0.0?"}
+    B{"one bare baseline trial:<br/>did it fail?"}
+    IN["kept for the <b>suite</b><br/><i>'the bare agent fails this'</i>"]
+    OUT["excluded as at ceiling<br/><i>'the bare agent passes this'</i>"]
+    F1["<b>p ≈ 0 — hopeless</b><br/>kept with probability 100 %<br/>7 of 16 failed under every condition"]
+    F2["<b>p ≈ 0.5 — discriminating</b><br/>kept with probability 50 %<br/>half of the useful tasks discarded"]
+    F3["<b>p ≈ 0.85 — reliable</b><br/>excluded, correctly, 85 % of the time<br/>but make-mips-interpreter slipped out<br/>and baseline then failed it twice"]
+    FIX["<b>two-sided rule</b><br/>keep when 1 or 2 of 3 baseline<br/>trials pass; costs 3 trials per<br/>candidate instead of 1"]
+
+    C --> O
+    O -->|"no"| DROP["dropped: unsolvable<br/>or trivially solvable"]
+    O -->|"yes"| B
+    B -->|"yes"| IN
+    B -->|"no"| OUT
+    IN --> F1
+    IN --> F2
+    OUT --> F3
+    F1 --> FIX
+    F2 --> FIX
+    F3 --> FIX
+
+    classDef q fill:#fff8e6,stroke:#eda100;
+    classDef bad fill:#fdecec,stroke:#d03b3b;
+    classDef fix fill:#eefaf4,stroke:#1baf7a,stroke-width:2px;
+    classDef plain fill:#f7f7f5,stroke:#898781;
+    class O,B q;
+    class F1,F2,F3 bad;
+    class FIX fix;
+    class C,IN,OUT,DROP plain;
