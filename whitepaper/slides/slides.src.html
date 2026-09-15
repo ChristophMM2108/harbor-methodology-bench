@@ -1,0 +1,1614 @@
+<title>The Cost of Process</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* ------------------------------------------------------------------ tokens */
+:root{
+  --ground:#F2F4F7; --surface:#FFFFFF; --surface-2:#E7ECF2; --sunken:#DFE5EC;
+  --ink:#101720; --ink-2:#46525F; --ink-3:#788492; --rule:#D2DAE3; --rule-2:#BAC5D1;
+  --accent:#2A78D6; --accent-soft:#DDE9FA; --accent-ink:#1B589F;
+  --warn:#DE5A24; --warn-soft:#FAE2D7; --warn-ink:#A9410F;
+  --good:#12996A; --good-soft:#D6F0E5; --good-ink:#0B6B4A;
+  --amber:#B9821F; --amber-soft:#F6ECD3; --amber-ink:#8A6013;
+  --neutral:#6B7785; --neutral-soft:#E2E7ED;
+  --shadow:0 1px 2px rgba(16,23,32,.06), 0 8px 24px -12px rgba(16,23,32,.22);
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Sans 3","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --ground:#0C1117; --surface:#141C25; --surface-2:#1C2733; --sunken:#0F161E;
+    --ink:#E9EEF4; --ink-2:#A0ADBB; --ink-3:#6E7C8B; --rule:#25313D; --rule-2:#33414F;
+    --accent:#5CA2F6; --accent-soft:#16293E; --accent-ink:#9CC7FB;
+    --warn:#F5834F; --warn-soft:#32201A; --warn-ink:#FBAE86;
+    --good:#34C793; --good-soft:#0F2B24; --good-ink:#6BDCB4;
+    --amber:#E0A94A; --amber-soft:#2C2517; --amber-ink:#EFC57F;
+    --neutral:#8B98A7; --neutral-soft:#1E2833;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C1117; --surface:#141C25; --surface-2:#1C2733; --sunken:#0F161E;
+  --ink:#E9EEF4; --ink-2:#A0ADBB; --ink-3:#6E7C8B; --rule:#25313D; --rule-2:#33414F;
+  --accent:#5CA2F6; --accent-soft:#16293E; --accent-ink:#9CC7FB;
+  --warn:#F5834F; --warn-soft:#32201A; --warn-ink:#FBAE86;
+  --good:#34C793; --good-soft:#0F2B24; --good-ink:#6BDCB4;
+  --amber:#E0A94A; --amber-soft:#2C2517; --amber-ink:#EFC57F;
+  --neutral:#8B98A7; --neutral-soft:#1E2833;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+}
+
+/* ------------------------------------------------------------------ shell */
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:var(--body); -webkit-font-smoothing:antialiased;
+  min-height:100vh; display:flex; flex-direction:column;
+  padding:0 16px; padding-block:0;
+}
+#deck{
+  flex:1; display:flex; flex-direction:column; gap:.75rem;
+  max-width:1560px; width:100%; margin:0 auto; padding-block:.9rem 1rem;
+}
+
+/* top rail ------------------------------------------------------------- */
+.rail{
+  display:flex; align-items:baseline; gap:1rem;
+  font-family:var(--mono); font-size:11px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-3); flex-wrap:wrap;
+}
+.rail .mark{color:var(--ink-2); font-weight:600;}
+.rail .sep{color:var(--rule-2);}
+.rail .spring{flex:1 1 auto;}
+.rail button{
+  font:inherit; letter-spacing:inherit; text-transform:inherit;
+  background:none; border:1px solid var(--rule); color:var(--ink-3);
+  border-radius:3px; padding:.2em .55em; cursor:pointer;
+}
+.rail button:hover{color:var(--ink); border-color:var(--rule-2);}
+.rail button[aria-pressed="true"]{color:var(--accent-ink); border-color:var(--accent); background:var(--accent-soft);}
+
+/* the stage ------------------------------------------------------------ */
+.stage{
+  container-type:inline-size;
+  position:relative; flex:1 1 auto; min-height:0;
+  background:var(--surface); border:1px solid var(--rule); border-radius:5px;
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.slide{
+  position:absolute; inset:0; overflow:auto;
+  display:grid; grid-template-rows:auto 1fr; gap:1.4em;
+  padding:2.5em 3em 2.2em;
+  font-size:1.15cqw; line-height:1.44;
+}
+.slide[hidden]{display:none;}
+
+/* budget meter: the deck's own wall-clock, echoing the experiment ------- */
+.meter{display:flex; flex-direction:column; gap:.4rem;}
+.meter .track{
+  position:relative; height:10px; background:var(--sunken);
+  border:1px solid var(--rule); border-radius:2px; overflow:hidden; cursor:pointer;
+}
+.meter .fill{
+  position:absolute; inset:0 auto 0 0; background:var(--accent);
+  transition:width .32s cubic-bezier(.2,.7,.3,1);
+}
+.meter .ticks{position:absolute; inset:0; display:flex;}
+.meter .ticks span{flex:1; border-right:1px solid var(--ground); opacity:.55;}
+.meter .ticks span:last-child{border-right:0;}
+.meter .wall{position:absolute; top:0; bottom:0; right:0; width:3px; background:var(--warn);}
+.meter .legend{
+  display:flex; justify-content:space-between; gap:1rem;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+
+/* ---------------------------------------------------------------- typography */
+.eyebrow{
+  font-family:var(--mono); font-size:.72em; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--accent-ink);
+}
+.eyebrow.warn{color:var(--warn-ink);} .eyebrow.good{color:var(--good-ink);}
+.eyebrow.mute{color:var(--ink-3);}
+h1{
+  font-family:var(--display); font-weight:800; font-size:4.4em; line-height:.98;
+  letter-spacing:-.028em; margin:0; text-wrap:balance;
+}
+h2{
+  font-family:var(--display); font-weight:800; font-size:2.35em; line-height:1.05;
+  letter-spacing:-.022em; margin:.18em 0 0; text-wrap:balance;
+}
+h3{
+  font-family:var(--display); font-weight:700; font-size:1.02em; line-height:1.25;
+  letter-spacing:-.005em; margin:0;
+}
+.lead{font-size:1.2em; line-height:1.42; color:var(--ink-2); margin:.5em 0 0; max-width:46em;}
+.lead strong{color:var(--ink); font-weight:600;}
+p{margin:0 0 .7em;} p:last-child{margin-bottom:0;}
+code, .mono{font-family:var(--mono); font-size:.88em; letter-spacing:-.01em;}
+code{background:var(--surface-2); padding:.08em .34em; border-radius:3px; color:var(--ink);}
+.num{font-family:var(--display); font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.03em;}
+.hdr{display:flex; flex-direction:column; gap:.1em;}
+
+/* ------------------------------------------------------------------- layout */
+.cols{display:grid; gap:1.6em; align-content:start; min-height:0;}
+.c-7-5{grid-template-columns:7fr 5fr;}
+.c-5-7{grid-template-columns:5fr 7fr;}
+.c-1-1{grid-template-columns:1fr 1fr;}
+.c-3{grid-template-columns:repeat(3,1fr);}
+.stack{display:flex; flex-direction:column; gap:1em; min-width:0;}
+.stack.tight{gap:.6em;}
+
+/* ------------------------------------------------------------------- pieces */
+.stat{display:flex; flex-direction:column; gap:.1em;}
+.stat .v{font-family:var(--display); font-weight:800; font-size:2.9em; line-height:1;
+  letter-spacing:-.035em; font-variant-numeric:tabular-nums;}
+.stat .k{font-family:var(--mono); font-size:.7em; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3);}
+.stat .n{font-size:.86em; color:var(--ink-2); line-height:1.3;}
+.stat.warn .v{color:var(--warn);} .stat.good .v{color:var(--good);}
+.stat.amber .v{color:var(--amber);} .stat.accent .v{color:var(--accent);}
+
+.claim{
+  border-left:3px solid var(--accent); background:var(--accent-soft);
+  padding:.85em 1.1em; border-radius:0 4px 4px 0;
+}
+.claim.warn{border-left-color:var(--warn); background:var(--warn-soft);}
+.claim.good{border-left-color:var(--good); background:var(--good-soft);}
+.claim.amber{border-left-color:var(--amber); background:var(--amber-soft);}
+.claim.mute{border-left-color:var(--rule-2); background:var(--surface-2);}
+.claim h3{margin-bottom:.3em;}
+.claim p{font-size:.95em; color:var(--ink-2);}
+.claim p strong{color:var(--ink);}
+
+.rows{display:flex; flex-direction:column;}
+.rows > li{
+  display:grid; grid-template-columns:auto 1fr; gap:.9em; align-items:baseline;
+  padding:.55em 0; border-bottom:1px solid var(--rule);
+}
+.rows > li:last-child{border-bottom:0;}
+.rows .tag{
+  font-family:var(--mono); font-size:.72em; font-weight:500; letter-spacing:.05em;
+  color:var(--ink-3); white-space:nowrap; padding-top:.15em;
+}
+ul.plain{list-style:none; margin:0; padding:0;}
+ul.bul{margin:0; padding-left:1.15em; display:flex; flex-direction:column; gap:.32em;}
+ul.bul li{color:var(--ink-2);} ul.bul li strong{color:var(--ink); font-weight:600;}
+ul.bul::marker{color:var(--ink-3);}
+
+.pill{
+  display:inline-flex; align-items:center; gap:.35em;
+  font-family:var(--mono); font-size:.7em; font-weight:500; letter-spacing:.06em;
+  text-transform:uppercase; padding:.2em .5em; border-radius:3px;
+  background:var(--surface-2); color:var(--ink-2); white-space:nowrap;
+}
+.pill.warn{background:var(--warn-soft); color:var(--warn-ink);}
+.pill.good{background:var(--good-soft); color:var(--good-ink);}
+.pill.amber{background:var(--amber-soft); color:var(--amber-ink);}
+.pill.accent{background:var(--accent-soft); color:var(--accent-ink);}
+
+figure{margin:0; display:flex; flex-direction:column; gap:.45em; min-width:0;}
+figure img{
+  width:100%; max-width:100%; display:block; border-radius:3px;
+  background:#fff; padding:.5em; border:1px solid var(--rule);
+}
+figcaption{font-size:.82em; color:var(--ink-3); line-height:1.35;}
+
+.tblwrap{overflow-x:auto; border:1px solid var(--rule); border-radius:4px;}
+table{border-collapse:collapse; width:100%; font-size:.86em; font-variant-numeric:tabular-nums;}
+th, td{padding:.42em .7em; text-align:right; border-bottom:1px solid var(--rule); white-space:nowrap;}
+th:first-child, td:first-child{text-align:left;}
+thead th{
+  font-family:var(--mono); font-size:.82em; font-weight:500; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--ink-3); background:var(--surface-2);
+  border-bottom:1px solid var(--rule-2);
+}
+tbody tr:last-child td{border-bottom:0;}
+td.cond{font-family:var(--mono); font-size:.92em;}
+td b, th b{font-weight:600; color:var(--ink);}
+tr.hl td{background:var(--warn-soft);}
+
+/* drill-down ------------------------------------------------------------ */
+details.drill{border:1px solid var(--rule); border-radius:4px; background:var(--sunken);}
+details.drill > summary{
+  cursor:pointer; list-style:none; padding:.5em .8em;
+  font-family:var(--mono); font-size:.72em; font-weight:500; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--accent-ink);
+  display:flex; align-items:center; gap:.55em;
+}
+details.drill > summary::-webkit-details-marker{display:none;}
+details.drill > summary::before{
+  content:"+"; display:inline-grid; place-items:center;
+  width:1.35em; height:1.35em; border:1px solid var(--accent); border-radius:2px;
+  font-weight:600; line-height:1;
+}
+details.drill[open] > summary::before{content:"\2212";}
+details.drill > summary:hover{color:var(--ink);}
+details.drill .body{padding:0 .8em .8em; display:flex; flex-direction:column; gap:.6em;}
+details.drill .body > p{font-size:.88em; color:var(--ink-2);}
+
+/* budget bars ----------------------------------------------------------- */
+.bars{display:flex; flex-direction:column; gap:.5em;}
+.bar{display:grid; grid-template-columns:8.5em 1fr auto; gap:.7em; align-items:center;}
+.bar .lab{font-family:var(--mono); font-size:.76em; color:var(--ink-2); text-align:right;}
+.bar .trk{
+  position:relative; height:1.5em; background:var(--sunken);
+  border:1px solid var(--rule); border-radius:2px; overflow:hidden;
+}
+.bar .val{
+  position:absolute; inset:0 auto 0 0; width:0;
+  transition:width .8s cubic-bezier(.16,.84,.34,1);
+}
+.bar .val.b{background:var(--neutral);}
+.bar .val.c{background:var(--warn);}
+.bar .val.s{background:var(--accent);}
+.bar .num{font-size:.8em; color:var(--ink-2); min-width:3.4em; text-align:right;}
+.wallmark{position:absolute; top:-.15em; bottom:-.15em; width:2px; background:var(--warn); opacity:.85;}
+
+/* timeline (post-completion trap) --------------------------------------- */
+.tl{position:relative; padding:2.6em 0 3.4em;}
+.tl .axis{position:relative; height:2.1em; background:var(--sunken);
+  border:1px solid var(--rule); border-radius:2px; overflow:hidden;}
+.tl .seg{position:absolute; top:0; bottom:0;}
+.tl .seg.work{background:var(--good); }
+.tl .seg.cer{background:repeating-linear-gradient(135deg,var(--warn-soft),var(--warn-soft) 5px,var(--warn) 5px,var(--warn) 6px);}
+.tl .kill{position:absolute; top:-.5em; bottom:-.5em; width:3px; background:var(--warn);}
+.tl .mk{position:absolute; transform:translateX(-50%); text-align:center; width:12em;}
+.tl .mk .t{font-family:var(--mono); font-size:.74em; color:var(--ink); font-weight:500;}
+.tl .mk .d{font-size:.78em; color:var(--ink-3); line-height:1.25;}
+.tl .mk.up{bottom:calc(100% - 2.1em + 2.9em);}
+.tl .mk.dn{top:calc(2.6em + 2.1em + .7em);}
+
+/* funnel (adherence) ----------------------------------------------------- */
+.funnel{display:flex; flex-direction:column; gap:.35em;}
+.funnel .step{display:grid; grid-template-columns:1fr auto; gap:.8em; align-items:center;
+  border:1px solid var(--rule); border-radius:3px; padding:.5em .75em; background:var(--surface-2);}
+.funnel .step .t{font-size:.92em;}
+.funnel .step .v{font-family:var(--display); font-weight:800; font-size:1.25em;
+  font-variant-numeric:tabular-nums; letter-spacing:-.02em;}
+.funnel .step.a{background:var(--good-soft); border-color:var(--good);} .funnel .step.a .v{color:var(--good);}
+.funnel .step.b{background:var(--accent-soft); border-color:var(--accent);} .funnel .step.b .v{color:var(--accent);}
+.funnel .step.c{background:var(--warn-soft); border-color:var(--warn);} .funnel .step.c .v{color:var(--warn);}
+
+/* notes panel ------------------------------------------------------------ */
+#notes{
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  background:var(--surface); border-top:2px solid var(--accent);
+  box-shadow:0 -12px 32px -18px rgba(0,0,0,.5);
+  padding:1rem 1.25rem 1.1rem; max-height:44vh; overflow:auto;
+}
+#notes[hidden]{display:none;}
+#notes .nh{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--accent-ink); margin-bottom:.5rem; display:flex; gap:.8rem; align-items:baseline;
+}
+#notes .nb{font-size:14.5px; line-height:1.5; color:var(--ink-2); max-width:78ch;}
+#notes .nb strong{color:var(--ink);}
+#notes .nb ul{margin:.4em 0 0; padding-left:1.1em; display:flex; flex-direction:column; gap:.2em;}
+
+/* help overlay ----------------------------------------------------------- */
+#help{
+  position:fixed; inset:0; z-index:60; display:grid; place-items:center;
+  background:color-mix(in srgb, var(--ground) 82%, transparent);
+  backdrop-filter:blur(3px);
+}
+#help[hidden]{display:none;}
+#help .box{
+  background:var(--surface); border:1px solid var(--rule-2); border-radius:6px;
+  box-shadow:var(--shadow); padding:1.4rem 1.6rem; min-width:min(420px, 90vw);
+}
+#help h3{font-size:1rem; margin-bottom:.9rem;}
+#help dl{display:grid; grid-template-columns:auto 1fr; gap:.45rem 1rem; margin:0; font-size:14px;}
+#help dt{font-family:var(--mono); font-size:12.5px; color:var(--accent-ink);}
+#help dd{margin:0; color:var(--ink-2);}
+
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px;}
+@media (prefers-reduced-motion: reduce){
+  *{transition-duration:.01ms !important; animation-duration:.01ms !important;}
+}
+
+/* phone ------------------------------------------------------------------ */
+@media (max-width:820px){
+  .slide{font-size:14px; padding:1.5em 1.4em 1.8em; gap:1em;}
+  h1{font-size:2.5em;} h2{font-size:1.6em;} .lead{font-size:1.05em;}
+  .cols{grid-template-columns:1fr !important; gap:1.1em;}
+  .stat .v{font-size:2.1em;}
+  .bar{grid-template-columns:6.5em 1fr auto;}
+  .tl .mk{width:8em;}
+  #deck{padding-block:.6rem .7rem;}
+}
+</style>
+
+<div id="deck">
+  <div class="rail">
+    <span class="mark">harbor-methodology-bench</span>
+    <span class="sep">/</span>
+    <span id="sect">the cost of process</span>
+    <span class="spring"></span>
+    <button type="button" id="btn-notes" aria-pressed="false" title="Speaker notes (N)">notes</button>
+    <button type="button" id="btn-help" title="Keyboard shortcuts (?)">?</button>
+    <span class="sep">|</span>
+    <span><span id="pos">1</span>&thinsp;/&thinsp;<span id="tot">15</span></span>
+  </div>
+
+  <div class="stage" id="stage">
+
+<style>
+/* pipeline + sequence: laid out in HTML so the type scales with the slide */
+.pipe{display:flex; align-items:stretch; gap:0; min-width:0; min-height:9.5em;}
+.pipe .node{
+  flex:1 1 0; min-width:0; border:1px solid var(--rule); border-radius:3px;
+  background:var(--surface-2); padding:.8em .85em; display:flex; flex-direction:column; gap:.3em;
+}
+.pipe .node .n{font-family:var(--mono); font-size:.86em; font-weight:600; color:var(--ink);}
+.pipe .node .d{font-size:.84em; line-height:1.35; color:var(--ink-3);}
+.pipe .node.check{background:var(--good-soft); border-color:var(--good);}
+.pipe .node.check .n{color:var(--good-ink);}
+.pipe .node.pin{background:transparent; border-style:dashed; border-color:var(--rule-2);}
+.pipe .arrow{
+  flex:0 0 1.7em; display:grid; place-items:center;
+  font-family:var(--mono); color:var(--rule-2); font-size:1em;
+}
+.pipe .inputs{flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:.35em;}
+.pipe .inputs .node{flex:1 1 auto;}
+@media (max-width:820px){
+  .pipe{flex-direction:column;}
+  .pipe .arrow{flex:0 0 1.2em; transform:rotate(90deg);}
+}
+
+.seq{display:flex; gap:.5em; align-items:stretch; min-width:0;}
+.seq .run{
+  flex:1 1 0; min-width:0; border:1px solid var(--rule); border-radius:3px;
+  padding:.6em .7em; display:flex; flex-direction:column; gap:.25em; background:var(--surface-2);
+}
+.seq .run .r{font-family:var(--mono); font-size:.8em; font-weight:600;}
+.seq .run .m{font-family:var(--mono); font-size:.7em; color:var(--ink-3);}
+.seq .run .o{font-size:.8em; line-height:1.3; color:var(--ink-2); margin-top:.15em;}
+.seq .run.gate{background:var(--good-soft); border-color:var(--good);}
+.seq .run.gate .r{color:var(--good-ink);}
+.seq .run.defect{background:var(--warn-soft); border-color:var(--warn);}
+.seq .run.defect .r{color:var(--warn-ink);}
+.seq .run.here{background:var(--accent-soft); border-color:var(--accent); border-width:2px;}
+.seq .run.here .r{color:var(--accent-ink);}
+.seq .split{display:flex; flex-direction:column; gap:.5em; flex:1.3 1 0; min-width:0;}
+@media (max-width:820px){ .seq{flex-direction:column;} .seq .split{flex-direction:column;} }
+</style>
+
+<!-- 1 ------------------------------------------------------------------ -->
+<section class="slide" data-sect="title">
+  <div class="hdr">
+    <span class="eyebrow">Measurement report &middot; harbor-methodology-bench</span>
+    <h1>The Cost of Process</h1>
+  </div>
+  <div class="stack">
+    <p class="lead">What a repository&rsquo;s agent configuration actually buys a coding agent &mdash;
+      measured against a proven-clean baseline on two task populations selected on
+      <strong>opposite</strong> criteria.</p>
+
+    <div class="cols c-3" style="gap:1.2em; margin-top:.4em;">
+      <div class="stat accent"><span class="v">156</span><span class="k">trials graded</span>
+        <span class="n">26 Terminal-Bench 2.0 tasks &times; 3 conditions &times; 2 attempts</span></div>
+      <div class="stat"><span class="v">$201.37</span><span class="k">total spend</span>
+        <span class="n">30.1 agent-hours across two runs</span></div>
+      <div class="stat warn"><span class="v">1.71&ndash;3.11&times;</span><span class="k">the headline</span>
+        <span class="n">what one toolkit costs, for level partial credit</span></div>
+    </div>
+
+    <div class="claim mute" style="margin-top:.3em;">
+      <p><strong>Christoph Mitschka</strong> &middot; korza.ai &middot; with an independent critical review
+      contributed by <strong>Antigravity</strong> (Google DeepMind). Every quantity recomputed from the
+      per-trial tables by <code>whitepaper/scripts/verify_numbers.py</code>, independently of the source analyses.</p>
+    </div>
+
+    <p class="mono" style="font-size:.74em; color:var(--ink-3); letter-spacing:.04em;">
+      agent Claude Code on claude-sonnet-5 &nbsp;&middot;&nbsp; task suite pinned @ 2fd12b88, unmodified
+      &nbsp;&middot;&nbsp; runs executed 2026-08-31 and 2026-09-01, 9-way concurrency on one host</p>
+  </div>
+  <template class="note">
+    <strong>Framing for the room.</strong> This is a cost-and-conformance result, not an outcome result.
+    The outcome comparison is a null and it is an <em>underpowered</em> null &mdash; say so early so nobody
+    hears &ldquo;methodology does not work&rdquo;. What is settled: what process costs, that it converts into
+    censoring risk, and that it was mostly not followed.
+    <ul>
+      <li>Two toolkits: <strong>CodeZen</strong> (delegation and review) and <strong>SDD</strong> (a seven-step specification chain).</li>
+      <li>Everything here is a single autonomous session on a fully specified task. That is the regime where a specification process has least to add &mdash; slide 15.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 2 ------------------------------------------------------------------ -->
+<section class="slide" data-sect="the question">
+  <div class="hdr">
+    <span class="eyebrow">The question</span>
+    <h2>Does a repository&rsquo;s agent configuration make the agent better?</h2>
+  </div>
+  <div class="cols c-7-5">
+    <div class="stack">
+      <p class="lead" style="font-size:1.08em;">Two published coding-agent toolkits, frozen at a Git SHA and
+        deployed <strong>as shipped</strong> &mdash; <code>CLAUDE.md</code>, <code>AGENTS.md</code>, a skills
+        directory, the surrounding docs &mdash; against a bare agent on the same tasks.</p>
+
+      <div class="claim warn">
+        <h3>The trap: the naive version measures nothing</h3>
+        <p>Harbor transfers only <code>instruction.md</code>, <code>tests/</code> and <code>solution/</code>
+        into the container. A <code>CLAUDE.md</code> placed next to <code>task.toml</code>
+        <strong>never reaches the agent</strong>. An experiment built that way returns a clean null and
+        no way to tell it from an absent condition.</p>
+      </div>
+
+      <ul class="rows plain">
+        <li><span class="tag">available?</span>
+          <span><code>hmb preflight</code> &mdash; an assertion made from <strong>inside</strong> the running
+          container, before any trial. All <strong>78</strong> task variants passed.</span></li>
+        <li><span class="tag">used?</span>
+          <span><code>hmb analysis</code> &mdash; adherence read from the agent&rsquo;s own trajectory:
+          Skill calls, sub-agent spawns, shell buckets.</span></li>
+      </ul>
+      <p style="font-size:.92em; color:var(--ink-2);">Keeping those two questions apart is what makes slide&nbsp;12 possible &mdash;
+        and slide&nbsp;12 changes what every other result is a result <em>about</em>.</p>
+    </div>
+
+    <div class="stack">
+      <div class="claim">
+        <h3>Why Terminal-Bench 2.0 is the right substrate&hellip;</h3>
+        <p><strong>The reward is a verifier, not a judge.</strong> A task passes when its own test suite
+        passes. No model grades style or process, so a methodology can only score by changing the artefact
+        on disk &mdash; which removes the most common way a process evaluation flatters itself.</p>
+      </div>
+      <div class="claim amber">
+        <h3>&hellip;and where it fights back</h3>
+        <p><strong>Every task declares a wall-clock budget, and Harbor enforces it.</strong> That single
+        fact turns out to be the dominant mechanism in the whole dataset.</p>
+        <p><strong>Tasks are self-contained and fully specified.</strong> Specification processes are
+        motivated by the opposite situation, so this is the regime in which one has <em>least</em> to add.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    89 tasks in the pool, 16 categories, easy/medium/hard. Each ships a unique environment, a human-written
+    solution, and tests written to verify it.
+    <ul>
+      <li>If asked why not just put the file in the task directory: that is exactly the failure mode. Harbor&rsquo;s
+      copy list is fixed, so the methodology has to be a <strong>Docker layer on the task&rsquo;s own base image</strong>.</li>
+      <li>78 variants = 48 in <em>suite</em> (16 tasks &times; 3) + 30 in <em>ceiling</em> (10 &times; 3).</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 3 ------------------------------------------------------------------ -->
+<section class="slide" data-sect="architecture">
+  <div class="hdr">
+    <span class="eyebrow">Architecture</span>
+    <h2>The measurement pipeline</h2>
+    <p class="lead">Two checks, in green, are what separate this design from an experiment that cannot tell a
+      present configuration from an absent one.</p>
+  </div>
+  <div class="stack">
+    <div class="pipe">
+      <div class="inputs">
+        <div class="node pin"><span class="n">Terminal-Bench 2.0</span>
+          <span class="d">task suite @ <code>2fd12b88</code>, never modified</span></div>
+        <div class="node pin"><span class="n">toolkit repository</span>
+          <span class="d">frozen at a Git SHA: CLAUDE.md &middot; AGENTS.md &middot; skills</span></div>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="node"><span class="n">hmb build</span>
+        <span class="d">one image per task &times; condition; methodology injected as a <b>layer</b> on the task&rsquo;s own base image</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node check"><span class="n">hmb preflight</span>
+        <span class="d">asserts from <b>inside</b> the container that the condition is what was declared</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node"><span class="n">Harbor</span>
+        <span class="d">agent runs with a shell and the task&rsquo;s <b>declared wall-clock budget</b></span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node check"><span class="n">verifier</span>
+        <span class="d">the task&rsquo;s own test suite &mdash; <b>a verifier, not a judge</b></span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node"><span class="n">hmb analysis</span>
+        <span class="d">reward &middot; partial credit &middot; cost &middot; tokens &middot; full trajectory</span></div>
+    </div>
+
+    <div class="cols c-3" style="gap:1.1em;">
+      <div class="claim good">
+        <h3>Availability is proven, not assumed</h3>
+        <p>The generated Dockerfile is <strong>byte-identical across every condition of a task</strong>, and
+        the <code>baseline</code> working directory is proven byte-identical to the untouched base image.
+        No build-path difference can be mistaken for a methodology effect.</p>
+      </div>
+      <div class="claim mute">
+        <h3>What comes out</h3>
+        <p><code>trials.csv</code> &middot; <code>tests.csv</code> &middot; <code>steps.csv</code> &middot;
+        <code>tool_calls.csv</code> &middot; <code>adherence.csv</code> &middot; condition summaries.
+        One row per trial, one row per verifier test, one row per agent step.</p>
+      </div>
+      <div class="claim amber">
+        <h3>The clock is inside the loop</h3>
+        <p>Harbor kills the container at the wall. A kill is <strong>right-censoring</strong>: the trial
+        stopped before the event of interest. Harbor still records what the verifier scored on the workspace
+        it killed &mdash; which slide&nbsp;10 turns into the cheapest available fix.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <strong>The one architectural decision worth defending out loud:</strong> injecting the methodology as a
+    Docker layer rather than as files in the task directory, and then asserting presence from inside the
+    container rather than trusting the build.
+    <ul>
+      <li>Preflight is cheap &mdash; it is a container exec, not a model call &mdash; and it is the only reason
+      the null on slide 7 can be read as &ldquo;no detectable effect&rdquo; rather than &ldquo;the condition was never there&rdquo;.</li>
+      <li>Concurrency caveat: nine trials ran at a time on one host, so wall-clock and the derived budget share
+      carry contention. Contention is symmetric within a task, so paired comparisons survive; absolute budget
+      percentages are inflated.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 4 ------------------------------------------------------------------ -->
+<section class="slide" data-sect="design">
+  <div class="hdr">
+    <span class="eyebrow">Design</span>
+    <h2>Three conditions, two populations selected on opposite criteria</h2>
+  </div>
+  <div class="cols c-1-1">
+    <div class="stack">
+      <span class="eyebrow mute">What the agent&rsquo;s working directory contains</span>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>condition</th><th style="text-align:left">contents</th></tr></thead>
+          <tbody>
+            <tr><td class="cond">baseline</td><td style="text-align:left">the benchmark task and nothing else &mdash; the pure agent, proven clean</td></tr>
+            <tr><td class="cond">sdd</td><td style="text-align:left">SDD as shipped: <code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>.sdd-kit/</code>, <b>7</b> skills</td></tr>
+            <tr><td class="cond">codezen-viable</td><td style="text-align:left">CodeZen reprojected as a repository, restricted to the <b>4</b> skills that can run in a container</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="claim warn">
+        <h3>A stated confound, not an oversight</h3>
+        <p>CodeZen&rsquo;s other seven skills need a Docker daemon, a human, a running system under test, or an
+        MCP server &mdash; none of which exist in a benchmark container. <strong>Every CodeZen number in this
+        deck is a number about a four-skill subset:</strong> <code>noc-tdd</code>, <code>noc-fix</code>,
+        <code>code-review</code>, <code>security-review</code>. Sub-agents its skills spawn run the
+        <em>same</em> model, which matters on slide&nbsp;10.</p>
+      </div>
+    </div>
+
+    <div class="stack">
+      <span class="eyebrow mute">The two populations</span>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th></th><th><i>suite</i></th><th><i>ceiling</i></th></tr></thead>
+          <tbody>
+            <tr><td>selected because&hellip;</td><td>bare agent <b>fails</b></td><td>bare agent <b>passes</b></td></tr>
+            <tr><td>tasks &times; conditions &times; attempts</td><td>16 &times; 3 &times; 2</td><td>10 &times; 3 &times; 2</td></tr>
+            <tr><td>trials</td><td>96</td><td>60</td></tr>
+            <tr><td>spend</td><td>$114.90</td><td>$86.46</td></tr>
+            <tr><td>baseline success (graded)</td><td>25.0&#8202;%</td><td>89.5&#8202;%</td></tr>
+            <tr class="hl"><td>tasks every condition treated alike</td><td><b>10 of 16</b></td><td><b>8 of 10</b></td></tr>
+            <tr><td>effective <i>n</i> per paired outcome test</td><td>4&ndash;5</td><td>1&ndash;2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="claim">
+        <h3>Read the highlighted row first</h3>
+        <p>In both runs, most of the money bought tasks on which every condition did the same thing.
+        Ten concordant <i>suite</i> tasks consumed <strong>$74.47 of $114.90</strong>; seven of them were
+        failed by everything. That is why the outcome comparison is a null, and slide&nbsp;8 is why it was
+        always going to be.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <strong>Population provenance.</strong> <i>suite</i> is a derivation, not a selection: every task survived
+    <code>hmb screen</code> &mdash; the oracle agent scored 1.0, the <code>nop</code> agent scored 0.0, and one
+    bare baseline trial failed. <i>ceiling</i> is ten of the 57 tasks the same screen <em>rejected</em> for being
+    at ceiling, ranked by expert estimate &divide; agent budget, top ten under 32&times;.
+    <ul>
+      <li>Not independent samples: <code>path-tracing-reverse</code> in <i>ceiling</i> is a sibling of
+      <code>path-tracing</code> in <i>suite</i>.</li>
+      <li>If challenged on the four-skill subset: agreed, and it is the reason no claim here is about
+      &ldquo;CodeZen&rdquo; as a product.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 5 ------------------------------------------------------------------ -->
+<section class="slide" data-sect="run sequence">
+  <div class="hdr">
+    <span class="eyebrow">Where these runs sit</span>
+    <h2>Five runs, three overshoots</h2>
+    <p class="lead">Each run&rsquo;s design was chosen to repair the previous run&rsquo;s defect. The repair
+      overshot every time &mdash; and that is the most transferable lesson in the experiment.</p>
+  </div>
+  <div class="stack">
+    <div class="seq">
+      <div class="run gate"><span class="r">probe3</span><span class="m">2026-08-26 &middot; 12 trials &middot; $24.94</span>
+        <span class="o">Gate: is adherence non-zero? Its predicted null did not happen, so the gate opened.</span></div>
+      <div class="run defect"><span class="r">prog16</span><span class="m">2026-08-27 &middot; 16 tasks &middot; $75.49</span>
+        <span class="o">Selected for human-expert difficulty. Null on outcome, measured cost &mdash; and a <b>ceiling</b> that made the null uninformative.</span></div>
+      <div class="run gate"><span class="r">screen</span><span class="m">2026-08-31 &middot; 83 candidates</span>
+        <span class="o">One bare baseline trial per candidate, plus oracle and <code>nop</code>. 16 kept &middot; 64 excluded &middot; 3 undecided.</span></div>
+      <div class="split">
+        <div class="run here"><span class="r">suite</span><span class="m">96 trials &middot; $114.90</span>
+          <span class="o">The 16 the bare agent failed &rarr; <b>floor</b>: 7 of 16 failed by everything.</span></div>
+        <div class="run here"><span class="r">ceiling</span><span class="m">60 trials &middot; $86.46</span>
+          <span class="o">10 of the 57 it rejected &rarr; <b>ceiling by construction</b>; run as a cost probe.</span></div>
+      </div>
+    </div>
+
+    <div class="cols c-5-7" style="gap:1.4em;">
+      <div class="claim warn">
+        <h3>Three screens, three overshoots</h3>
+        <p>Selecting for human-expert difficulty produced a ceiling (baseline 81&#8202;%). Screening for
+        &ldquo;the bare agent fails&rdquo; produced a floor (37.5&#8202;%). The rejected set is a ceiling by
+        construction (90&#8202;%). <strong>No screen in this sequence landed in the discriminating band.</strong></p>
+      </div>
+      <div class="stack tight">
+        <p style="font-size:.95em; color:var(--ink-2);">The two runs reported here are the screen&rsquo;s two
+          sides, pooled into <strong>156 trials &middot; 26 tasks &middot; $201.37</strong>. Pooling is what makes
+          the length analysis on slide&nbsp;13 possible &mdash; and it is also that analysis&rsquo;s main confound,
+          because run membership and task length are correlated but not aligned.</p>
+        <div class="claim mute">
+          <p><strong>Direct evidence the one-trial rule misclassifies both ways:</strong>
+          <code>make-mips-interpreter</code> was excluded as &ldquo;the bare agent already passes it&rdquo; &mdash;
+          and baseline then failed <em>both</em> of its attempts in the run that used it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    Slide 8 gives the analytic form of the screen defect. Keep this slide to the narrative: the sequence is
+    honest about having overshot three times, and the fix costs three baseline trials per candidate instead of one.
+    <ul>
+      <li><i>probe3</i> was a spend gate, not a result: 3 tasks &times; 4 conditions &times; 1 attempt.</li>
+      <li>If asked why <i>ceiling</i> was run at all knowing it was at ceiling: it was run as a <strong>cost</strong>
+      probe, and it delivered &mdash; the 1.71&times; multiplier and the 10-of-10 result come from it.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 6 ------------------------------------------------------------------ -->
+<section class="slide" data-sect="conventions">
+  <div class="hdr">
+    <span class="eyebrow warn">Before any number</span>
+    <h2>Two reporting conventions decide the answer</h2>
+    <p class="lead">Neither is cosmetic. On the <i>ceiling</i> population the censoring convention alone moves
+      CodeZen across <strong>27.9 points</strong> and three ranks.</p>
+  </div>
+  <div class="cols c-7-5">
+    <div class="stack">
+      <span class="eyebrow mute">1 &middot; what to do with a trial the clock killed</span>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>reading</th><th style="text-align:left">rule</th><th>CodeZen on <i>ceiling</i></th><th>rank</th></tr></thead>
+          <tbody>
+            <tr><td class="cond">censored</td><td style="text-align:left">drop the trial from numerator <em>and</em> denominator</td><td><b>92.9&#8202;%</b></td><td>1st</td></tr>
+            <tr><td class="cond">grade at kill</td><td style="text-align:left">score the workspace as it stood when killed</td><td>80.0&#8202;%</td><td>2nd</td></tr>
+            <tr><td class="cond">timeout = fail</td><td style="text-align:left">every kill counts against its condition</td><td>65.0&#8202;%</td><td><b>3rd</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:.94em; color:var(--ink-2);">The primary convention here is <b>censored</b>, because the
+        agent was <em>stopped</em>, not beaten. Both alternatives are reported wherever they change something.
+        <strong>Six of CodeZen&rsquo;s 20 <i>ceiling</i> trials were killed, against baseline&rsquo;s one</strong> &mdash;
+        which is why the convention has this much leverage on one condition and almost none on the others.</p>
+
+      <div class="claim amber">
+        <h3>And a third option beats all three</h3>
+        <p>Harbor already recorded what the verifier scored on the workspace it killed. <strong>7 of the 23
+        kills across both runs scored reward 1.0.</strong> Grading at the kill turns a lost observation into a
+        measured one and costs no model tokens &mdash; slide&nbsp;10.</p>
+      </div>
+    </div>
+
+    <div class="stack">
+      <span class="eyebrow mute">2 &middot; what &ldquo;the task passed&rdquo; means at two attempts</span>
+      <ul class="rows plain">
+        <li><span class="tag">pass-at-2</span><span>at least one of the two attempts passed. The
+          <em>capability</em> reading.</span></li>
+        <li><span class="tag">pass-both</span><span>both attempts passed. The <em>reliability</em> reading.</span></li>
+      </ul>
+      <div class="claim">
+        <p>They disagree about whether SDD regressed <strong>zero</strong> tasks or <strong>three</strong>.
+        Both are quoted wherever they diverge.</p>
+      </div>
+
+      <span class="eyebrow mute" style="margin-top:.3em;">Statistics, and the power behind every null</span>
+      <ul class="bul">
+        <li>Every task ran in every condition, so tests are <strong>paired</strong>: exact McNemar on binary
+          outcomes, Wilcoxon signed-rank on per-task means, Wilson intervals on proportions, two-sided Spearman
+          for length.</li>
+        <li>80&#8202;% power at &alpha;&nbsp;=&nbsp;0.05 needs <strong>|&rho;|&nbsp;&ge;&nbsp;0.53 at n&nbsp;=&nbsp;26</strong>
+          and <strong>&ge;&nbsp;0.79 at n&nbsp;=&nbsp;10</strong>. Anything below that is &ldquo;not resolved&rdquo;, never &ldquo;absent&rdquo;.</li>
+        <li><strong>p&nbsp;=&nbsp;0.002 is the minimum attainable value</strong> for a two-sided Wilcoxon at
+          n&nbsp;=&nbsp;10. It means <em>the effect is present on every task</em> &mdash; not that it is large.</li>
+      </ul>
+    </div>
+  </div>
+  <template class="note">
+    Spend the time here. Almost every objection later in the deck is really an objection to one of these two
+    conventions, and answering it once is cheaper than answering it five times.
+    <ul>
+      <li>Three <i>suite</i> kills &mdash; <code>path-tracing</code> (baseline), <code>adaptive-rejection-sampler</code>
+      and <code>torch-tensor-parallelism</code> (CodeZen) &mdash; were killed with a <strong>passing verifier already
+      on disk</strong>. Readings 2 and 3 therefore do not bracket an uncertainty about them: they record the same
+      three solved tasks as failures and as passes on identical evidence. That is a harness defect, not a robustness check.</li>
+      <li>Censoring here is <em>informative</em> right-censoring &mdash; the agent&rsquo;s own behaviour determines
+      whether it reaches the deadline &mdash; so survival analysis does not apply off the shelf.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 7 ------------------------------------------------------------------ -->
+<section class="slide" data-sect="results I &middot; outcome">
+  <div class="hdr">
+    <span class="eyebrow mute">Results I &middot; outcome</span>
+    <h2>The null &mdash; and it is the weakest half of the paper</h2>
+    <p class="lead">Every McNemar test is non-significant. <strong>18 of 26 tasks are concordant.</strong>
+      Effective sample size per paired outcome test is 1&ndash;5. This is an underpowered, internally
+      inconsistent null, not a demonstrated absence.</p>
+  </div>
+  <div class="stack">
+    <div class="tblwrap">
+        <table>
+          <thead>
+            <tr><th></th><th>cens.</th><th>success<br><span style="text-transform:none">(censored dropped)</span></th>
+              <th>t/o&nbsp;=&nbsp;fail</th><th>graded at kill</th>
+              <th>partial credit</th><th>test rate</th><th>spend</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="cond">suite &middot; baseline</td><td>4</td><td>25.0&#8202;%</td><td>21.9&#8202;%</td><td>25.0&#8202;%</td><td><b>0.533</b></td><td>59.8&#8202;%</td><td>$21.87</td></tr>
+            <tr class="hl"><td class="cond">suite &middot; CodeZen</td><td>7</td><td><b>36.0&#8202;%</b></td><td>28.1&#8202;%</td><td>34.4&#8202;%</td><td>0.516</td><td><b>60.0&#8202;%</b></td><td><b>$68.13</b></td></tr>
+            <tr><td class="cond">suite &middot; SDD</td><td>3</td><td>24.1&#8202;%</td><td>21.9&#8202;%</td><td>21.9&#8202;%</td><td>0.448</td><td>52.5&#8202;%</td><td>$24.89</td></tr>
+            <tr><td class="cond">ceiling &middot; baseline</td><td>1</td><td>89.5&#8202;%</td><td><b>85.0&#8202;%</b></td><td><b>85.0&#8202;%</b></td><td><b>0.917</b></td><td>90.7&#8202;%</td><td>$22.72</td></tr>
+            <tr class="hl"><td class="cond">ceiling &middot; CodeZen</td><td>6</td><td><b>92.9&#8202;%</b></td><td>65.0&#8202;%</td><td>80.0&#8202;%</td><td>0.900</td><td><b>92.6&#8202;%</b></td><td>$38.80</td></tr>
+            <tr><td class="cond">ceiling &middot; SDD</td><td>2</td><td>77.8&#8202;%</td><td>70.0&#8202;%</td><td>75.0&#8202;%</td><td>0.750</td><td>68.5&#8202;%</td><td>$24.94</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    <details class="drill">
+      <summary>Outcome by condition, at three resolutions &mdash; both runs</summary>
+        <div class="body">
+          <figure><img src="{{IMG:suite-01-outcome}}" alt="suite run: success rate, partial credit and test-level pass rate by condition, with 95% intervals">
+            <figcaption><i>suite</i>. Intervals contain each other in every comparison.</figcaption></figure>
+          <figure><img src="{{IMG:ceiling-01-outcome}}" alt="ceiling run: success rate, partial credit and test-level pass rate by condition, with 95% intervals">
+            <figcaption><i>ceiling</i>. The one panel worth taking seriously is bottom right: SDD satisfies
+            22 points less of each verifier than baseline. Whiskers on test-level panels are task-clustered
+            bootstrap intervals, not binomial intervals on test rows.</figcaption></figure>
+        </div>
+    </details>
+
+    <div class="cols c-3" style="align-items:start;">
+      <div class="claim warn">
+        <h3>On <i>suite</i>, the coarse and fine metrics do not rank the conditions the same way</h3>
+        <p>Success rate puts CodeZen first by 11 points &mdash; on a difference of <strong>two trials</strong>.
+        Partial credit puts baseline first by 0.017 &mdash; but exactly one trial in the 156 has no per-test
+        record, and scoring that failure 0 makes it 0.517 against 0.516, a tie. Test-level rate reproduces
+        neither: 60.0&#8202;% against 59.8&#8202;%.</p>
+      </div>
+      <div class="claim mute">
+        <h3>The pooled test count does not buy power</h3>
+        <p>357 <i>suite</i> test rows are not 357 independent observations &mdash; they cluster in 16 tasks, two of
+        which supply 30&#8202;%. Design effects 5.7&ndash;7.4, effective n 16&ndash;20. Clustered intervals run
+        <strong>42&ndash;48 points wide</strong> where binomial ones on the same counts run 17&ndash;18.</p>
+      </div>
+      <div class="claim good">
+        <h3>The one fine-grained signal worth carrying</h3>
+        <p>SDD satisfies <strong>0.82&ndash;0.83&times;</strong> of each verifier&rsquo;s tests &mdash; the same
+        shortfall, independently, on <em>both</em> populations. It never reaches significance
+        (p&nbsp;=&nbsp;0.125 at n&nbsp;=&nbsp;10). The consistency across two disjoint task sets is more
+        interesting than either p-value, and slide&nbsp;12 supplies a mechanism.</p>
+      </div>
+    </div>
+
+    <p style="font-size:.88em; color:var(--ink-3);">95&#8202;% Wilson intervals on the success column:
+      [13,&nbsp;43] [20,&nbsp;55] [12,&nbsp;42] on <i>suite</i>; [69,&nbsp;97] [69,&nbsp;99] [55,&nbsp;91] on
+      <i>ceiling</i> &mdash; each contains every other. &nbsp;Exact McNemar under pass-at-2:
+      p&nbsp;=&nbsp;0.625 (CodeZen), p&nbsp;=&nbsp;1.000 (SDD) on <i>suite</i>; p&nbsp;=&nbsp;1.000 for both
+      on <i>ceiling</i>.</p>
+  </div>
+  <template class="note">
+    <strong>Do not let this slide be the takeaway.</strong> The correct sentence is &ldquo;no detectable effect
+    that the coarse and fine metrics agree about&rdquo; &mdash; the intervals are wide enough for a moderate real
+    effect in either direction.
+    <ul>
+      <li>The unrecorded trial is <code>torch-tensor-parallelism</code> under baseline: not censored, verifier ran
+      436.8&#8202;s and returned reward 0 with no test rows.</li>
+      <li>Methodology can also <em>regress</em> a solved task. <code>torch-pipeline-parallelism</code>: baseline
+      passes one of two attempts at 29&#8202;% of budget; CodeZen consumed 100&#8202;% of budget on both and failed
+      both at 2 of 3 tests. Under pass-both the regression list grows &mdash; CodeZen also loses
+      <code>schemelike-metacircular-eval</code>, and SDD loses three tasks it passed once.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 8 ------------------------------------------------------------------ -->
+<section class="slide" data-sect="the screen defect">
+  <div class="hdr">
+    <span class="eyebrow warn">Why neither population could have shown an outcome effect</span>
+    <h2>A one-trial screen is monotone in the wrong quantity</h2>
+  </div>
+  <div class="cols c-7-5">
+    <figure>
+      <img src="{{IMG:x13-screen-selection}}" alt="Probability that a task survives the screen, plotted against its true single-attempt pass probability. The one-trial rule keeps hopeless tasks with certainty and discards half of the ideally discriminating ones; a two-sided rule on three trials peaks in the middle.">
+      <figcaption>Red: probability a task with true single-attempt pass probability <i>p</i> survives the rule
+        &ldquo;keep it if one baseline trial fails&rdquo;. Blue: a two-sided rule on three trials.</figcaption>
+    </figure>
+    <div class="stack">
+      <div class="claim warn">
+        <h3>The rule keeps exactly the wrong tasks</h3>
+        <p>It <strong>keeps hopeless tasks with certainty</strong> and <strong>discards half of the ideally
+        discriminating ones</strong>. One trial cannot distinguish <em>always fails</em> &mdash; a floor task
+        that carries no information &mdash; from <em>sometimes fails</em>, the only kind of task that separates
+        two conditions.</p>
+      </div>
+      <ul class="bul">
+        <li>Across ~60,000 agent trajectories on SWE-Bench-Verified, <strong>single-run performance estimates vary
+          substantially between runs, including at temperature zero</strong>. A one-trial screen samples
+          run-to-run noise as much as task difficulty.</li>
+        <li>Direct evidence of misclassification in both directions is in the runs themselves:
+          <code>make-mips-interpreter</code> was excluded as already-passing, and baseline then failed both attempts.</li>
+      </ul>
+      <div class="claim good">
+        <h3>The fix, and its price</h3>
+        <p>A two-sided rule on the baseline pass <em>rate</em>: <strong>keep a task when 1 or 2 of 3 baseline
+        trials pass.</strong> Three baseline trials per candidate instead of one &mdash; roughly 2&times; the
+        screen&rsquo;s cost, and the only change that materially improves outcome power.</p>
+      </div>
+      <div class="claim mute">
+        <h3>The uncomfortable possibility, stated plainly</h3>
+        <p>The discriminating band may be narrow <em>and</em> unstable &mdash; in which case no affordable screen
+        produces a well-powered outcome comparison, and cost and conformance should be promoted to primary
+        endpoints with outcome demoted to secondary. Both runs are consistent with that. Neither establishes it.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    This is the most transferable lesson in the whole experiment, and it is a lesson about experiments rather than
+    about agents. If the audience takes one methodological thing away, make it this one.
+    <ul>
+      <li>Ten of the 16 <i>suite</i> tasks are concordant under pass-at-2, seven failed by every condition, and
+      those ten consumed <strong>$74.47 of $114.90</strong>. Eight of the 10 <i>ceiling</i> tasks are concordant
+      by construction.</li>
+      <li>Human-expert difficulty does not predict agent difficulty either: &rho;&nbsp;=&nbsp;&minus;0.078,
+      p&nbsp;=&nbsp;0.70 over 26 tasks. So &ldquo;pick hard tasks&rdquo; is not an available shortcut.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 9 ------------------------------------------------------------------ -->
+<section class="slide" data-sect="results II &middot; cost">
+  <div class="hdr">
+    <span class="eyebrow warn">Results II &middot; cost &mdash; the one claim with significance, replication and a mechanism</span>
+    <h2>Process costs, and the size depends on whether the work finishes</h2>
+  </div>
+  <div class="cols c-7-5">
+    <div class="stack">
+      <div class="cols c-1-1" style="gap:1.4em;">
+        <div class="stat warn"><span class="v">1.71&times;</span><span class="k">on work that completes</span>
+          <span class="n"><i>ceiling</i> &mdash; dearer on <b>10 of 10</b> tasks, p&nbsp;=&nbsp;0.002, the floor of the test</span></div>
+        <div class="stat warn"><span class="v">3.11&times;</span><span class="k">on work that does not</span>
+          <span class="n"><i>suite</i> &mdash; dearer on 12 of 16 tasks, p&nbsp;=&nbsp;0.009</span></div>
+      </div>
+
+      <span class="eyebrow mute">mean cost per trial, by run &mdash; bar length is dollars</span>
+      <div class="bars">
+        <div class="bar"><span class="lab">suite baseline</span>
+          <span class="trk"><span class="val b" style="width:31%"></span></span><span class="num">$0.68</span></div>
+        <div class="bar"><span class="lab">suite CodeZen</span>
+          <span class="trk"><span class="val c" style="width:97%"></span></span><span class="num">$2.13</span></div>
+        <div class="bar"><span class="lab">suite SDD</span>
+          <span class="trk"><span class="val s" style="width:35%"></span></span><span class="num">$0.78</span></div>
+        <div class="bar" style="margin-top:.35em;"><span class="lab">ceiling baseline</span>
+          <span class="trk"><span class="val b" style="width:52%"></span></span><span class="num">$1.14</span></div>
+        <div class="bar"><span class="lab">ceiling CodeZen</span>
+          <span class="trk"><span class="val c" style="width:88%"></span></span><span class="num">$1.94</span></div>
+        <div class="bar"><span class="lab">ceiling SDD</span>
+          <span class="trk"><span class="val s" style="width:57%"></span></span><span class="num">$1.25</span></div>
+      </div>
+
+      <details class="drill">
+        <summary>Paired Wilcoxon tests &mdash; &ldquo;on&rdquo; counts tasks where the condition exceeded baseline</summary>
+        <div class="body">
+          <div class="tblwrap"><table>
+            <thead><tr><th>run &middot; measure</th><th>CodeZen ratio</th><th>higher on</th><th>p</th><th>SDD ratio</th><th>higher on</th><th>p</th></tr></thead>
+            <tbody>
+              <tr><td>ceiling &middot; cost</td><td><b>1.71&times;</b></td><td><b>10 / 10</b></td><td><b>0.002</b></td><td>1.10&times;</td><td>7 / 10</td><td>0.275</td></tr>
+              <tr><td>ceiling &middot; agent seconds</td><td>1.64&times;</td><td><b>10 / 10</b></td><td><b>0.002</b></td><td>1.21&times;</td><td>6 / 10</td><td>0.322</td></tr>
+              <tr><td>ceiling &middot; output tokens</td><td>1.93&times;</td><td><b>10 / 10</b></td><td><b>0.002</b></td><td>1.12&times;</td><td>6 / 10</td><td>0.375</td></tr>
+              <tr><td>ceiling &middot; thinking tokens</td><td>1.72&times;</td><td><b>10 / 10</b></td><td><b>0.002</b></td><td>1.08&times;</td><td>6 / 10</td><td>0.557</td></tr>
+              <tr><td>suite &middot; cost</td><td><b>3.11&times;</b></td><td>12 / 16</td><td><b>0.009</b></td><td>1.14&times;</td><td>9 / 16</td><td>0.821</td></tr>
+              <tr><td>suite &middot; output tokens</td><td>3.00&times;</td><td>12 / 16</td><td><b>0.016</b></td><td>1.08&times;</td><td>10 / 16</td><td>0.669</td></tr>
+            </tbody>
+          </table></div>
+          <p>Per-task cost ratios range from 1.01&times; to 10.6&times; in <i>ceiling</i> and 0.06&times; to
+            16.0&times; in <i>suite</i>.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="stack">
+      <div class="claim warn">
+        <h3>What the price buys</h3>
+        <p><strong>0.96&ndash;1.00&times; the partial credit.</strong> Level, once the one baseline trial with no
+        per-test record is counted as the failure it was. The 3.11&times; is the number that bites, because the
+        methodology cannot tell in advance which kind of task it is on.</p>
+      </div>
+      <div class="claim">
+        <h3>The mechanism is delegation, and it is measured</h3>
+        <p><strong>2.6 sub-agents per trial against baseline&rsquo;s 0.04.</strong> 84 spawns across CodeZen&rsquo;s
+        32 <i>suite</i> trials against 1 for baseline and 0 for SDD. Each inherits prompt context and produces its
+        own thinking and output tokens.</p>
+      </div>
+      <div class="claim mute">
+        <h3>Three objections, closed</h3>
+        <p><strong>The smaller run is the stronger evidence.</strong> 10 of 10 on four separate metrics beats
+        12 of 16: no task where the effect is absent, no runaway trial carrying the mean.</p>
+        <p><strong>SDD&rsquo;s cost is not the story.</strong> 1.10&ndash;1.14&times; is indistinguishable from
+        baseline in both runs. Its shortfall is in what it satisfied, not what it spent.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    The two multipliers are not in conflict &mdash; they measure overhead on different things. On the floor
+    population CodeZen&rsquo;s trials frequently run to the wall without producing a passing artefact, so the ratio
+    includes work spent on tasks nothing solved. On the ceiling population the same machinery runs on tasks that
+    finish, and overhead settles at 1.71&times;.
+    <ul>
+      <li><strong>Not a caching artefact.</strong> Cache hit ratios are effectively identical across conditions
+      (94.8&#8202;/&#8202;94.5&#8202;/&#8202;93.4&#8202;% in <i>suite</i>; 96.0&#8202;/&#8202;95.8&#8202;/&#8202;96.1&#8202;%
+      in <i>ceiling</i>) and thinking share of output is flat. The extra spend is extra work.</li>
+      <li><strong>The multiplier is flat in task length</strong> &mdash; &rho;&nbsp;=&nbsp;+0.001 across a
+      288&times; range of expert time. The absolute penalty grows only because the base grows: baseline cost
+      against log&#8321;&#8320; expert minutes gives &rho;&nbsp;=&nbsp;+0.696, p&nbsp;&lt;&nbsp;0.001, the strongest
+      correlation in the pooled data.</li>
+      <li>CodeZen&rsquo;s mean overhead: <strong>$0.79 per trial on short-budget tasks, $1.68 on long-budget ones</strong>
+      &mdash; twice the dollars for the same multiplier.</li>
+      <li>Cost per graded pass on <i>suite</i>: $7.57 (CodeZen) against $3.12 (baseline) and $3.56 (SDD).</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 10 ----------------------------------------------------------------- -->
+<section class="slide" data-sect="results III &middot; the clock">
+  <div class="hdr">
+    <span class="eyebrow warn">Results III &middot; the binding constraint</span>
+    <h2>The clock, not the money</h2>
+    <p class="lead">Review and implementation draw on the <strong>same</strong> bounded budget, not on different
+      people&rsquo;s calendars. Process converts directly into censoring risk.</p>
+  </div>
+  <div class="cols c-1-1">
+    <div class="stack">
+      <span class="eyebrow mute">mean share of each task&rsquo;s declared wall-clock budget &mdash; the wall is at 100&#8202;%</span>
+      <div class="bars">
+        <div class="bar"><span class="lab">suite baseline</span>
+          <span class="trk"><span class="val b" style="width:30.2%"></span></span><span class="num">30.2&#8202;%</span></div>
+        <div class="bar"><span class="lab">suite CodeZen</span>
+          <span class="trk"><span class="val c" style="width:46.8%"></span></span><span class="num">46.8&#8202;%</span></div>
+        <div class="bar"><span class="lab">suite SDD</span>
+          <span class="trk"><span class="val s" style="width:33.1%"></span></span><span class="num">33.1&#8202;%</span></div>
+        <div class="bar" style="margin-top:.35em;"><span class="lab">ceiling baseline</span>
+          <span class="trk"><span class="val b" style="width:30.2%"></span></span><span class="num">30.2&#8202;%</span></div>
+        <div class="bar"><span class="lab">ceiling CodeZen</span>
+          <span class="trk"><span class="val c" style="width:57.5%"></span></span><span class="num">57.5&#8202;%</span></div>
+        <div class="bar"><span class="lab">ceiling SDD</span>
+          <span class="trk"><span class="val s" style="width:34.3%"></span></span><span class="num">34.3&#8202;%</span></div>
+      </div>
+
+      <div class="cols c-3" style="gap:1.1em; margin-top:.3em;">
+        <div class="stat warn"><span class="v">25&#8202;%</span><span class="k">CodeZen trials killed</span>
+          <span class="n">13 of 52, against 9.6&#8202;% for baseline <em>and</em> SDD</span></div>
+        <div class="stat amber"><span class="v">7 / 23</span><span class="k">kills that scored 1.0</span>
+          <span class="n">30.4&#8202;% discarded a solution that had already passed every test</span></div>
+        <div class="stat warn"><span class="v">1.90&times;</span><span class="k">budget consumption</span>
+          <span class="n">p&nbsp;=&nbsp;0.002, higher on 10 of 10 <i>ceiling</i> tasks</span></div>
+      </div>
+
+      <details class="drill">
+        <summary>Every trial killed by the clock, split by what the verifier scored</summary>
+        <div class="body">
+          <figure><img src="{{IMG:x08-censoring}}" alt="Bar chart of the 23 censored trials split by the reward the verifier assigned the workspace at the moment of the kill; seven scored 1.0">
+            <figcaption>Seven of 23 &mdash; 30.4&#8202;% &mdash; discarded a solution that had already passed
+              every test. Harbor already recorded those seven verdicts.</figcaption></figure>
+        </div>
+      </details>
+    </div>
+
+    <div class="stack">
+      <figure>
+        <img src="{{IMG:ceiling-04-budget}}" alt="ceiling run: each trial plotted by the share of its task's declared budget it consumed, with rings marking trials killed by the clock and trials killed while the verifier already scored 1.0">
+        <figcaption><i>ceiling</i>: one dot per trial, positioned by budget share consumed. Rings mark trials
+          killed by the clock; the highlighted ones were killed with a <strong>passing verifier already on
+          disk</strong>. This is the population where the whole causal chain is visible, because the work
+          mostly completes.</figcaption>
+      </figure>
+      <div class="claim warn">
+        <h3>The chain, measured rather than inferred</h3>
+        <p><b>1.</b> CodeZen delegates &mdash; 2.55 sub-agents per trial against baseline&rsquo;s 0.05 &mdash; and
+        reviews after implementing. &nbsp;<b>2.</b> That work is real and takes wall-clock, so budget consumption
+        rises 1.90&times;. &nbsp;<b>3.</b> On tasks whose budget is tight relative to their size, the extra
+        consumption crosses the wall and Harbor kills the agent. &nbsp;<b>4.</b> Sometimes the work was already
+        done. Sometimes it was not.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <strong>Grading the workspace at the kill is the single cheapest improvement available to this design.</strong>
+    It costs no model tokens, turns a lost observation into a measured one, and removes the need to choose between
+    dropping a trial and overruling its verifier.
+    <ul>
+      <li>Trials over 75&#8202;% of budget: <i>suite</i> 5&#8202;/&#8202;9&#8202;/&#8202;6 and <i>ceiling</i>
+      1&#8202;/&#8202;7&#8202;/&#8202;3 for baseline&#8202;/&#8202;CodeZen&#8202;/&#8202;SDD.</li>
+      <li>Concurrency caveat again: nine trials at a time on one host inflates absolute budget percentages.
+      Contention is symmetric within a task, so the paired 1.90&times; survives.</li>
+    </ul>
+  </template>
+</section>
+
+<style>
+/* timeline, corrected geometry */
+.tl{position:relative; padding:5.6em 0 0;}
+.tl .row{position:relative;}
+.tl .axis{position:relative; height:2.2em; background:var(--sunken);
+  border:1px solid var(--rule); border-radius:2px; overflow:hidden;}
+.tl .seg{position:absolute; top:0; bottom:0;}
+.tl .kill{position:absolute; top:-.55em; bottom:-.55em; width:3px; background:var(--warn); border-radius:2px;}
+.tl .mk{position:absolute; width:13em; transform:translateX(-50%); display:flex; flex-direction:column; gap:.1em;}
+.tl .mk.up{bottom:100%; margin-bottom:.8em;}
+.tl .mk.start{transform:translateX(-8%); text-align:left;}
+.tl .mk.end{transform:translateX(-93%); text-align:right;}
+.tl .mk .t{font-family:var(--mono); font-size:.76em; font-weight:600; color:var(--ink);}
+.tl .mk .d{font-size:.8em; line-height:1.3; color:var(--ink-3);}
+.tl .mk.up::after{content:""; position:absolute; top:100%; left:50%; width:1px;
+  height:.65em; background:var(--rule-2);}
+.tl .mk.start::after{left:8%;}
+.tl .mk.end::after{left:auto; right:7%;}
+.tl .mid{margin:.9em auto 0; max-width:36em; text-align:center; font-size:.88em;
+  line-height:1.4; color:var(--ink-2);}
+.tl .base{margin-top:1.5em; display:grid; grid-template-columns:9em 1fr; gap:.45em .8em; align-items:center;}
+.tl .base .lab{font-family:var(--mono); font-size:.76em; color:var(--ink-2); text-align:right;}
+.tl .base .trk{position:relative; height:1.4em; background:var(--sunken);
+  border:1px solid var(--rule); border-radius:2px; overflow:hidden;}
+.tl .base .cap{grid-column:2; font-size:.84em; line-height:1.35; color:var(--ink-3);}
+</style>
+
+<!-- 11 ----------------------------------------------------------------- -->
+<section class="slide" data-sect="the post-completion trap">
+  <div class="hdr">
+    <span class="eyebrow warn">The single most illuminating trajectory in the dataset</span>
+    <h2>The post-completion trap</h2>
+    <p class="lead"><code>headless-terminal</code> under CodeZen. Not a story about difficulty &mdash; a story
+      about an agent with no termination gate.</p>
+  </div>
+  <div class="stack">
+    <div class="tl">
+      <div class="row">
+        <div class="axis">
+          <span class="seg work" style="left:0; width:7.3%; background:var(--good);"></span>
+          <span class="seg cer" style="left:7.3%; right:0;"></span>
+        </div>
+        <span class="kill" style="left:calc(100% - 3px);"></span>
+        <span class="mk up start" style="left:7.3%;">
+          <span class="t">65.6 s &mdash; green</span>
+          <span class="d">CodeZen runs the tests &mdash; the responsible thing &mdash; and they <b>pass</b>. Reward 1.0 is on disk.</span></span>
+        <span class="mk up end" style="left:100%;">
+          <span class="t">the wall</span>
+          <span class="d">Harbor kills the container. Both attempts recorded as <b>censored</b> &mdash; despite scoring reward 1.0.</span></span>
+      </div>
+      <p class="mid"><b>834 seconds of ceremony</b> &mdash; docstrings, defensive assertions and stylistic tweaks
+        across <b>nine sub-agents</b>, at $2.21 and $2.79: <b>8.1&times; and 14.1&times; baseline</b>.</p>
+      <div class="base">
+        <span class="lab">baseline, same task</span>
+        <span class="trk"><span class="seg" style="left:0; width:16.1%; background:var(--neutral);"></span></span>
+        <span class="cap">finished in <b>144.5 s and 114.1 s</b> for <b>$0.27 and $0.20</b>, with <b>zero</b>
+          recognised test invocations on either attempt: it edited the code, stopped, and was right anyway.</span>
+      </div>
+    </div>
+
+    <div class="cols c-1-1" style="gap:1.4em;">
+      <div class="claim warn">
+        <h3>The architectural lesson</h3>
+        <p>An autonomous agent under a real time or compute budget needs an <strong>explicit exit
+        condition</strong>. When verification already succeeds, procedural review skills must be suppressed, or
+        gated behind a strict time-remaining threshold.</p>
+        <p>In human engineering, thoroughness and peer review are virtues. <strong>In an agent with a fixed
+        clock and no termination gate, thoroughness is a failure mode.</strong></p>
+      </div>
+      <div class="claim mute">
+        <h3>The same machinery, on work that was <em>not</em> already done</h3>
+        <p>Baseline meets a hard barrier &mdash; a missing shared library, a convergence problem, an obscure
+        binary format &mdash; tries a few commands and stops inside about 20 steps and $0.68.</p>
+        <p>CodeZen treats failure as a signal to invoke process: <code>noc-tdd</code> to write tests,
+        <code>code-review</code> to inspect non-working code, <code>noc-fix</code> to attempt repairs. Because
+        every sub-agent runs the <em>same</em> model, they share the parent&rsquo;s blind spots and cannot conjure
+        domain knowledge the base model lacks. On <code>filter-js-from-html</code> that loop reached
+        <strong>100&#8202;% of budget on both attempts at a 16.0&times; cost ratio, with zero passing tests</strong>.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    On this task the entire cost difference bought the agent a confirmation it then failed to act on. That is the
+    sentence to land.
+    <ul>
+      <li>Process research already holds that a standardised process should be <em>tailored</em> to its project.
+      An agent needs a strictly more dynamic form of that: the context that gates the process is not only the
+      project but the <strong>execution state</strong> &mdash; whether the artefact already passes &mdash; and the
+      budget remaining.</li>
+      <li>Correction against the independent review, worth stating if anyone has read it: baseline&rsquo;s durations
+      on this task are 144.5&#8202;s and 114.1&#8202;s, not 253.4&#8202;s and 648.9&#8202;s. The trap is
+      <em>larger</em> than the review reported, not smaller.</li>
+      <li>One clean regression, honestly stated: <code>torch-pipeline-parallelism</code>. &ldquo;A task baseline
+      solves half the time, that CodeZen never solved, at three times the budget&rdquo; &mdash; not &ldquo;a task
+      baseline solves easily&rdquo;.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 12 ----------------------------------------------------------------- -->
+<section class="slide" data-sect="adherence">
+  <div class="hdr">
+    <span class="eyebrow warn">Results IV &middot; what changes every other result</span>
+    <h2>Availability is not adherence</h2>
+    <p class="lead">Whatever these runs measured, it was not a methodology being <em>followed</em>.</p>
+  </div>
+  <div class="cols c-1-1">
+    <div class="stack">
+      <div class="funnel">
+        <div class="step"><span class="t">toolkit trials (CodeZen 52 + SDD 52)</span><span class="v">104</span></div>
+        <div class="step a"><span class="t">instruction files present, every skill registered</span><span class="v">104</span></div>
+        <div class="step b"><span class="t">invoked at least one toolkit skill</span><span class="v">30</span></div>
+        <div class="step c"><span class="t">invoked <b>nothing</b></span><span class="v">74&nbsp;&middot;&nbsp;71&#8202;%</span></div>
+      </div>
+      <p style="font-size:.95em; color:var(--ink-2);">CodeZen invoked a skill in 38&#8202;% of <i>suite</i> and
+        35&#8202;% of <i>ceiling</i> trials; SDD in 22&#8202;% and 20&#8202;%. So what was compared is not
+        &ldquo;method versus no method&rdquo; but <strong>&ldquo;a repository containing a method, mostly unused,
+        versus a bare task&rdquo;</strong>.</p>
+
+      <details class="drill">
+        <summary>The five behavioural measures that carry a mechanism &mdash; per-trial means</summary>
+        <div class="body">
+          <div class="tblwrap"><table>
+            <thead><tr><th></th><th colspan="3"><i>suite</i></th><th colspan="3"><i>ceiling</i></th></tr>
+              <tr><th></th><th>base</th><th>CodeZen</th><th>SDD</th><th>base</th><th>CodeZen</th><th>SDD</th></tr></thead>
+            <tbody>
+              <tr><td>sub-agents spawned</td><td>0.03</td><td><b>2.62</b></td><td>0.00</td><td>0.05</td><td><b>2.55</b></td><td>0.05</td></tr>
+              <tr><td>verification commands</td><td>0.56</td><td><b>3.56</b></td><td>0.66</td><td>0.30</td><td>1.65</td><td><b>0.00</b></td></tr>
+              <tr><td>wrote its own test file</td><td>9&#8202;%</td><td><b>34&#8202;%</b></td><td>3&#8202;%</td><td>10&#8202;%</td><td>25&#8202;%</td><td>0&#8202;%</td></tr>
+              <tr><td>agent steps</td><td>21.9</td><td><b>48.0</b></td><td>24.8</td><td>26.0</td><td><b>42.9</b></td><td>28.2</td></tr>
+              <tr><td>tool results with an error</td><td>10.2&#8202;%</td><td>12.9&#8202;%</td><td>9.7&#8202;%</td><td>13.1&#8202;%</td><td>16.9&#8202;%</td><td>10.9&#8202;%</td></tr>
+            </tbody>
+          </table></div>
+          <p>Shell commands are bucketed by pattern rather than parsed, so &ldquo;verification commands&rdquo; is a
+            comparison between conditions on one corpus, not an absolute count.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="stack">
+      <div class="claim warn">
+        <h3>CodeZen verifies far more, and it does not help</h3>
+        <p>3.56 verification commands per trial against baseline&rsquo;s 0.56 in <i>suite</i> &mdash; a
+        <strong>6.3&times; increase, p&nbsp;=&nbsp;0.046</strong> &mdash; and it wrote a dedicated test file in
+        34.4&#8202;% of trials against 9.4&#8202;%. Partial credit still came out 0.96&times; baseline.</p>
+      </div>
+      <div class="claim">
+        <h3>A hypothesis for why &mdash; proposed, not measured</h3>
+        <p>The verifier is an external oracle the agent cannot see. When an agent writes its own tests it tests
+        against its <em>own</em> reading of the problem: a misread edge case gets encoded in a test, runs green,
+        and is believed. <strong>Ungrounded test-driven development produces false confidence.</strong>
+        The instrument that would settle it: log a &ldquo;mock misalignment&rdquo; event whenever the agent&rsquo;s
+        own suite passes and the verifier does not.</p>
+      </div>
+      <div class="claim amber">
+        <h3>SDD points the wrong way on the one behaviour that matters</h3>
+        <p>Near-invisible otherwise &mdash; steps 1.13&times;, tool calls 1.07&times;, wall-clock 0.99&times;, zero
+        sub-agents &mdash; but on <i>ceiling</i> it ran <strong>zero</strong> recognised verification commands
+        across 20 trials, against baseline&rsquo;s 0.30 and CodeZen&rsquo;s 1.65. For a toolkit shipping an
+        <code>sdd-verify</code> skill, that lines up with the partial-credit shortfall: it satisfied 68.5&#8202;%
+        of verifier tests against baseline&rsquo;s 90.7&#8202;% and checked its work <em>less</em> than the bare agent.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <strong>The question this design cannot answer.</strong> Pooled, 30.0&#8202;% of skill-invoking trials passed
+    against 54.1&#8202;% of toolkit trials that invoked nothing. Two explanations both have support and this design
+    cannot separate them:
+    <ul>
+      <li><em>Distress</em> &mdash; when the agent grasps a solution it edits and runs commands; when stuck it
+      reaches for documented process as a fallback. Slide 13 adds direct evidence: SDD&rsquo;s invocation rate
+      rises with task size.</li>
+      <li><em>Consumption</em> &mdash; invoking the chain spends the budget that would have solved the task. The
+      censoring data supports this independently.</li>
+      <li>Only a design that <strong>randomises invocation</strong> separates them &mdash; which is also what
+      &ldquo;methodology enforcement&rdquo; literally requires.</li>
+      <li>Two invocation patterns: CodeZen implements first and reviews after (10 of 12 <i>suite</i> skill-using
+      trials open with <code>noc-tdd</code>). SDD&rsquo;s chain either runs completely or aborts at step two &mdash;
+      five trials stop after <code>sdd-specify</code> + <code>sdd-clarify</code> having consumed 2.2&ndash;17.0&#8202;% of budget.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 13 ----------------------------------------------------------------- -->
+<section class="slide" data-sect="the length hypothesis">
+  <div class="hdr">
+    <span class="eyebrow warn">Results V &middot; a claim we had to walk back</span>
+    <h2>Longer tasks do not make process more valuable</h2>
+    <p class="lead">A real effect <strong>sharpens</strong> with the instrument. This one dissolves.</p>
+  </div>
+  <div class="cols c-7-5">
+    <div class="stack">
+      <figure>
+        <img src="{{IMG:x10-length-dissolution}}" alt="The length effect plotted at three metric resolutions: 26 binary task outcomes, 52 binary trial outcomes, and 519 graded verifier tests. The correlation shrinks toward zero as resolution increases.">
+        <figcaption>Reading across, the outcome measure sharpens from 26 binary task outcomes to 52 binary trial
+          outcomes to 519 graded verifier tests.</figcaption>
+      </figure>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>&Delta; against expert&#8202;/&#8202;budget ratio</th><th>n</th><th>CodeZen &rho;</th><th>SDD &rho;</th><th>verdict</th></tr></thead>
+          <tbody>
+            <tr><td>pass-at-2 &mdash; 26 binary task outcomes</td><td>26</td><td>+0.330</td><td>+0.349</td><td>~35&ndash;40&#8202;% power</td></tr>
+            <tr><td>pass rate &mdash; 52 binary trial outcomes</td><td>26</td><td>+0.107</td><td>+0.181</td><td>not resolved</td></tr>
+            <tr><td>partial credit &mdash; 519 graded tests</td><td>26</td><td>&minus;0.02</td><td>~0</td><td>indistinguishable from 0</td></tr>
+            <tr class="hl"><td>cost multiplier vs expert time</td><td>26</td><td colspan="2"><b>+0.001</b> across a 288&times; range</td><td>flat</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:.9em; color:var(--ink-3);">80&#8202;% power at n&nbsp;=&nbsp;26 needs
+        |&rho;|&nbsp;&ge;&nbsp;0.53, so every row above is &ldquo;not resolved&rdquo;, not &ldquo;absent&rdquo;.
+        A weak positive lean exists <em>only in the coarsest metric</em>. That is the signature of noise in a
+        coarse metric.</p>
+    </div>
+
+    <div class="stack">
+      <div class="claim warn">
+        <h3>The most pointed result in the dataset</h3>
+        <p>This is not &ldquo;we could not find the effect where we looked&rdquo;. It is <strong>&ldquo;the toolkit
+        looked in the same place, acted on the same belief, and the belief did not pay&rdquo;</strong>.</p>
+        <p>SDD invokes its chain <strong>2.2&times; more often on long-horizon tasks</strong>
+        (&rho;&nbsp;=&nbsp;+0.379 against log expert time, p&nbsp;=&nbsp;0.056). It gates itself on perceived task
+        size and engages exactly where the hypothesis says it should pay off &mdash; and posts the largest
+        partial-credit deficit anywhere in the data on precisely those tasks:
+        <strong>&minus;0.182 on long-horizon against &minus;0.080 on short</strong>.</p>
+      </div>
+      <details class="drill">
+        <summary>Toolkit invocation against task horizon</summary>
+        <div class="body">
+          <figure><img src="{{IMG:x11-adherence-vs-length}}" alt="Toolkit skill invocation rate plotted against task horizon; SDD's invocation rises with expert time estimate">
+            <figcaption>It also settles an older question: a harness that gave the agent no reason to consult a
+              process would suppress invocation <em>uniformly</em>. Invocation instead rises with perceived task
+              size, so the low adherence on slide&nbsp;12 is at least partly the toolkit gating itself.</figcaption></figure>
+        </div>
+      </details>
+      <div class="claim mute">
+        <h3>Two limits on this analysis</h3>
+        <p>The pooled sample mixes two populations selected on baseline outcome, so run membership dominates
+        baseline pass rate more than long-horizon status does. Long-horizon tasks split 5&#8202;/&#8202;5 between
+        the runs, so the confound is not aligned with the predictor &mdash; but it is not orthogonal either.</p>
+        <p><strong>And the range is not the range the hypothesis is about.</strong> These tasks top out at a day of
+        expert time in a <em>single autonomous session with a fully specified instruction</em>. The hypothesis
+        concerns multi-session work with ambiguous requirements and a human in the loop.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    Terminal-Bench&rsquo;s own <code>long-horizon</code> axis says the same and adds something: on every
+    finer-grained outcome measure <em>both</em> toolkits do worse on long-horizon tasks than on short ones.
+    <ul>
+      <li>Pooled expert estimates span <strong>5 to 1,440 minutes</strong>; 10 of the 26 tasks carry the
+      <code>long-horizon</code> axis.</li>
+      <li>The absolute bill still grows with length &mdash; baseline cost against log&#8321;&#8320; expert minutes is
+      &rho;&nbsp;=&nbsp;+0.696, p&nbsp;&lt;&nbsp;0.001 &mdash; but that is a constant multiplier on a larger base,
+      not process becoming more expensive per unit of work.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 14 ----------------------------------------------------------------- -->
+<section class="slide" data-sect="best-of-N">
+  <div class="hdr">
+    <span class="eyebrow warn">The strongest cross-run claim, adjudicated</span>
+    <h2>&ldquo;Just retry more&rdquo;: plausible, not proven</h2>
+    <p class="lead">The sharpest operational claim from the independent review is that a fixed budget is better
+      spent on more independent attempts with the bare agent than on a methodology. The argument is arithmetic
+      &mdash; and the arithmetic rests on an assumption this data contradicts.</p>
+  </div>
+  <div class="cols c-7-5">
+    <div class="stack">
+      <div class="claim mute">
+        <p style="font-size:1.02em; text-align:center; margin:.2em 0 .35em;">
+          <span class="mono">P(at least one of <i>k</i> passes) = 1 &minus; (1 &minus; p)<sup>k</sup></span></p>
+        <p>&hellip;which assumes every attempt on every task is an <strong>exchangeable draw from one common
+        Bernoulli rate</strong>. On <i>suite</i> that gives 59&#8202;% against CodeZen&rsquo;s 36&#8202;% for the
+        same money, and the conclusion drawn was that repeated sampling <em>strictly dominates</em> process.</p>
+      </div>
+      <div class="claim warn">
+        <h3>The two-attempt design tests that assumption directly &mdash; and it leans the wrong way in 5 of 6 cells</h3>
+        <p>Observed pass-at-2 falls <em>below</em> the independence prediction: <i>suite</i> baseline
+        <b>0.375</b> against 0.438; SDD <b>0.313</b> against 0.390; CodeZen <b>0.500</b> against 0.569.
+        No single cell rejects homogeneity at n&nbsp;=&nbsp;10&ndash;16 (&chi;&sup2; gives
+        p&nbsp;=&nbsp;0.16 to 0.57), but the sign is consistent and the mechanism is not in doubt:
+        <strong>ten of sixteen <i>suite</i> tasks were failed by baseline on both attempts, and retries cannot
+        rescue a task that is dead.</strong></p>
+      </div>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th></th><th>baseline p&#772; per attempt</th><th><i>k</i> at equal spend</th>
+            <th>homogeneous</th><th>beta-binomial</th><th>plug-in</th><th>CodeZen measured</th></tr></thead>
+          <tbody>
+            <tr><td><i>suite</i></td><td>0.25</td><td>6.2</td><td>83&#8202;%</td><td>59&#8202;%</td><td>37&#8202;%</td><td><b>50&#8202;%</b></td></tr>
+            <tr><td><i>ceiling</i></td><td>0.85</td><td>3.4</td><td>100&#8202;%</td><td>93&#8202;%</td><td>89&#8202;%</td><td><b>90&#8202;%</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:.86em; color:var(--ink-3);"><b>homogeneous</b> denies task heterogeneity &mdash; the
+        optimistic bound. <b>plug-in</b> takes two-attempt per-task estimates at face value &mdash; the pessimistic
+        bound. <b>beta-binomial</b> fits the heterogeneity by maximum likelihood.</p>
+    </div>
+
+    <div class="stack">
+      <div class="claim amber">
+        <h3>Bounded, not settled</h3>
+        <p>At 6.2 baseline attempts for the price of CodeZen&rsquo;s two, the retry strategy reaches somewhere
+        between <strong>37&#8202;% and 83&#8202;%</strong> against CodeZen&rsquo;s measured <strong>50&#8202;%</strong>.
+        The homogeneous model favours retries by 33 points, the beta-binomial by 8.6 &mdash; and the plug-in model
+        favours <em>CodeZen</em> by 12.8.</p>
+        <p><strong>The sign changes with the estimator</strong>, so &ldquo;repeated sampling strictly dominates&rdquo;
+        is not established. It remains the most plausible reading &mdash; two of three estimators favour retries, and
+        the dissenting one has the clearest upward bias in its assumptions &mdash; but <em>plausible</em> is the
+        correct word.</p>
+      </div>
+      <details class="drill">
+        <summary>Best-of-<i>N</i> curves under the three estimators</summary>
+        <div class="body">
+          <figure><img src="{{IMG:x09-best-of-n}}" alt="Best-of-N pass probability curves under the homogeneous, beta-binomial and plug-in estimators, with the equal-spend budget marked and CodeZen's measured result inside the band">
+            <figcaption>CodeZen&rsquo;s measured result sits <em>inside</em> the band on the <i>suite</i> population.</figcaption></figure>
+        </div>
+      </details>
+      <div class="claim good">
+        <h3>On <i>ceiling</i> no estimator is needed</h3>
+        <p>Baseline already passes 89.5&#8202;% of graded trials, so extra attempts buy almost nothing and the
+        overhead is a <strong>pure loss rather than a trade</strong>. All three estimators put baseline retries at
+        or above CodeZen&rsquo;s 90&#8202;%.</p>
+      </div>
+      <div class="claim warn">
+        <h3>None of this is a measurement</h3>
+        <p><strong>Nobody has run baseline at 3&times; the attempts and compared.</strong> That experiment needs no
+        new infrastructure, is the comparison an operator actually faces, and would replace a three-estimator range
+        with a number. It is the highest-value cheap experiment left.</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    Repeated sampling is an established way to raise functional correctness of model-written code and the accuracy
+    of model reasoning &mdash; those results establish that <em>more samples help</em>, not that attempts on a fixed
+    task are exchangeable. That is the whole gap.
+    <ul>
+      <li>Independent evidence agrees attempts are not exchangeable: single-run agent performance estimates carry
+      substantial between-run variance even at temperature zero.</li>
+      <li>If someone pushes the homogeneous number: it is the optimistic bound <em>by construction</em>, and the
+      observed 0/1/2 count distributions are more clumped than it predicts in five of six cells.</li>
+    </ul>
+  </template>
+</section>
+
+<!-- 15 ----------------------------------------------------------------- -->
+<section class="slide" data-sect="what to change">
+  <div class="hdr">
+    <span class="eyebrow">Conclusion</span>
+    <h2>What is settled, what is not, and what to change</h2>
+  </div>
+  <div class="cols c-3" style="align-items:start;">
+    <div class="stack tight">
+      <span class="eyebrow good">Supported</span>
+      <ul class="bul">
+        <li>CodeZen costs <strong>1.71&times;</strong> on work that completes and <strong>3.11&times;</strong> on
+          work that does not, for 0.96&ndash;1.00&times; the partial credit. Significant on two independent
+          populations, with delegation as the measured mechanism.</li>
+        <li>Process converts into <strong>censoring risk</strong>: 1.90&times; budget consumption, 25&#8202;% of
+          CodeZen trials killed by the clock against 9.6&#8202;%.</li>
+        <li>Methodology can <strong>regress</strong> a solved task, and can make a solved task less reliable.</li>
+        <li><strong>71&#8202;%</strong> of toolkit trials invoked no toolkit skill. Availability was total.</li>
+        <li>Human-expert difficulty does not predict agent difficulty (&rho;&nbsp;=&nbsp;&minus;0.078, p&nbsp;=&nbsp;0.70).</li>
+        <li>The one-trial screening rule is unreliable in <strong>both</strong> directions.</li>
+        <li>The censoring convention is decision-relevant, and 7 of 23 kills discarded a workspace scoring 1.0.</li>
+      </ul>
+    </div>
+
+    <div class="stack tight">
+      <span class="eyebrow warn">Not supported</span>
+      <ul class="bul">
+        <li>Any claim about which configuration produces <strong>better outcomes</strong>. 18 of 26 tasks are
+          concordant; effective n is 1&ndash;5.</li>
+        <li>That SDD&rsquo;s partial-credit shortfall is real rather than noise (p&nbsp;=&nbsp;0.125 at
+          n&nbsp;=&nbsp;10) &mdash; though it appears at the same magnitude on both populations.</li>
+        <li>Any <strong>causal</strong> reading of &ldquo;skill-invoking trials mostly failed&rdquo;. Selection and
+          effect are inseparable here.</li>
+        <li>That retries beat process at equal spend. The sign changes with the estimator.</li>
+        <li>Anything about the regime methodologies are actually <em>written</em> for: multi-session work with
+          ambiguous requirements and a human in the loop.</li>
+      </ul>
+      <details class="drill">
+        <summary>The five confounds that actually bind</summary>
+        <div class="body">
+          <p><b>1.</b> The measured population is not the target population &mdash; single-session, self-contained,
+          fully specified. <b>2.</b> The condition is a <em>repository</em>, not a methodology text. <b>3.</b>
+          <code>codezen-viable</code> is a curated four-skill subset of eleven. <b>4.</b> Method
+          <em>availability</em>, not enforcement &mdash; the agent was never instructed to follow the process.
+          <b>5.</b> Concurrency inflates the clock; paired comparisons survive, absolute budget percentages do not.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="stack tight">
+      <span class="eyebrow accent" style="color:var(--accent-ink);">What to change</span>
+      <ul class="rows plain">
+        <li><span class="tag">do first</span><span><strong>Grade the workspace at the moment of the kill.</strong>
+          7 of 23 kills scored 1.0 anyway. Costs no model tokens.</span></li>
+        <li><span class="tag">2&times; screen cost</span><span><strong>Screen on baseline pass <em>rate</em>.</strong>
+          Keep a task when 1 or 2 of 3 baseline trials pass. The only change that materially improves outcome power.</span></li>
+        <li><span class="tag">new variable</span><span><strong>Randomise invocation</strong> &mdash; mandate the
+          process in half the trials. Breaks the selection/effect confound.</span></li>
+        <li><span class="tag">cheap</span><span><strong>Run the equal-budget retry comparison.</strong> Replaces a
+          three-estimator range with a measurement.</span></li>
+        <li><span class="tag">agent design</span><span><strong>Gate procedural skills on state and on time
+          remaining.</strong> No delegated review when the tests are already green, or on a small fraction of budget.</span></li>
+      </ul>
+      <div class="claim">
+        <h3>The general form of the finding</h3>
+        <p>The result is not that these two toolkits are badly built. It is that <strong>a fixed process applied
+        unconditionally is the wrong shape of thing for an agent under a bounded budget</strong>.</p>
+        <p style="margin-top:.4em;"><em>Autonomous coding methodology is better treated as an adaptive
+        resource-allocation policy than as a universally beneficial fixed process.</em></p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <strong>For an operator, in one sentence:</strong> on work the bare agent already handles, the methodology is a
+    1.7&times; bill with a measurable downside and no measurable benefit; where there is a hard per-attempt time
+    limit, process is the larger <em>risk</em>, not the cost.
+    <ul>
+      <li>The same review machinery that is defensible while the artefact is still failing becomes harmful once it
+      already passes &mdash; continued process consumes the one resource the trial needs in order to terminate, and
+      in seven trials it converted finished work into a censored observation.</li>
+      <li>Full record: <code>whitepaper/main.pdf</code> (48 pp, 20 figures, 18 tables, all nine adjudicated
+      divergences). Short report: <code>whitepaper/brief.pdf</code>. Per-trial tables:
+      <code>results/analysis-{suite,ceiling}/data/trials.csv</code>.</li>
+    </ul>
+  </template>
+</section>
+  </div><!-- /stage -->
+
+  <div class="meter">
+    <div class="track" id="track" role="slider" tabindex="0" aria-label="Deck position"
+         aria-valuemin="1" aria-valuemax="15" aria-valuenow="1">
+      <div class="fill" id="fill"></div>
+      <div class="ticks" id="ticks"></div>
+      <div class="wall" title="the wall"></div>
+    </div>
+    <div class="legend">
+      <span id="legend-left">deck consumed</span>
+      <span>&larr; &rarr; move &nbsp;&middot;&nbsp; N notes &nbsp;&middot;&nbsp; ? keys</span>
+    </div>
+  </div>
+</div>
+
+<div id="notes" hidden>
+  <div class="nh"><span>Speaker notes</span><span id="notes-sect"></span></div>
+  <div class="nb" id="notes-body"></div>
+</div>
+
+<div id="help" hidden>
+  <div class="box">
+    <h3>Keyboard</h3>
+    <dl>
+      <dt>&rarr; &nbsp;space &nbsp;PgDn</dt><dd>next slide</dd>
+      <dt>&larr; &nbsp;PgUp</dt><dd>previous slide</dd>
+      <dt>Home &nbsp;End</dt><dd>first / last slide</dd>
+      <dt>N</dt><dd>toggle speaker notes</dd>
+      <dt>?</dt><dd>this panel</dd>
+      <dt>Esc</dt><dd>close notes or this panel</dd>
+    </dl>
+    <p style="margin-top:.9rem; font-size:13px; color:var(--ink-3);">The address bar carries the slide number
+      &mdash; copy the URL to link someone straight to it. Click the bar below the slide to jump.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var stage = document.getElementById('stage');
+  var pos = document.getElementById('pos');
+  var tot = document.getElementById('tot');
+  var sect = document.getElementById('sect');
+  var fill = document.getElementById('fill');
+  var track = document.getElementById('track');
+  var ticks = document.getElementById('ticks');
+  var legendLeft = document.getElementById('legend-left');
+  var notes = document.getElementById('notes');
+  var notesBody = document.getElementById('notes-body');
+  var notesSect = document.getElementById('notes-sect');
+  var btnNotes = document.getElementById('btn-notes');
+  var help = document.getElementById('help');
+  var btnHelp = document.getElementById('btn-help');
+  var current = 0;
+
+  tot.textContent = String(total);
+  track.setAttribute('aria-valuemax', String(total));
+  for (var t = 0; t < total; t++) ticks.appendChild(document.createElement('span'));
+
+  function noteFor(i) {
+    var tpl = slides[i].querySelector('template.note');
+    return tpl ? tpl.innerHTML : '<em>No notes for this slide.</em>';
+  }
+
+  function render(i) {
+    current = i;
+    slides.forEach(function (s, k) { s.hidden = k !== i; });
+    stage.scrollTop = 0;
+    slides[i].scrollTop = 0;
+    pos.textContent = String(i + 1);
+    sect.textContent = slides[i].dataset.sect || '';
+    fill.style.width = ((i + 1) / total * 100) + '%';
+    track.setAttribute('aria-valuenow', String(i + 1));
+    legendLeft.textContent = 'slide ' + (i + 1) + ' of ' + total + ' · ' + (slides[i].dataset.sect || '');
+    notesBody.innerHTML = noteFor(i);
+    notesSect.textContent = slides[i].dataset.sect || '';
+    var hash = '#' + (i + 1);
+    if (location.hash !== hash) history.replaceState(null, '', hash);
+  }
+
+  function go(i) { render(Math.max(0, Math.min(total - 1, i))); }
+
+  function fromHash() {
+    var n = parseInt((location.hash || '').replace('#', ''), 10);
+    return isFinite(n) && n >= 1 && n <= total ? n - 1 : 0;
+  }
+
+  function toggleNotes(force) {
+    var open = typeof force === 'boolean' ? force : notes.hidden;
+    notes.hidden = !open;
+    btnNotes.setAttribute('aria-pressed', open ? 'true' : 'false');
+  }
+
+  function toggleHelp(force) {
+    var open = typeof force === 'boolean' ? force : help.hidden;
+    help.hidden = !open;
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var tag = (e.target && e.target.tagName) || '';
+    var interactive = /^(BUTTON|A|SUMMARY|INPUT|TEXTAREA|SELECT)$/.test(tag);
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': go(current + 1); e.preventDefault(); break;
+      case 'ArrowLeft': case 'PageUp': go(current - 1); e.preventDefault(); break;
+      case ' ': if (interactive) return; go(current + 1); e.preventDefault(); break;
+      case 'Home': go(0); e.preventDefault(); break;
+      case 'End': go(total - 1); e.preventDefault(); break;
+      case 'n': case 'N': if (interactive) return; toggleNotes(); e.preventDefault(); break;
+      case '?': toggleHelp(); e.preventDefault(); break;
+      case 'Escape':
+        if (!help.hidden) toggleHelp(false);
+        else if (!notes.hidden) toggleNotes(false);
+        break;
+    }
+  });
+
+  track.addEventListener('click', function (e) {
+    var r = track.getBoundingClientRect();
+    go(Math.floor((e.clientX - r.left) / r.width * total));
+  });
+  track.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') return; // handled globally
+  });
+
+  btnNotes.addEventListener('click', function () { toggleNotes(); });
+  btnHelp.addEventListener('click', function () { toggleHelp(); });
+  help.addEventListener('click', function (e) { if (e.target === help) toggleHelp(false); });
+  window.addEventListener('hashchange', function () { go(fromHash()); });
+
+  go(fromHash());
+})();
+</script>
